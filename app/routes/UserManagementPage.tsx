@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
 import { Plus, Edit, Trash2, Search, X, AlertTriangle } from 'lucide-react';
 
 interface User {
@@ -142,7 +142,7 @@ export default function UserManagementPage() {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'Admin': return 'danger';
+      case 'Admin': return 'destructive';
       case 'Sespri': return 'info';
       case 'Kasubag Protokol': return 'success';
       case 'Kasubag Media': return 'success';
@@ -156,9 +156,9 @@ export default function UserManagementPage() {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.jabatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.nip.includes(searchTerm);
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.jabatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.nip.includes(searchTerm);
     const matchesFilter = filterRole === 'all' || user.role === filterRole;
     return matchesSearch && matchesFilter;
   });
@@ -216,7 +216,7 @@ export default function UserManagementPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (modalMode === 'add') {
       // Validasi email unik
       if (users.some(u => u.email === formData.email)) {
@@ -263,24 +263,24 @@ export default function UserManagementPage() {
         return;
       }
 
-      setUsers(users.map(user => 
-        user.id_user === selectedUser?.id_user 
+      setUsers(users.map(user =>
+        user.id_user === selectedUser?.id_user
           ? {
-              ...user,
-              nama: formData.nama,
-              email: formData.email,
-              nip: formData.nip,
-              role: formData.role,
-              jabatan: formData.jabatan,
-              instansi: formData.instansi,
-              no_hp: formData.no_hp,
-              status_aktif: formData.status_aktif
-            }
+            ...user,
+            nama: formData.nama,
+            email: formData.email,
+            nip: formData.nip,
+            role: formData.role,
+            jabatan: formData.jabatan,
+            instansi: formData.instansi,
+            no_hp: formData.no_hp,
+            status_aktif: formData.status_aktif
+          }
           : user
       ));
       alert('User berhasil diupdate!');
     }
-    
+
     setShowModal(false);
   };
 
@@ -381,7 +381,7 @@ export default function UserManagementPage() {
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{user.no_hp}</TableCell>
                     <TableCell>
-                      <Badge variant={user.status_aktif ? 'success' : 'default'}>
+                      <Badge variant={user.status_aktif ? 'success' : 'secondary'}>
                         {user.status_aktif ? 'Aktif' : 'Tidak Aktif'}
                       </Badge>
                     </TableCell>
@@ -405,7 +405,7 @@ export default function UserManagementPage() {
 
       {/* Modal Add/Edit User */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -615,7 +615,7 @@ export default function UserManagementPage() {
 
       {/* Modal Delete User */}
       {showDeleteModal && userToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -658,18 +658,18 @@ export default function UserManagementPage() {
 
                 {/* Buttons */}
                 <div className="flex gap-3 pt-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowDeleteModal(false)} 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteModal(false)}
                     className="flex-1"
                   >
                     Batal
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="danger" 
-                    onClick={confirmDelete} 
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={confirmDelete}
                     className="flex-1"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />

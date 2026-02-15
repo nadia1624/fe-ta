@@ -1,6 +1,6 @@
 import { Bell, User, LogOut, Menu } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/button';
 import { useLocation, useNavigate } from 'react-router';
 
 interface TopBarProps {

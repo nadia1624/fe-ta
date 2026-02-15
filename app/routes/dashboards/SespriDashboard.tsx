@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { FileText, Clock, CheckCircle, XCircle, Calendar, UserCheck, ClipboardList, CheckSquare } from 'lucide-react';
-import { Badge } from '../../components/ui/Badge';
+import { Badge } from '../../components/ui/badge';
 import { Link } from 'react-router';
-import { Button } from '../../components/ui/Button';
+import { Button } from '../../components/ui/button';
 
 export default function SespriDashboard() {
   const stats = [
@@ -44,7 +44,7 @@ export default function SespriDashboard() {
 
   // Today's date untuk contoh (February 4, 2026)
   const today = '2025-02-04';
-  
+
   const todayAgenda = [
     {
       id: 1,
@@ -185,11 +185,11 @@ export default function SespriDashboard() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="font-semibold text-gray-900">{agenda.kegiatan}</h4>
-                        <Badge 
+                        <Badge
                           variant={
-                            agenda.status === 'Berlangsung' ? 'info' : 
-                            agenda.status === 'Selesai' ? 'success' : 
-                            'warning'
+                            agenda.status === 'Berlangsung' ? 'info' :
+                              agenda.status === 'Selesai' ? 'success' :
+                                'warning'
                           }
                         >
                           {agenda.status}

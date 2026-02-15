@@ -1,40 +1,40 @@
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Users, Newspaper, CheckCircle, Clock, Calendar, TrendingUp, FileText, UserCheck, ClipboardList } from 'lucide-react';
-import { Badge } from '../../components/ui/Badge';
+import { Badge } from '../../components/ui/badge';
 import { Link } from 'react-router';
-import { Button } from '../../components/ui/Button';
+import { Button } from '../../components/ui/button';
 
 export default function KasubagMediaDashboard() {
   const stats = [
-    { 
-      label: 'Total Staf Media', 
-      value: '6', 
-      icon: Users, 
-      iconColor: '#9810FA', 
+    {
+      label: 'Total Staf Media',
+      value: '6',
+      icon: Users,
+      iconColor: '#9810FA',
       bg: 'bg-[#faf5ff]',
       borderColor: 'border-gray-200'
     },
-    { 
-      label: 'Draft Perlu Review', 
-      value: '4', 
-      icon: Clock, 
-      iconColor: '#D08700', 
+    {
+      label: 'Draft Perlu Review',
+      value: '4',
+      icon: Clock,
+      iconColor: '#D08700',
       bg: 'bg-[#fefce8]',
       borderColor: 'border-gray-200'
     },
-    { 
-      label: 'Draft Disetujui', 
-      value: '18', 
-      icon: CheckCircle, 
-      iconColor: '#00A63E', 
+    {
+      label: 'Draft Disetujui',
+      value: '18',
+      icon: CheckCircle,
+      iconColor: '#00A63E',
       bg: 'bg-[#f0fdf4]',
       borderColor: 'border-gray-200'
     },
-    { 
-      label: 'Penugasan Aktif', 
-      value: '7', 
-      icon: Newspaper, 
-      iconColor: '#155DFC', 
+    {
+      label: 'Penugasan Aktif',
+      value: '7',
+      icon: Newspaper,
+      iconColor: '#155DFC',
       bg: 'bg-[#eff6ff]',
       borderColor: 'border-gray-200'
     },
@@ -243,11 +243,11 @@ export default function KasubagMediaDashboard() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="text-[16px] font-bold text-[#101828]">{agenda.kegiatan}</h4>
-                        <Badge 
+                        <Badge
                           variant={
-                            agenda.status === 'Berlangsung' ? 'info' : 
-                            agenda.status === 'Selesai' ? 'success' : 
-                            'warning'
+                            agenda.status === 'Berlangsung' ? 'info' :
+                              agenda.status === 'Selesai' ? 'success' :
+                                'warning'
                           }
                         >
                           {agenda.status}

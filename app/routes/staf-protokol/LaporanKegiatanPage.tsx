@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { Search, Filter, Eye, Calendar, MapPin, Clock, FileText, User, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 export default function LaporanKegiatanPage() {

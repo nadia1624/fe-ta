@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Calendar, FileText, Users, CheckCircle } from 'lucide-react';
-import { Badge } from '../../components/ui/Badge';
+import { Badge } from '../../components/ui/badge';
 
 export default function AdminDashboard() {
   const stats = [

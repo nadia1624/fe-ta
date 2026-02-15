@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Users, ClipboardList, CheckCircle, Clock, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
-import { Badge } from '../../components/ui/Badge';
+import { Badge } from '../../components/ui/badge';
 import { Link } from 'react-router';
-import { Button } from '../../components/ui/Button';
+import { Button } from '../../components/ui/button';
 
 export default function KasubagProtokolDashboard() {
   const today = new Date().toISOString().split('T')[0];
@@ -183,11 +183,11 @@ export default function KasubagProtokolDashboard() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="font-semibold text-gray-900">{agenda.kegiatan}</h4>
-                        <Badge 
+                        <Badge
                           variant={
-                            agenda.status === 'Berlangsung' ? 'info' : 
-                            agenda.status === 'Selesai' ? 'success' : 
-                            'warning'
+                            agenda.status === 'Berlangsung' ? 'info' :
+                              agenda.status === 'Selesai' ? 'success' :
+                                'warning'
                           }
                         >
                           {agenda.status}

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { Eye, Calendar, X, Search, Filter, List, CalendarDays } from 'lucide-react';
 
 export default function AgendaPimpinanPage() {
@@ -472,7 +472,7 @@ export default function AgendaPimpinanPage() {
 
       {/* Detail Modal */}
       {showDetailModal && selectedAgenda && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <div className="flex items-center justify-between">

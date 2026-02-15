@@ -1,12 +1,12 @@
 import { Link } from 'react-router';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
-import { 
-  Calendar, 
-  ClipboardList, 
-  CheckCircle, 
-  Clock, 
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import {
+  Calendar,
+  ClipboardList,
+  CheckCircle,
+  Clock,
   AlertCircle,
   ArrowRight
 } from 'lucide-react';
@@ -238,11 +238,11 @@ export default function StafProtokolDashboard() {
                     <div className="flex-1">
                       <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
                         <h4 className="font-semibold text-sm md:text-base text-gray-900">{agenda.kegiatan}</h4>
-                        <Badge 
+                        <Badge
                           variant={
-                            agenda.status === 'Berlangsung' ? 'info' : 
-                            agenda.status === 'Selesai' ? 'success' : 
-                            'warning'
+                            agenda.status === 'Berlangsung' ? 'info' :
+                              agenda.status === 'Selesai' ? 'success' :
+                                'warning'
                           }
                           className="w-fit"
                         >
@@ -335,18 +335,18 @@ export default function StafProtokolDashboard() {
                   <div className="flex-1">
                     <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
                       <h4 className="font-semibold text-sm md:text-base text-gray-900">{task.judul}</h4>
-                      <Badge 
+                      <Badge
                         variant={
-                          task.status === 'Berlangsung' ? 'info' : 
-                          task.status === 'Selesai' ? 'success' : 
-                          'warning'
+                          task.status === 'Berlangsung' ? 'info' :
+                            task.status === 'Selesai' ? 'success' :
+                              'warning'
                         }
                         className="w-fit"
                       >
                         {task.status}
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-1 mb-3">
                       <p className="text-xs text-gray-600">
                         📋 Dari: {task.penugasan_dari}
@@ -374,8 +374,8 @@ export default function StafProtokolDashboard() {
                       <div className="flex items-center gap-2">
                         <ClipboardList className={`w-4 h-4 ${task.jumlah_progress > 0 ? 'text-green-600' : 'text-gray-400'}`} />
                         <span className="text-xs font-medium text-gray-700">
-                          {task.jumlah_progress > 0 
-                            ? `${task.jumlah_progress} Progress Dilaporkan` 
+                          {task.jumlah_progress > 0
+                            ? `${task.jumlah_progress} Progress Dilaporkan`
                             : 'Belum Ada Progress'}
                         </span>
                       </div>
@@ -383,7 +383,7 @@ export default function StafProtokolDashboard() {
 
                     {/* Action Button */}
                     <Link to={`/dashboard/tugas-detail/${task.tugas_id}`}>
-                      <Button variant="primary" size="sm" className="w-full">
+                      <Button variant="outline" size="sm" className="w-full">
                         <ClipboardList className="w-4 h-4 mr-2" />
                         Update Progress
                         <ArrowRight className="w-4 h-4 ml-2" />

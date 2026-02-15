@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
 
 export default function PeriodeManagementPage() {
@@ -143,7 +143,7 @@ export default function PeriodeManagementPage() {
                   </TableCell>
                   <TableCell className="text-sm text-gray-600">{periode.keterangan}</TableCell>
                   <TableCell>
-                    <Badge variant={periode.status === 'Aktif' ? 'success' : 'default'}>
+                    <Badge variant={periode.status === 'Aktif' ? 'success' : 'secondary'}>
                       {periode.status}
                     </Badge>
                   </TableCell>
@@ -166,7 +166,7 @@ export default function PeriodeManagementPage() {
 
       {/* Modal Add/Edit */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-2xl w-full">
             <CardHeader>
               <h3 className="text-lg font-semibold text-gray-900">
@@ -265,7 +265,7 @@ export default function PeriodeManagementPage() {
 
       {/* Modal Delete */}
       {showDeleteModal && periodeToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -305,7 +305,7 @@ export default function PeriodeManagementPage() {
                         })}
                       </p>
                       <div className="pt-1">
-                        <Badge variant={periodeToDelete.status === 'Aktif' ? 'success' : 'default'}>
+                        <Badge variant={periodeToDelete.status === 'Aktif' ? 'success' : 'secondary'}>
                           {periodeToDelete.status}
                         </Badge>
                       </div>
@@ -322,18 +322,18 @@ export default function PeriodeManagementPage() {
 
                 {/* Buttons */}
                 <div className="flex gap-3 pt-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowDeleteModal(false)} 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteModal(false)}
                     className="flex-1"
                   >
                     Batal
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="danger" 
-                    onClick={handleDeleteConfirm} 
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleDeleteConfirm}
                     className="flex-1"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />

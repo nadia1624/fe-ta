@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
 
 export default function PimpinanManagementPage() {
@@ -154,7 +154,7 @@ export default function PimpinanManagementPage() {
                   <TableCell className="text-sm">{pimpinan.email}</TableCell>
                   <TableCell className="text-sm">{pimpinan.no_hp}</TableCell>
                   <TableCell>
-                    <Badge variant={pimpinan.status === 'Aktif' ? 'success' : 'default'}>
+                    <Badge variant={pimpinan.status === 'Aktif' ? 'success' : 'secondary'}>
                       {pimpinan.status}
                     </Badge>
                   </TableCell>
@@ -177,7 +177,7 @@ export default function PimpinanManagementPage() {
 
       {/* Modal Add/Edit */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <h3 className="text-lg font-semibold text-gray-900">
@@ -303,7 +303,7 @@ export default function PimpinanManagementPage() {
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
-                    <strong>Catatan:</strong> Data pimpinan digunakan untuk agenda dan disposisi. 
+                    <strong>Catatan:</strong> Data pimpinan digunakan untuk agenda dan disposisi.
                     Pastikan data yang diinput sudah benar dan lengkap.
                   </p>
                 </div>
@@ -324,7 +324,7 @@ export default function PimpinanManagementPage() {
 
       {/* Modal Delete */}
       {showDeleteModal && pimpinanToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -356,7 +356,7 @@ export default function PimpinanManagementPage() {
                         <Badge variant={pimpinanToDelete.jabatan === 'Walikota' ? 'info' : 'default'}>
                           {pimpinanToDelete.jabatan}
                         </Badge>
-                        <Badge variant={pimpinanToDelete.status === 'Aktif' ? 'success' : 'default'}>
+                        <Badge variant={pimpinanToDelete.status === 'Aktif' ? 'success' : 'secondary'}>
                           {pimpinanToDelete.status}
                         </Badge>
                       </div>
@@ -381,25 +381,25 @@ export default function PimpinanManagementPage() {
                 {/* Warning */}
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                   <p className="text-sm text-red-800">
-                    <strong>Peringatan:</strong> Data pimpinan yang dihapus tidak dapat dikembalikan. 
+                    <strong>Peringatan:</strong> Data pimpinan yang dihapus tidak dapat dikembalikan.
                     Semua agenda dan disposisi yang terkait dengan pimpinan ini akan terpengaruh.
                   </p>
                 </div>
 
                 {/* Buttons */}
                 <div className="flex gap-3 pt-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowDeleteModal(false)} 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteModal(false)}
                     className="flex-1"
                   >
                     Batal
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="danger" 
-                    onClick={handleConfirmDelete} 
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleConfirmDelete}
                     className="flex-1"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />

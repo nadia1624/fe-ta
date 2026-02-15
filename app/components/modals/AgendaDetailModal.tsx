@@ -1,6 +1,6 @@
 import { X, FileText, Calendar, Clock, MapPin } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 
 interface AgendaDetailModalProps {
   agenda: any;
@@ -12,13 +12,13 @@ export default function AgendaDetailModal({ agenda, onClose }: AgendaDetailModal
     switch (status) {
       case 'Approved': return 'success';
       case 'Pending': return 'warning';
-      case 'Rejected': return 'danger';
+      case 'Rejected': return 'destructive';
       default: return 'default';
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Detail Agenda</h3>
@@ -132,7 +132,7 @@ export default function AgendaDetailModal({ agenda, onClose }: AgendaDetailModal
               <Button variant="secondary">
                 Tolak
               </Button>
-              <Button variant="primary">
+              <Button variant="default">
                 Setujui
               </Button>
             </>

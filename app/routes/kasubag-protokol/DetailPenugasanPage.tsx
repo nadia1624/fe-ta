@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { ArrowLeft, CheckCircle, TrendingUp, Calendar, MapPin, Clock, User } from 'lucide-react';
 
 export default function DetailPenugasanPage() {

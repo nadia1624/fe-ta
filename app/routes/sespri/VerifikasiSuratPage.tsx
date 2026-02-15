@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { CheckCircle, XCircle, Eye } from 'lucide-react';
 
 export default function VerifikasiSuratPage() {
@@ -107,7 +107,7 @@ export default function VerifikasiSuratPage() {
       </Card>
 
       {showModal && selectedSurat && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-lg w-full">
             <CardHeader>
               <h3 className="text-lg font-semibold text-gray-900">Verifikasi Surat</h3>

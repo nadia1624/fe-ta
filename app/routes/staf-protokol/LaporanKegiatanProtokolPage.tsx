@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { ArrowRight, Search, Filter, TrendingUp } from 'lucide-react';
 
 export default function LaporanKegiatanProtokolPage() {

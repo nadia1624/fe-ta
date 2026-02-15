@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Card, CardContent, CardHeader } from '../../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { Search, Filter, FileText, Eye, X, Calendar, User, ArrowRight } from 'lucide-react';
 
 export default function DraftBeritaMediaPage() {
@@ -360,7 +360,7 @@ export default function DraftBeritaMediaPage() {
 
       {/* Detail Modal */}
       {showDetailModal && selectedDraft && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <CardHeader className="border-b border-gray-200">
               <div className="flex items-center justify-between">
