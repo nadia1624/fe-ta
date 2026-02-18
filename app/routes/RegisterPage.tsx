@@ -1,7 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/button';
 import { Building2, ArrowLeft } from 'lucide-react';
+import { authApi } from '../lib/api';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -12,25 +22,60 @@ export default function RegisterPage() {
     confirmPassword: '',
     jabatan: '',
     instansi: '',
-    no_hp: ''
+    no_hp: '',
+    alamat: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock registration - in real app would validate and create user
+    setError('');
+
+    // Validasi password match
     if (formData.password !== formData.confirmPassword) {
-      alert('Password tidak cocok!');
+      setError('Password dan konfirmasi password tidak cocok!');
       return;
     }
-    alert('Registrasi berhasil! Silakan login.');
-    navigate('/login');
+
+    // Validasi panjang password
+    if (formData.password.length < 8) {
+      setError('Password minimal 8 karakter!');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await authApi.register({
+        nama: formData.nama,
+        email: formData.email,
+        password: formData.password,
+        instansi: formData.instansi || undefined,
+        jabatan: formData.jabatan || undefined,
+        no_hp: formData.no_hp || undefined,
+        alamat: formData.alamat || undefined,
+      });
+
+      if (response.success) {
+        // Registrasi berhasil, tampilkan popup
+        setShowSuccessDialog(true);
+      } else {
+        setError(response.message || 'Registrasi gagal');
+      }
+    } catch (err) {
+      setError('Tidak dapat terhubung ke server. Pastikan backend sudah berjalan.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,6 +114,12 @@ export default function RegisterPage() {
               </p>
             </div>
 
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
@@ -84,6 +135,7 @@ export default function RegisterPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                     placeholder="Masukkan nama lengkap"
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -100,6 +152,7 @@ export default function RegisterPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                     placeholder="contoh@email.com"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -119,6 +172,7 @@ export default function RegisterPage() {
                     placeholder="Minimal 8 karakter"
                     required
                     minLength={8}
+                    disabled={loading}
                   />
                 </div>
 
@@ -135,6 +189,7 @@ export default function RegisterPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                     placeholder="Ulangi password"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -157,7 +212,7 @@ export default function RegisterPage() {
 
               <div>
                 <label htmlFor="instansi" className="block text-sm font-medium text-gray-700 mb-2">
-                  Instansi/Organisasi <span className="text-red-500">*</span>
+                  Instansi/Organisasi
                 </label>
                 <input
                   id="instansi"
@@ -167,13 +222,29 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                   placeholder="Contoh: Dinas Pendidikan Kabupaten"
-                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="alamat" className="block text-sm font-medium text-gray-700 mb-2">
+                  Alamat
+                </label>
+                <textarea
+                  id="alamat"
+                  name="alamat"
+                  value={formData.alamat}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                  placeholder="Alamat lengkap"
+                  rows={3}
+                  disabled={loading}
                 />
               </div>
 
               <div>
                 <label htmlFor="no_hp" className="block text-sm font-medium text-gray-700 mb-2">
-                  Nomor HP <span className="text-red-500">*</span>
+                  Nomor HP
                 </label>
                 <input
                   id="no_hp"
@@ -183,19 +254,19 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                   placeholder="08xxxxxxxxxx"
-                  required
+                  disabled={loading}
                 />
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900">
-                  <strong>Catatan:</strong> Akun akan digunakan untuk mengajukan surat permohonan agenda kegiatan. 
+                  <strong>Catatan:</strong> Akun akan digunakan untuk mengajukan surat permohonan agenda kegiatan.
                   Pastikan data yang diisi sudah benar dan lengkap.
                 </p>
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Daftar
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? 'Memproses...' : 'Daftar'}
               </Button>
             </form>
 
@@ -210,6 +281,22 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Registrasi Berhasil</AlertDialogTitle>
+            <AlertDialogDescription>
+              Akun Anda telah berhasil dibuat. Silakan login untuk melanjutkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => navigate('/login')}>
+              Login
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

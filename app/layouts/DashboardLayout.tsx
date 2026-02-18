@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router';
 import Sidebar from '../components/layout/Sidebar';
 import TopBar from '../components/layout/TopBar';
 import { useEffect, useState } from 'react';
+import { authApi, getToken, clearAuthData } from '../lib/api';
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
@@ -15,37 +16,40 @@ export default function DashboardLayout() {
   });
 
   useEffect(() => {
-    // Get user from localStorage (in real app, use proper auth)
+    const token = getToken();
     const userRole = localStorage.getItem('userRole');
-    const userEmail = localStorage.getItem('userEmail');
 
-    if (!userRole || !userEmail) {
+    if (!token || !userRole) {
       // If not logged in, redirect to login
+      clearAuthData();
       navigate('/login');
       return;
     }
 
-    // Mock user data based on role
-    const userMap: Record<string, any> = {
-      'Admin': { nama: 'Budi Santoso', jabatan: 'Administrator Sistem' },
-      'Sespri': { nama: 'Siti Rahma', jabatan: 'Sekretaris Pribadi' },
-      'Kasubag Protokol': { nama: 'Ahmad Hidayat', jabatan: 'Kepala Subbagian Protokol' },
-      'Kasubag Media': { nama: 'Dewi Lestari', jabatan: 'Kepala Subbagian Media' },
-      'Ajudan': { nama: 'Eko Prasetyo', jabatan: 'Ajudan Pimpinan' },
-      'Staf Protokol': { nama: 'Bambang Wijaya', jabatan: 'Staf Pelaksana Protokol' },
-      'Staf Media': { nama: 'Siti Nurhaliza', jabatan: 'Staf Dokumentasi' },
-      'Pemohon': { nama: 'Rina Kusuma', jabatan: 'Kepala Dinas Pendidikan' },
-    };
+    // Gunakan cached data dari localStorage untuk tampilan awal (UX cepat)
+    setCurrentUser({
+      nama: localStorage.getItem('userName') || '',
+      role: userRole,
+      jabatan: '',
+      email: localStorage.getItem('userEmail') || ''
+    });
 
-    const userData = userMap[userRole];
-    if (userData) {
-      setCurrentUser({
-        nama: userData.nama,
-        role: userRole,
-        jabatan: userData.jabatan,
-        email: userEmail
-      });
-    }
+    // Fetch data terbaru dari backend
+    authApi.getMe().then((response) => {
+      if (response.success && response.data) {
+        const user = response.data;
+        setCurrentUser({
+          nama: user.nama,
+          role: user.role?.nama_role || userRole,
+          jabatan: '',
+          email: user.email
+        });
+      }
+    }).catch(() => {
+      // Jika token invalid/expired, redirect ke login
+      clearAuthData();
+      navigate('/login');
+    });
 
     // Redirect to appropriate dashboard if on /dashboard root
     if (location.pathname === '/dashboard' || location.pathname === '/dashboard/') {
@@ -69,8 +73,7 @@ export default function DashboardLayout() {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
+    clearAuthData();
     navigate('/login');
   };
 

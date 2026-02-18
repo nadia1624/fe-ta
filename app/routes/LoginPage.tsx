@@ -1,67 +1,51 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/button';
 import { Building2, ArrowLeft } from 'lucide-react';
+import { authApi, setToken, setUserData } from '../lib/api';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Mock users for different roles
-  const mockUsers = [
-    { email: 'admin@protokol.go.id', password: 'admin123', role: 'Admin' },
-    { email: 'sespri@protokol.go.id', password: 'sespri123', role: 'Sespri' },
-    { email: 'kasubag.protokol@protokol.go.id', password: 'kasubag123', role: 'Kasubag Protokol' },
-    { email: 'kasubag.media@protokol.go.id', password: 'kasubag123', role: 'Kasubag Media' },
-    { email: 'ajudan@protokol.go.id', password: 'ajudan123', role: 'Ajudan' },
-    { email: 'staf.protokol@protokol.go.id', password: 'staf123', role: 'Staf Protokol' },
-    { email: 'staf.media@protokol.go.id', password: 'staf123', role: 'Staf Media' },
-    { email: 'pemohon@email.com', password: 'pemohon123', role: 'Pemohon' },
-  ];
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Find user by email and password
-    const user = mockUsers.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-      // Store user data in localStorage (in real app, use proper auth)
-      localStorage.setItem('userRole', user.role);
-      localStorage.setItem('userEmail', user.email);
-      
-      // Redirect based on role
-      switch (user.role) {
-        case 'Admin':
-          navigate('/dashboard/admin');
-          break;
-        case 'Sespri':
-          navigate('/dashboard/sespri');
-          break;
-        case 'Kasubag Protokol':
-          navigate('/dashboard/kasubag-protokol');
-          break;
-        case 'Kasubag Media':
-          navigate('/dashboard/kasubag-media');
-          break;
-        case 'Ajudan':
-          navigate('/dashboard/ajudan');
-          break;
-        case 'Staf Protokol':
-          navigate('/dashboard/staf-protokol');
-          break;
-        case 'Staf Media':
-          navigate('/dashboard/staf-media');
-          break;
-        case 'Pemohon':
-          navigate('/dashboard/pemohon');
-          break;
-        default:
-          navigate('/dashboard/admin');
+    console.log('[LoginPage] Submitting:', { email, password });
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await authApi.login(email, password);
+
+      if (response.success && response.data) {
+        // Simpan token dan data user ke localStorage
+        setToken(response.data.token);
+        setUserData(response.data.user);
+
+        // Redirect berdasarkan role
+        const role = response.data.user.role.nama_role;
+        const roleMap: Record<string, string> = {
+          'Admin': '/dashboard/admin',
+          'Sespri': '/dashboard/sespri',
+          'Kasubag Protokol': '/dashboard/kasubag-protokol',
+          'Kasubag Media': '/dashboard/kasubag-media',
+          'Ajudan': '/dashboard/ajudan',
+          'Staf Protokol': '/dashboard/staf-protokol',
+          'Staf Media': '/dashboard/staf-media',
+          'Pemohon': '/dashboard/pemohon',
+        };
+
+        navigate(roleMap[role] || '/dashboard/admin');
+      } else {
+        setError(response.message || 'Login gagal');
       }
-    } else {
-      alert('Email atau password salah!');
+    } catch (err) {
+      setError('Tidak dapat terhubung ke server. Pastikan backend sudah berjalan.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,19 +85,26 @@ export default function LoginPage() {
               </p>
             </div>
 
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email / Username
+                  Email
                 </label>
                 <input
                   id="email"
-                  type="text"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="Masukkan email atau username"
+                  placeholder="Masukkan email"
                   required
+                  disabled={loading}
                 />
               </div>
 
@@ -129,32 +120,22 @@ export default function LoginPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                   placeholder="Masukkan password"
                   required
+                  disabled={loading}
                 />
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                Masuk
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? 'Memproses...' : 'Masuk'}
               </Button>
             </form>
 
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 text-center mb-4">
+              <p className="text-sm text-gray-600 text-center">
                 Belum punya akun?{' '}
                 <Link to="/register" className="text-blue-600 hover:underline font-medium">
                   Daftar sebagai Pemohon
                 </Link>
               </p>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-xs font-medium text-blue-900 mb-2">Demo Login:</p>
-                <div className="space-y-1 text-xs text-blue-800">
-                  <p>• Admin: admin@protokol.go.id / admin123</p>
-                  <p>• Sespri: sespri@protokol.go.id / sespri123</p>
-                  <p>• Kasubag: kasubag.protokol@protokol.go.id / kasubag123</p>
-                  <p>• Staf: staf.protokol@protokol.go.id / staf123</p>
-                  <p>• Pemohon: pemohon@email.com / pemohon123</p>
-                </div>
-              </div>
             </div>
           </div>
 
