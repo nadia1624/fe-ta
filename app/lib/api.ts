@@ -82,3 +82,193 @@ export const authApi = {
         return res.json();
     },
 };
+
+// ==================== Periode API ====================
+
+export const periodeApi = {
+    async getAll(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/periode`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async create(data: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/periode`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async update(id: string, data: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/periode/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async delete(id: string): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/periode/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+};
+
+// ==================== Pimpinan API ====================
+
+export const pimpinanApi = {
+    async getAll(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/pimpinan`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getJabatan(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/pimpinan/jabatan`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getList(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/pimpinan/list`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getActiveAssignments(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/pimpinan/active-assignments`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async createOrUpdate(data: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/pimpinan`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async delete(data: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/pimpinan/delete`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+};
+
+export const userApi = {
+    async getAll(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/users`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async create(data: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async update(id: string, data: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/users/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async delete(id_user: string): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/users/delete`, {
+            method: 'POST', // or DELETE if strict
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id_user }),
+        });
+        return res.json();
+    },
+
+    async getRoles(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/users/roles`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    }
+};

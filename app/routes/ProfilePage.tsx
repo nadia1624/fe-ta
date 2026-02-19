@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/button';
 import { User, Mail, Phone, Lock, Image } from 'lucide-react';
 
 export default function ProfilePage() {

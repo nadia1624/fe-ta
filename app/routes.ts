@@ -31,12 +31,12 @@ export default [
     route("penugasan", "routes/PenugasanStafPage.tsx"),
     route("draft-berita", "routes/DraftBeritaPage.tsx"),
     route("laporan", "routes/LaporanPage.tsx"),
-    route("users", "routes/UserManagementPage.tsx"),
     route("profile", "routes/ProfilePage.tsx"),
 
     // Admin Specific
     route("periode", "routes/admin/PeriodeManagementPage.tsx"),
     route("pimpinan", "routes/admin/PimpinanManagementPage.tsx"),
+    route("users", "routes/admin/UserManagementPage.tsx"),
 
     // Sespri Specific
     route("verifikasi-permohonan", "routes/sespri/VerifikasiPermohonanPage.tsx"),

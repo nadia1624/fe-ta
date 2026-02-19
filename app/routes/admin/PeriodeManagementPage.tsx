@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
+import { periodeApi } from '../../lib/api';
+import Swal from 'sweetalert2';
 
 export default function PeriodeManagementPage() {
   const [showModal, setShowModal] = useState(false);
@@ -11,6 +13,9 @@ export default function PeriodeManagementPage() {
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedPeriode, setSelectedPeriode] = useState<any>(null);
   const [periodeToDelete, setPeriodeToDelete] = useState<any>(null);
+  const [periodeList, setPeriodeList] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     periode: '',
@@ -20,24 +25,32 @@ export default function PeriodeManagementPage() {
     status: 'Aktif'
   });
 
-  const periodeList = [
-    {
-      id: 1,
-      periode: 'Periode 2020-2025',
-      tanggal_mulai: '2020-01-01',
-      tanggal_selesai: '2025-12-31',
-      keterangan: 'Periode jabatan Walikota/Wakil Walikota 2020-2025',
-      status: 'Aktif'
-    },
-    {
-      id: 2,
-      periode: 'Periode 2015-2020',
-      tanggal_mulai: '2015-01-01',
-      tanggal_selesai: '2020-12-31',
-      keterangan: 'Periode jabatan Walikota/Wakil Walikota 2015-2020',
-      status: 'Nonaktif'
-    },
-  ];
+  const fetchPeriode = async () => {
+    setIsLoading(true);
+    try {
+      const response = await periodeApi.getAll();
+      if (response.success) {
+        setPeriodeList(response.data);
+      } else {
+        setError(response.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Memuat Data',
+          text: response.message,
+        });
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Gagal memuat data periode';
+      setError(errorMessage);
+      console.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPeriode();
+  }, []);
 
   const handleAdd = () => {
     setModalMode('add');
@@ -56,11 +69,11 @@ export default function PeriodeManagementPage() {
     setModalMode('edit');
     setSelectedPeriode(periode);
     setFormData({
-      periode: periode.periode,
+      periode: periode.nama_periode,
       tanggal_mulai: periode.tanggal_mulai,
       tanggal_selesai: periode.tanggal_selesai,
-      keterangan: periode.keterangan,
-      status: periode.status
+      keterangan: periode.keterangan || '',
+      status: periode.status_periode === 'aktif' ? 'Aktif' : 'Nonaktif'
     });
     setShowModal(true);
   };
@@ -70,20 +83,87 @@ export default function PeriodeManagementPage() {
     setShowDeleteModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (modalMode === 'add') {
-      alert('Periode berhasil ditambahkan!');
-    } else {
-      alert('Periode berhasil diupdate!');
+    setIsLoading(true);
+
+    // Convert status to backend format if needed. 
+    // Backend expects 'aktif' or 'nonaktif' (lowercase).
+    const payload = {
+      nama_periode: formData.periode,
+      tanggal_mulai: formData.tanggal_mulai,
+      tanggal_selesai: formData.tanggal_selesai,
+      keterangan: formData.keterangan,
+      status_periode: formData.status.toLowerCase()
+    };
+
+    try {
+      let response;
+      if (modalMode === 'add') {
+        response = await periodeApi.create(payload);
+      } else {
+        response = await periodeApi.update(selectedPeriode.id_periode, payload);
+      }
+
+      if (response.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: `Periode berhasil ${modalMode === 'add' ? 'ditambahkan' : 'diupdate'}!`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+        setShowModal(false);
+        fetchPeriode();
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: response.message,
+        });
+      }
+    } catch (err: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Terjadi Kesalahan',
+        text: err.message,
+      });
+    } finally {
+      setIsLoading(false);
     }
-    setShowModal(false);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (periodeToDelete) {
-      alert(`Periode "${periodeToDelete.periode}" berhasil dihapus!`);
-      setShowDeleteModal(false);
+      setIsLoading(true);
+      try {
+        const response = await periodeApi.delete(periodeToDelete.id_periode);
+        if (response.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Terhapus!',
+            text: `Periode "${periodeToDelete.nama_periode}" berhasil dihapus!`,
+            timer: 2000,
+            showConfirmButton: false
+          });
+          setShowDeleteModal(false);
+          fetchPeriode();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal Menghapus',
+            text: response.message,
+          });
+        }
+      } catch (err: any) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Terjadi Kesalahan',
+          text: err.message,
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -112,55 +192,65 @@ export default function PeriodeManagementPage() {
           <h3 className="text-lg font-semibold text-gray-900">Daftar Periode</h3>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Periode</TableHead>
-                <TableHead>Tanggal Mulai</TableHead>
-                <TableHead>Tanggal Selesai</TableHead>
-                <TableHead>Keterangan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {periodeList.map((periode) => (
-                <TableRow key={periode.id}>
-                  <TableCell className="font-medium">{periode.periode}</TableCell>
-                  <TableCell>
-                    {new Date(periode.tanggal_mulai).toLocaleDateString('id-ID', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(periode.tanggal_selesai).toLocaleDateString('id-ID', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600">{periode.keterangan}</TableCell>
-                  <TableCell>
-                    <Badge variant={periode.status === 'Aktif' ? 'success' : 'secondary'}>
-                      {periode.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(periode)}>
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(periode)}>
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {isLoading && <div className="p-4 text-center">Loading...</div>}
+          {error && <div className="p-4 text-center text-red-500">{error}</div>}
+
+          {!isLoading && !error && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Periode</TableHead>
+                  <TableHead>Tanggal Mulai</TableHead>
+                  <TableHead>Tanggal Selesai</TableHead>
+                  <TableHead>Keterangan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {periodeList.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-4">Tidak ada data periode</TableCell>
+                  </TableRow>
+                ) : (
+                  periodeList.map((periode) => (
+                    <TableRow key={periode.id_periode}>
+                      <TableCell className="font-medium">{periode.nama_periode}</TableCell>
+                      <TableCell>
+                        {new Date(periode.tanggal_mulai).toLocaleDateString('id-ID', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(periode.tanggal_selesai).toLocaleDateString('id-ID', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">{periode.keterangan}</TableCell>
+                      <TableCell>
+                        <Badge variant={periode.status_periode === 'aktif' ? 'success' : 'secondary'}>
+                          {periode.status_periode === 'aktif' ? 'Aktif' : 'Nonaktif'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(periode)}>
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(periode)}>
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -253,8 +343,8 @@ export default function PeriodeManagementPage() {
                   <Button type="button" variant="outline" onClick={() => setShowModal(false)} className="flex-1">
                     Batal
                   </Button>
-                  <Button type="submit" className="flex-1">
-                    {modalMode === 'add' ? 'Tambah' : 'Update'}
+                  <Button type="submit" className="flex-1" disabled={isLoading}>
+                    {isLoading ? 'Menyimpan...' : (modalMode === 'add' ? 'Tambah' : 'Update')}
                   </Button>
                 </div>
               </form>
@@ -292,7 +382,7 @@ export default function PeriodeManagementPage() {
                       Apakah Anda yakin ingin menghapus periode berikut?
                     </p>
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-1">
-                      <p className="text-sm font-semibold text-gray-900">{periodeToDelete.periode}</p>
+                      <p className="text-sm font-semibold text-gray-900">{periodeToDelete.nama_periode}</p>
                       <p className="text-xs text-gray-600">
                         {new Date(periodeToDelete.tanggal_mulai).toLocaleDateString('id-ID', {
                           day: '2-digit',
@@ -305,8 +395,8 @@ export default function PeriodeManagementPage() {
                         })}
                       </p>
                       <div className="pt-1">
-                        <Badge variant={periodeToDelete.status === 'Aktif' ? 'success' : 'secondary'}>
-                          {periodeToDelete.status}
+                        <Badge variant={periodeToDelete.status_periode === 'aktif' ? 'success' : 'secondary'}>
+                          {periodeToDelete.status_periode === 'aktif' ? 'Aktif' : 'Nonaktif'}
                         </Badge>
                       </div>
                     </div>
@@ -335,9 +425,14 @@ export default function PeriodeManagementPage() {
                     variant="destructive"
                     onClick={handleDeleteConfirm}
                     className="flex-1"
+                    disabled={isLoading}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Hapus Periode
+                    {isLoading ? 'Menghapus...' : (
+                      <>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Hapus Periode
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
