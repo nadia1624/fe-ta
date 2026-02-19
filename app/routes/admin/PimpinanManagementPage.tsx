@@ -178,7 +178,7 @@ export default function PimpinanManagementPage() {
       setIsLoading(true);
       try {
         const payload = {
-          id_pimpinan: pimpinanToDelete.id_pimpinan,
+          id_jabatan: pimpinanToDelete.id_jabatan, // Key change: id_pimpinan -> id_jabatan
           id_periode: pimpinanToDelete.id_periode
         };
 

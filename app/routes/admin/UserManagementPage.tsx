@@ -63,7 +63,8 @@ export default function UserManagementPage() {
     no_hp: '',
     status_aktif: true,
     // Ajudan specific
-    id_pimpinan_ajudan: '',
+    id_pimpinan_ajudan: '', // Used for UI state (selected pimpinan)
+    id_jabatan_ajudan: '', // Actual Foreign Key for backend
     id_periode_ajudan: '',
     nama_pimpinan_selected: '' // For UI display only
   });
@@ -89,8 +90,10 @@ export default function UserManagementPage() {
         const uniquePimpinans = new Map();
         assignmentsRes.data.forEach((item: any) => {
           if (item.pimpinan) {
-            uniquePimpinans.set(item.id_pimpinan, {
-              ...item.pimpinan,
+            uniquePimpinans.set(item.pimpinan.id_pimpinan, { // Use keys from backend properly
+              id_pimpinan: item.pimpinan.id_pimpinan,
+              nama_pimpinan: item.pimpinan.nama_pimpinan,
+              nip: item.pimpinan.nip,
               jabatan: item.jabatan?.nama_jabatan || '',
               status: 'aktif'
             });
@@ -154,6 +157,7 @@ export default function UserManagementPage() {
       no_hp: '',
       status_aktif: true,
       id_pimpinan_ajudan: '',
+      id_jabatan_ajudan: '', // Reset
       id_periode_ajudan: '',
       nama_pimpinan_selected: ''
     });
@@ -168,17 +172,25 @@ export default function UserManagementPage() {
 
     // Initial Ajudan Data
     let pimpinanId = '';
+    let jabatanId = '';
     let periodeId = '';
     let pimpinanName = '';
 
     if (user.pimpinanAjudans && user.pimpinanAjudans.length > 0) {
       const assignment = user.pimpinanAjudans[0];
-      pimpinanId = assignment.id_pimpinan;
-      periodeId = assignment.id_periode;
-      // Try to find name in nested object first
-      if (assignment.periodePimpinan?.pimpinan?.nama_pimpinan) {
-        pimpinanName = assignment.periodePimpinan.pimpinan.nama_pimpinan;
+      // Structure changed: assignment.periodeJabatan -> pimpinan
+
+      // Before: assignment.id_pimpinan, assignment.periodePimpinan.pimpinan
+      // After: assignment.id_jabatan, assignment.periodeJabatan.pimpinan
+
+      // We need to resolve pimpinan from periodeJabatan
+      if (assignment.periodeJabatan?.pimpinan) {
+        pimpinanId = assignment.periodeJabatan.pimpinan.id_pimpinan;
+        pimpinanName = assignment.periodeJabatan.pimpinan.nama_pimpinan;
       }
+
+      jabatanId = assignment.id_jabatan;
+      periodeId = assignment.id_periode;
     }
 
     setFormData({
@@ -193,6 +205,7 @@ export default function UserManagementPage() {
       no_hp: user.no_hp || '',
       status_aktif: user.status_aktif === 'aktif' || user.status_aktif === true,
       id_pimpinan_ajudan: pimpinanId,
+      id_jabatan_ajudan: jabatanId,
       id_periode_ajudan: periodeId,
       nama_pimpinan_selected: pimpinanName
     });
@@ -201,7 +214,10 @@ export default function UserManagementPage() {
 
     // Set available periodes based on pimpinanId if it exists
     if (pimpinanId) {
-      const pimpinanAssignments = activeAssignments.filter(a => a.id_pimpinan === pimpinanId);
+      // Find assignments for this pimpinan (assignments are now PeriodeJabatan objects)
+      // We filter by pimpinan.id_pimpinan inside the nested object
+      const pimpinanAssignments = activeAssignments.filter(a => a.pimpinan?.id_pimpinan === pimpinanId);
+
       const periods = pimpinanAssignments.map(a => a.periode).filter(Boolean);
       const uniquePeriods = Array.from(new Set(periods.map((p: any) => p.id_periode)))
         .map(id => periods.find((p: any) => p.id_periode === id));
@@ -260,7 +276,7 @@ export default function UserManagementPage() {
     }
 
     // Ajudan Validation
-    const selectedRoleObj = roles.find(r => r.id_role == formData.role_id); // loose comparison for string/number id
+    const selectedRoleObj = roles.find(r => r.id_role == formData.role_id);
     if (selectedRoleObj && selectedRoleObj.nama_role.toLowerCase() === 'ajudan') {
       if (!formData.id_pimpinan_ajudan || !formData.id_periode_ajudan) {
         Swal.fire('Error', 'Untuk Role Ajudan, Pimpinan dan Periode wajib dipilih', 'error');
@@ -304,10 +320,27 @@ export default function UserManagementPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    });
+
+    if (name === 'id_periode_ajudan') {
+      // When periode selected, find the id_jabatan from assignments
+      // We know id_pimpinan_ajudan (selected pimpinan) and now id_periode_ajudan
+
+      const assignment = activeAssignments.find(a =>
+        a.pimpinan?.id_pimpinan === formData.id_pimpinan_ajudan &&
+        a.id_periode === value
+      );
+
+      setFormData({
+        ...formData,
+        id_periode_ajudan: value,
+        id_jabatan_ajudan: assignment ? assignment.id_jabatan : ''
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      });
+    }
   };
 
   // Filter pimpinan list for dropdown
@@ -327,13 +360,15 @@ export default function UserManagementPage() {
       ...prev,
       id_pimpinan_ajudan: pimpinan.id_pimpinan,
       nama_pimpinan_selected: pimpinan.nama_pimpinan,
-      id_periode_ajudan: ''
+      id_periode_ajudan: '',
+      id_jabatan_ajudan: '' // Reset
     }));
     setPimpinanSearchQuery(pimpinan.nama_pimpinan);
     setIsPimpinanDropdownOpen(false);
 
     // Filter available periodes containing this pimpinan
-    const pimpinanAssignments = activeAssignments.filter(a => a.id_pimpinan === pimpinan.id_pimpinan);
+    // activeAssignments are PeriodeJabatan records
+    const pimpinanAssignments = activeAssignments.filter(a => a.pimpinan?.id_pimpinan === pimpinan.id_pimpinan);
     const periods = pimpinanAssignments.map(a => a.periode).filter(Boolean);
     const uniquePeriods = Array.from(new Set(periods.map((p: any) => p.id_periode)))
       .map(id => periods.find((p: any) => p.id_periode === id));
@@ -342,9 +377,15 @@ export default function UserManagementPage() {
 
     // Auto-select if only one
     if (uniquePeriods.length === 1) {
+      const selectedPeriodeId = uniquePeriods[0].id_periode;
+
+      // Find the id_jabatan for this single assignment
+      const assignment = pimpinanAssignments.find(a => a.id_periode === selectedPeriodeId);
+
       setFormData(prev => ({
         ...prev,
-        id_periode_ajudan: uniquePeriods[0].id_periode
+        id_periode_ajudan: selectedPeriodeId,
+        id_jabatan_ajudan: assignment ? assignment.id_jabatan : ''
       }));
     }
   };
@@ -439,10 +480,10 @@ export default function UserManagementPage() {
                     </TableCell>
                     <TableCell className="text-sm">
                       {user.role?.nama_role?.toLowerCase() === 'ajudan' ? (
-                        user.pimpinanAjudans?.[0]?.periodePimpinan?.pimpinan?.nama_pimpinan ? (
+                        user.pimpinanAjudans?.[0]?.periodeJabatan?.pimpinan?.nama_pimpinan ? (
                           <div className="flex flex-col">
-                            <span className="font-medium text-blue-700">{user.pimpinanAjudans[0].periodePimpinan.pimpinan.nama_pimpinan}</span>
-                            <span className="text-xs text-gray-400">{user.pimpinanAjudans[0].periodePimpinan.periode?.nama_periode}</span>
+                            <span className="font-medium text-blue-700">{user.pimpinanAjudans[0].periodeJabatan.pimpinan.nama_pimpinan}</span>
+                            <span className="text-xs text-gray-400">{user.pimpinanAjudans[0].periodeJabatan.periode?.nama_periode}</span>
                           </div>
                         ) : '-'
                       ) : (
