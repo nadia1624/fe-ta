@@ -109,7 +109,7 @@ export default function TugasDetailPage() {
   const getPrioritasBadge = (prioritas: string) => {
     switch (prioritas) {
       case 'Tinggi':
-        return <Badge variant="danger">Prioritas Tinggi</Badge>;
+        return <Badge variant="destructive">Prioritas Tinggi</Badge>;
       case 'Sedang':
         return <Badge variant="info">Prioritas Sedang</Badge>;
       case 'Rendah':
@@ -245,7 +245,7 @@ export default function TugasDetailPage() {
             </div>
             {tugas.status_laporan !== 'Sudah Dilaporkan' && (
               <Link to={`/dashboard/tambah-laporan-protokol/${tugas.agenda_id}`}>
-                <Button variant="primary" size="sm" className="w-full md:w-auto">
+                <Button variant="default" size="sm" className="w-full md:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
                   Tambah Progress
                 </Button>
@@ -289,7 +289,7 @@ export default function TugasDetailPage() {
               <ClipboardList className="w-12 h-12 mx-auto mb-3 text-gray-400" />
               <p className="text-gray-500 mb-4">Belum ada progress yang dilaporkan</p>
               <Link to={`/dashboard/tambah-laporan-protokol/${tugas.agenda_id}`}>
-                <Button variant="primary" size="sm">
+                <Button variant="default" size="sm">
                   <Plus className="w-4 h-4 mr-2" />
                   Mulai Laporan
                 </Button>
@@ -303,7 +303,7 @@ export default function TugasDetailPage() {
       {tugas.status_laporan !== 'Sudah Dilaporkan' && (
         <div className="flex flex-col md:flex-row gap-3">
           <Link to={`/dashboard/tambah-laporan-protokol/${tugas.agenda_id}`} className="flex-1">
-            <Button variant="primary" className="w-full">
+            <Button variant="default" className="w-full">
               <Plus className="w-4 h-4 mr-2" />
               Tambah Progress Baru
             </Button>

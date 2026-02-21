@@ -461,13 +461,13 @@ export default function AgendaPimpinanPage() {
   };
 
   const filteredData = agendaList.filter(item => {
-    const matchSearch = 
+    const matchSearch =
       item.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.tempat.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchPimpinan = filterPimpinan === 'all' || item.pimpinan === filterPimpinan;
-    
+
     return matchSearch && matchPimpinan;
   });
 
@@ -482,22 +482,20 @@ export default function AgendaPimpinanPage() {
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode('calendar')}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${
-                viewMode === 'calendar'
+              className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${viewMode === 'calendar'
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               <CalendarDays className="w-4 h-4" />
               Kalender
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${
-                viewMode === 'list'
+              className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${viewMode === 'list'
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               <List className="w-4 h-4" />
               List
@@ -593,21 +591,20 @@ export default function AgendaPimpinanPage() {
                   {day}
                 </div>
               ))}
-              
+
               {/* Calendar days */}
               {getDaysInMonth(selectedDate).map((day, index) => {
                 const agendas = day ? getAgendaForDate(day) : [];
-                const isToday = day && 
-                  day === new Date().getDate() && 
+                const isToday = day &&
+                  day === new Date().getDate() &&
                   selectedDate.getMonth() === new Date().getMonth() &&
                   selectedDate.getFullYear() === new Date().getFullYear();
 
                 return (
                   <div
                     key={index}
-                    className={`min-h-[100px] border rounded-lg p-2 ${
-                      day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
-                    } ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
+                    className={`min-h-[100px] border rounded-lg p-2 ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
+                      } ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
                   >
                     {day && (
                       <>
@@ -619,11 +616,10 @@ export default function AgendaPimpinanPage() {
                             <div
                               key={agenda.id}
                               onClick={() => handleDetail(agenda)}
-                              className={`text-xs p-1 rounded cursor-pointer truncate ${
-                                agenda.status === 'Terkonfirmasi' ? 'bg-blue-100 text-blue-700' :
-                                agenda.status === 'Menunggu Konfirmasi' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-green-100 text-green-700'
-                              }`}
+                              className={`text-xs p-1 rounded cursor-pointer truncate ${agenda.status === 'Terkonfirmasi' ? 'bg-blue-100 text-blue-700' :
+                                  agenda.status === 'Menunggu Konfirmasi' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-green-100 text-green-700'
+                                }`}
                               title={agenda.judul_kegiatan}
                             >
                               {agenda.waktu_mulai} {agenda.judul_kegiatan}
@@ -725,11 +721,11 @@ export default function AgendaPimpinanPage() {
                       {agenda.waktu_mulai} - {agenda.waktu_selesai}
                     </TableCell>
                     <TableCell>
-                      <Badge 
+                      <Badge
                         variant={
-                          agenda.status === 'Terkonfirmasi' ? 'info' : 
-                          agenda.status === 'Selesai' ? 'success' : 
-                          'warning'
+                          agenda.status === 'Terkonfirmasi' ? 'info' :
+                            agenda.status === 'Selesai' ? 'success' :
+                              'warning'
                         }
                       >
                         {agenda.status}
@@ -1065,11 +1061,11 @@ export default function AgendaPimpinanPage() {
                   <div>
                     <label className="text-sm font-medium text-gray-700">Status</label>
                     <div className="mt-1">
-                      <Badge 
+                      <Badge
                         variant={
-                          selectedAgenda.status === 'Terkonfirmasi' ? 'info' : 
-                          selectedAgenda.status === 'Selesai' ? 'success' : 
-                          'warning'
+                          selectedAgenda.status === 'Terkonfirmasi' ? 'info' :
+                            selectedAgenda.status === 'Selesai' ? 'success' :
+                              'warning'
                         }
                       >
                         {selectedAgenda.status}
@@ -1136,11 +1132,11 @@ export default function AgendaPimpinanPage() {
                   <Button variant="outline" onClick={() => setShowDetailModal(false)} className="flex-1">
                     Tutup
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => {
                       setShowDetailModal(false);
                       handleEdit(selectedAgenda);
-                    }} 
+                    }}
                     className="flex-1"
                   >
                     Edit Agenda
@@ -1201,18 +1197,18 @@ export default function AgendaPimpinanPage() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowDeleteModal(false)} 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteModal(false)}
                     className="flex-1"
                   >
                     Batal
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="danger" 
-                    onClick={handleConfirmDelete} 
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleConfirmDelete}
                     className="flex-1"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />

@@ -123,14 +123,14 @@ export default function TugasSayaMediaPage() {
   ];
 
   const filteredTugas = tugasList.filter(tugas => {
-    const matchSearch = 
+    const matchSearch =
       tugas.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tugas.pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tugas.tempat.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchStatus = filterStatus === 'all' || tugas.status_draft === filterStatus;
     const matchBulan = tugas.tanggal.startsWith(filterBulan);
-    
+
     return matchSearch && matchStatus && matchBulan;
   });
 
@@ -143,7 +143,7 @@ export default function TugasSayaMediaPage() {
       case 'Disetujui':
         return <Badge variant="success">Disetujui</Badge>;
       case 'Perlu Revisi':
-        return <Badge variant="danger">Perlu Revisi</Badge>;
+        return <Badge variant="destructive">Perlu Revisi</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -170,7 +170,7 @@ export default function TugasSayaMediaPage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const newPreviews = files.map(file => URL.createObjectURL(file));
-    
+
     setUploadForm({
       ...uploadForm,
       foto_dokumentasi: [...uploadForm.foto_dokumentasi, ...files],
@@ -183,7 +183,7 @@ export default function TugasSayaMediaPage() {
     const newPreviews = [...uploadForm.foto_previews];
     newFotos.splice(index, 1);
     newPreviews.splice(index, 1);
-    
+
     setUploadForm({
       ...uploadForm,
       foto_dokumentasi: newFotos,
@@ -193,7 +193,7 @@ export default function TugasSayaMediaPage() {
 
   const handleSubmitDraft = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!uploadForm.judul_draft || !uploadForm.konten_draft) {
       alert('Mohon lengkapi judul dan konten draft berita');
       return;
@@ -357,9 +357,9 @@ export default function TugasSayaMediaPage() {
                     {/* Right Side - Actions */}
                     <div className="flex flex-col gap-2 md:w-48">
                       {tugas.status_draft === 'Belum Upload' ? (
-                        <Button 
-                          variant="primary" 
-                          size="sm" 
+                        <Button
+                          variant="default"
+                          size="sm"
                           className="w-full"
                           onClick={() => handleUploadClick(tugas)}
                         >
@@ -368,18 +368,18 @@ export default function TugasSayaMediaPage() {
                         </Button>
                       ) : tugas.status_draft === 'Perlu Revisi' ? (
                         <>
-                          <Button 
-                            variant="primary" 
-                            size="sm" 
+                          <Button
+                            variant="default"
+                            size="sm"
                             className="w-full"
                             onClick={() => handleUploadClick(tugas)}
                           >
                             <Edit className="w-4 h-4 mr-2" />
                             Upload Revisi
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             className="w-full"
                             onClick={() => handleDetailClick(tugas)}
                           >
@@ -388,9 +388,9 @@ export default function TugasSayaMediaPage() {
                           </Button>
                         </>
                       ) : (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="w-full"
                           onClick={() => handleDetailClick(tugas)}
                         >
@@ -489,7 +489,7 @@ export default function TugasSayaMediaPage() {
                     <Upload className="w-4 h-4 mr-2" />
                     Upload Foto
                   </Button>
-                  
+
                   {uploadForm.foto_previews.length > 0 && (
                     <div className="grid grid-cols-3 gap-3 mt-3">
                       {uploadForm.foto_previews.map((preview, index) => (
@@ -515,7 +515,7 @@ export default function TugasSayaMediaPage() {
                   <Button type="button" variant="outline" className="flex-1" onClick={() => setShowUploadModal(false)}>
                     Batal
                   </Button>
-                  <Button type="submit" variant="primary" className="flex-1">
+                  <Button type="submit" variant="default" className="flex-1">
                     {selectedTugas.status_draft === 'Perlu Revisi' ? 'Upload Revisi' : 'Upload Draft'}
                   </Button>
                 </div>

@@ -272,3 +272,43 @@ export const userApi = {
         return res.json();
     }
 };
+
+// ==================== Agenda API ====================
+
+export const agendaApi = {
+    async create(formData: FormData): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                // Do not set Content-Type for FormData, browser will set it with boundary
+            },
+            body: formData,
+        });
+        return res.json();
+    },
+
+    async getMyAgendas(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda/my`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getSlots(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda/slots`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    }
+};
+

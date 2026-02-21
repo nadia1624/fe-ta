@@ -54,13 +54,13 @@ export default function PenugasanPage() {
   ];
 
   const filteredData = penugasanList.filter(item => {
-    const matchSearch = 
+    const matchSearch =
       item.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.tempat.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchStatus = filterStatus === 'all' || item.status_draft === filterStatus;
-    
+
     return matchSearch && matchStatus;
   });
 
@@ -73,7 +73,7 @@ export default function PenugasanPage() {
       case 'Disetujui':
         return <Badge variant="success">Disetujui</Badge>;
       case 'Perlu Revisi':
-        return <Badge variant="danger">Perlu Revisi</Badge>;
+        return <Badge variant="destructive">Perlu Revisi</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -165,7 +165,7 @@ export default function PenugasanPage() {
                   </div>
                   {getStatusBadge(item.status_draft)}
                 </div>
-                
+
                 <div className="space-y-2 text-xs text-gray-600 mb-3">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-3 h-3" />
@@ -195,8 +195,8 @@ export default function PenugasanPage() {
                 <Link to={`/dashboard/upload-draft/${item.id}`}>
                   <Button variant="outline" size="sm" className="w-full">
                     <ArrowRight className="w-4 h-4 mr-2" />
-                    {item.status_draft === 'Belum Upload' ? 'Upload Draft' : 
-                     item.status_draft === 'Perlu Revisi' ? 'Upload Revisi' : 'Lihat Detail'}
+                    {item.status_draft === 'Belum Upload' ? 'Upload Draft' :
+                      item.status_draft === 'Perlu Revisi' ? 'Upload Revisi' : 'Lihat Detail'}
                   </Button>
                 </Link>
               </div>

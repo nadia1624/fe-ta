@@ -198,7 +198,7 @@ export default function KonfirmasiPenggantiPage() {
 
   const handleSubmitKonfirmasi = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (konfirmasiData.status_konfirmasi === 'Terkonfirmasi') {
       alert(`✓ Konfirmasi Kehadiran Perwakilan\n\nAgenda: ${selectedPermintaan?.judul_kegiatan}\nPerwakilan: ${selectedPermintaan?.perwakilan_nama}\n\nStatus diupdate menjadi: Terkonfirmasi (Perwakilan)`);
     } else if (konfirmasiData.status_konfirmasi === 'Tidak Bersedia') {
@@ -206,7 +206,7 @@ export default function KonfirmasiPenggantiPage() {
     } else if (konfirmasiData.status_konfirmasi === 'Dibatalkan') {
       alert(`✗ Agenda Dibatalkan\n\nAgenda: ${selectedPermintaan?.judul_kegiatan}\n\nAgenda dibatalkan atas persetujuan pimpinan (offline).`);
     }
-    
+
     setShowKonfirmasiModal(false);
   };
 
@@ -217,14 +217,14 @@ export default function KonfirmasiPenggantiPage() {
   };
 
   const filteredData = permintaanList.filter(item => {
-    const matchSearch = 
+    const matchSearch =
       item.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.pimpinan_nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.perwakilan_nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.pemohon.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchStatus = filterStatus === 'all' || item.status === filterStatus;
-    
+
     return matchSearch && matchStatus;
   });
 
@@ -235,7 +235,7 @@ export default function KonfirmasiPenggantiPage() {
       case 'Terkonfirmasi (Perwakilan)':
         return <Badge variant="success">{status}</Badge>;
       case 'Tidak Bersedia':
-        return <Badge variant="danger">{status}</Badge>;
+        return <Badge variant="destructive">{status}</Badge>;
       case 'Dibatalkan':
         return <Badge variant="default">{status}</Badge>;
       default:
@@ -642,16 +642,14 @@ export default function KonfirmasiPenggantiPage() {
                 </div>
 
                 {/* Info Note */}
-                <div className={`${
-                  konfirmasiData.status_konfirmasi === 'Terkonfirmasi' ? 'bg-green-50 border-green-200' : 
-                  konfirmasiData.status_konfirmasi === 'Tidak Bersedia' ? 'bg-red-50 border-red-200' :
-                  'bg-gray-50 border-gray-300'
-                } border rounded-lg p-3`}>
-                  <p className={`text-sm ${
-                    konfirmasiData.status_konfirmasi === 'Terkonfirmasi' ? 'text-green-900' : 
-                    konfirmasiData.status_konfirmasi === 'Tidak Bersedia' ? 'text-red-900' :
-                    'text-gray-900'
-                  }`}>
+                <div className={`${konfirmasiData.status_konfirmasi === 'Terkonfirmasi' ? 'bg-green-50 border-green-200' :
+                    konfirmasiData.status_konfirmasi === 'Tidak Bersedia' ? 'bg-red-50 border-red-200' :
+                      'bg-gray-50 border-gray-300'
+                  } border rounded-lg p-3`}>
+                  <p className={`text-sm ${konfirmasiData.status_konfirmasi === 'Terkonfirmasi' ? 'text-green-900' :
+                      konfirmasiData.status_konfirmasi === 'Tidak Bersedia' ? 'text-red-900' :
+                        'text-gray-900'
+                    }`}>
                     {konfirmasiData.status_konfirmasi === 'Terkonfirmasi' ? (
                       <>
                         <strong>✓ Perwakilan Bersedia</strong><br />
@@ -900,7 +898,7 @@ export default function KonfirmasiPenggantiPage() {
                   <h5 className="text-sm font-semibold text-gray-900 mb-2">Instruksi:</h5>
                   <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
                     <p className="text-sm text-gray-900">
-                      Dengan ini menunjuk dan menugaskan Saudara/i untuk <strong>mewakili kehadiran</strong> {selectedPermintaan.pimpinan_nama} 
+                      Dengan ini menunjuk dan menugaskan Saudara/i untuk <strong>mewakili kehadiran</strong> {selectedPermintaan.pimpinan_nama}
                       pada kegiatan tersebut di atas.
                     </p>
                   </div>
@@ -932,15 +930,15 @@ export default function KonfirmasiPenggantiPage() {
               </div>
 
               <div className="flex gap-3 mt-6">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => alert('Surat disposisi berhasil didownload!')}
                   className="flex-1"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download PDF
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => setShowDisposisiModal(false)}
                   className="flex-1"

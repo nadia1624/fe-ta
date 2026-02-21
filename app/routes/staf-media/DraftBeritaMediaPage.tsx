@@ -108,18 +108,18 @@ export default function DraftBeritaMediaPage() {
   ];
 
   const filteredDrafts = draftHistory.filter(draft => {
-    const matchSearch = 
+    const matchSearch =
       draft.judul_draft.toLowerCase().includes(searchTerm.toLowerCase()) ||
       draft.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       draft.pimpinan.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchStatus = filterStatus === 'all' || draft.status === filterStatus;
-    
+
     let matchBulan = true;
     if (filterBulan !== 'all') {
       matchBulan = draft.tanggal_kegiatan.startsWith(filterBulan);
     }
-    
+
     return matchSearch && matchStatus && matchBulan;
   });
 
@@ -128,7 +128,7 @@ export default function DraftBeritaMediaPage() {
       case 'Disetujui':
         return <Badge variant="success">Disetujui</Badge>;
       case 'Perlu Revisi':
-        return <Badge variant="danger">Perlu Revisi</Badge>;
+        return <Badge variant="destructive">Perlu Revisi</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -250,7 +250,7 @@ export default function DraftBeritaMediaPage() {
                     <TableCell>
                       <div className="text-xs space-y-1">
                         <p className="text-gray-600">
-                          <span className="font-medium">Kegiatan:</span><br/>
+                          <span className="font-medium">Kegiatan:</span><br />
                           {new Date(draft.tanggal_kegiatan).toLocaleDateString('id-ID', {
                             day: '2-digit',
                             month: 'short',
@@ -258,7 +258,7 @@ export default function DraftBeritaMediaPage() {
                           })}
                         </p>
                         <p className="text-gray-600">
-                          <span className="font-medium">Upload:</span><br/>
+                          <span className="font-medium">Upload:</span><br />
                           {new Date(draft.tanggal_upload).toLocaleDateString('id-ID', {
                             day: '2-digit',
                             month: 'short',
@@ -278,8 +278,8 @@ export default function DraftBeritaMediaPage() {
                     </TableCell>
                     <TableCell className="text-center">
                       <Link to={`/dashboard/detail-draft-berita/${draft.id}`}>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                         >
                           <Eye className="w-4 h-4" />
@@ -321,7 +321,7 @@ export default function DraftBeritaMediaPage() {
                       {getStatusBadge(draft.status)}
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -335,9 +335,9 @@ export default function DraftBeritaMediaPage() {
                   </div>
 
                   <Link to={`/dashboard/detail-draft-berita/${draft.id}`} className="w-full">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="w-full"
                     >
                       <Eye className="w-4 h-4 mr-2" />

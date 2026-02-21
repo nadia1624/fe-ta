@@ -62,6 +62,7 @@ export default function AgendaPimpinanPage() {
       status_kehadiran: 'Diwakilkan', // TIDAK DITAMPILKAN - agenda sudah bukan milik pimpinan
       perwakilan: 'Ir. Hj. Siti Rahmawati, M.T',
       jabatan_perwakilan: 'Wakil Walikota',
+      status_pelaksanaan: 'Belum Terlaksana',
       tanggal_surat: '2026-02-06'
     },
     {
@@ -165,8 +166,8 @@ export default function AgendaPimpinanPage() {
   // 1. Hanya untuk pimpinan yang dipegang ajudan
   // 2. Hanya yang status_kehadiran = "Hadir" (bukan "Diwakilkan")
   const agendaPimpinan = allAgenda.filter(
-    agenda => 
-      agenda.pimpinan === ajudanInfo.pimpinan.nama && 
+    agenda =>
+      agenda.pimpinan === ajudanInfo.pimpinan.nama &&
       agenda.status_kehadiran === 'Hadir' // HANYA yang HADIR, BUKAN Diwakilkan
   );
 
@@ -177,13 +178,13 @@ export default function AgendaPimpinanPage() {
 
   // Filter dan Search
   const filteredAgenda = agendaPimpinan.filter(agenda => {
-    const matchSearch = 
+    const matchSearch =
       agenda.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       agenda.nomor_surat.toLowerCase().includes(searchTerm.toLowerCase()) ||
       agenda.pemohon.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchStatus = filterStatus === 'all' || agenda.status_pelaksanaan === filterStatus;
-    
+
     return matchSearch && matchStatus;
   });
 
@@ -194,7 +195,7 @@ export default function AgendaPimpinanPage() {
       case 'Pending':
         return <Badge variant="warning">Pending</Badge>;
       case 'Ditolak':
-        return <Badge variant="danger">Ditolak</Badge>;
+        return <Badge variant="destructive">Ditolak</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -342,21 +343,19 @@ export default function AgendaPimpinanPage() {
               <div className="flex gap-2 border border-gray-300 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('calendar')}
-                  className={`px-3 py-1.5 rounded ${
-                    viewMode === 'calendar'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded ${viewMode === 'calendar'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:bg-gray-100'
+                    }`}
                 >
                   <Calendar className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`px-3 py-1.5 rounded ${
-                    viewMode === 'list'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                  className={`px-3 py-1.5 rounded ${viewMode === 'list'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:bg-gray-100'
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -411,19 +410,17 @@ export default function AgendaPimpinanPage() {
                   return (
                     <div
                       key={day}
-                      className={`aspect-square border rounded-lg p-2 ${
-                        isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                      } ${hasAgenda ? 'bg-green-50' : 'bg-white'}`}
+                      className={`aspect-square border rounded-lg p-2 ${isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                        } ${hasAgenda ? 'bg-green-50' : 'bg-white'}`}
                     >
                       <div className="text-sm font-semibold text-gray-900 mb-1">{day}</div>
                       {agendas.map((agenda, idx) => (
                         <div
                           key={idx}
-                          className={`text-xs px-1 py-0.5 rounded mb-1 truncate cursor-pointer flex items-center gap-1 ${
-                            agenda.status_pelaksanaan === 'Terlaksana'
-                              ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                              : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
-                          }`}
+                          className={`text-xs px-1 py-0.5 rounded mb-1 truncate cursor-pointer flex items-center gap-1 ${agenda.status_pelaksanaan === 'Terlaksana'
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                            : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                            }`}
                           onClick={() => handleDetail(agenda)}
                           title={agenda.judul_kegiatan}
                         >
@@ -496,7 +493,7 @@ export default function AgendaPimpinanPage() {
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(agenda.status)}</TableCell>
-                    <TableCell>{getPelaksanaanBadge(agenda.status_pelaksanaan)}</TableCell>
+                    <TableCell>{getPelaksanaanBadge(agenda.status_pelaksanaan || 'Belum Terlaksana')}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center">
                         <Button variant="ghost" size="sm" onClick={() => handleDetail(agenda)}>

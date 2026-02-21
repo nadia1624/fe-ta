@@ -143,13 +143,13 @@ export default function LaporanKegiatanAjudanPage() {
     // Filter hanya pimpinan yang di-handle ajudan ini
     if (item.pimpinan !== currentPimpinan) return false;
 
-    const matchSearch = 
+    const matchSearch =
       item.kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.lokasi.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.jadwal_id.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchStatus = filterStatus === 'all' || item.status_kehadiran === filterStatus;
-    
+
     return matchSearch && matchStatus;
   });
 
@@ -160,7 +160,7 @@ export default function LaporanKegiatanAjudanPage() {
       case 'Diwakilkan':
         return <Badge variant="info">Diwakilkan</Badge>;
       case 'Tidak Hadir':
-        return <Badge variant="danger">Tidak Hadir</Badge>;
+        return <Badge variant="destructive">Tidak Hadir</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }

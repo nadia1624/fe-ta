@@ -110,14 +110,14 @@ export default function TambahProgressPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const tipe = useCustomTipe ? formData.tipe_progress_custom : formData.tipe_progress;
-    
+
     if (!tipe) {
       alert('Mohon isi tipe progress');
       return;
     }
-    
+
     if (!formData.deskripsi) {
       alert('Mohon isi deskripsi progress');
       return;
@@ -224,7 +224,7 @@ export default function TambahProgressPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Foto Dokumentasi <span className="text-red-500">*</span>
                 </label>
-                
+
                 {!formData.foto_preview && (
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -279,7 +279,7 @@ export default function TambahProgressPage() {
                     <div className="flex gap-2">
                       <Button
                         type="button"
-                        variant="primary"
+                        variant="default"
                         className="flex-1"
                         onClick={capturePhoto}
                       >
@@ -308,7 +308,7 @@ export default function TambahProgressPage() {
                       />
                       <Button
                         type="button"
-                        variant="danger"
+                        variant="destructive"
                         size="sm"
                         className="absolute top-2 right-2"
                         onClick={removeFoto}
@@ -359,7 +359,7 @@ export default function TambahProgressPage() {
           </Button>
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             className="flex-1"
           >
             <Check className="w-4 h-4 mr-2" />
