@@ -309,6 +309,79 @@ export const agendaApi = {
             },
         });
         return res.json();
+    },
+
+    async getAll(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda/all`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async verify(id_agenda: string, data: { status: string; catatan?: string }): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda/${id_agenda}/verify`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async update(id_agenda: string, formData: FormData): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda/${id_agenda}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+        return res.json();
+    },
+
+    async getLeaderAgendas(params: { start_date?: string; end_date?: string; id_jabatan?: string; id_periode?: string }): Promise<ApiResponse> {
+        const token = getToken();
+        const queryParams = new URLSearchParams(params as any).toString();
+        const res = await fetch(`${API_BASE_URL}/agenda/leader-agendas?${queryParams}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async updateLeaderAttendance(id_agenda: string, id_jabatan: string, id_periode: string, formData: FormData): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda/pimpinan/${id_agenda}/${id_jabatan}/${id_periode}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+        return res.json();
+    },
+
+    async updateLeaderSlots(data: { id_agenda: string; slots: any[] }): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda/pimpinan/slots`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
     }
 };
 

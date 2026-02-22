@@ -1,110 +1,150 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Eye, CheckCircle, XCircle, FileText, Search, Filter, X } from 'lucide-react';
+import { Eye, CheckCircle, XCircle, FileText, Search, Filter, X, RefreshCw, Clock, RotateCcw, AlertTriangle } from 'lucide-react';
+import { agendaApi } from '../../lib/api';
+
+type StatusType = 'pending' | 'revision' | 'rejected_sespri' | 'approved_sespri' | 'approved_ajudan' | 'delegated' | 'rejected_ajudan' | 'canceled' | 'completed';
+
+interface Agenda {
+  id_agenda: string;
+  nomor_surat: string;
+  tanggal_surat: string;
+  perihal: string;
+  surat_permohonan: string | null;
+  tanggal_pengajuan: string;
+  tanggal_kegiatan: string;
+  waktu_mulai: string;
+  waktu_selesai: string;
+  nama_kegiatan: string;
+  lokasi_kegiatan: string;
+  contact_person: string;
+  keterangan: string;
+  pemohon: {
+    id_user: string;
+    nama: string;
+    email: string;
+    instansi: string;
+    jabatan: string;
+    no_hp: string;
+  };
+  statusAgendas: {
+    id_status_agenda: string;
+    status_agenda: StatusType;
+    tanggal_status: string;
+    catatan: string | null;
+    sespri?: { id_user: string; nama: string };
+    createdAt: string;
+  }[];
+  agendaPimpinans: {
+    id_jabatan: string;
+    id_periode: string;
+    periodeJabatan?: {
+      jabatan?: { nama_jabatan: string };
+      pimpinan?: { nama_pimpinan: string };
+    };
+  }[];
+}
+
+const STATUS_CONFIG: Record<StatusType, { label: string; variant: string; icon: any; color: string; bg: string; borderColor: string }> = {
+  pending: { label: 'Pending', variant: 'warning', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50', borderColor: 'border-l-amber-500' },
+  revision: { label: 'Revisi', variant: 'info', icon: RotateCcw, color: 'text-blue-600', bg: 'bg-blue-50', borderColor: 'border-l-blue-500' },
+  rejected_sespri: { label: 'Ditolak Sespri', variant: 'danger', icon: XCircle, color: 'text-red-600', bg: 'bg-red-50', borderColor: 'border-l-red-500' },
+  approved_sespri: { label: 'Diverifikasi', variant: 'success', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50', borderColor: 'border-l-green-500' },
+  approved_ajudan: { label: 'Disetujui Pimpinan', variant: 'success', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50', borderColor: 'border-l-emerald-500' },
+  delegated: { label: 'Diwakilkan', variant: 'info', icon: RotateCcw, color: 'text-indigo-600', bg: 'bg-indigo-50', borderColor: 'border-l-indigo-500' },
+  rejected_ajudan: { label: 'Ditolak Pimpinan', variant: 'danger', icon: XCircle, color: 'text-red-600', bg: 'bg-red-50', borderColor: 'border-l-red-500' },
+  canceled: { label: 'Dibatalkan', variant: 'secondary', icon: AlertTriangle, color: 'text-gray-600', bg: 'bg-gray-50', borderColor: 'border-l-gray-400' },
+  completed: { label: 'Selesai', variant: 'success', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50', borderColor: 'border-l-green-500' },
+};
+
+function getLatestStatus(agenda: Agenda): StatusType {
+  if (!agenda.statusAgendas || agenda.statusAgendas.length === 0) return 'pending';
+  const sorted = [...agenda.statusAgendas].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+  return sorted[0].status_agenda;
+}
+
+function getLatestStatusRecord(agenda: Agenda) {
+  if (!agenda.statusAgendas || agenda.statusAgendas.length === 0) return null;
+  const sorted = [...agenda.statusAgendas].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+  return sorted[0];
+}
 
 export default function VerifikasiPermohonanPage() {
+  const [agendaList, setAgendaList] = useState<Agenda[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showVerifikasiModal, setShowVerifikasiModal] = useState(false);
-  const [selectedPermohonan, setSelectedPermohonan] = useState<any>(null);
+  const [selectedPermohonan, setSelectedPermohonan] = useState<Agenda | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [verifikasiData, setVerifikasiData] = useState({
-    status: 'Disetujui',
+    status: 'approved_sespri' as string,
     catatan: ''
   });
+  const [submitting, setSubmitting] = useState(false);
 
-  const permohonanList = [
-    {
-      id: 1,
-      nomor_surat: '012/SP/II/2025',
-      tanggal_surat: '2025-02-01',
-      pemohon: 'Kepala Dinas Kesehatan',
-      instansi: 'Dinas Kesehatan Kota',
-      perihal: 'Permohonan audiensi terkait program vaksinasi',
-      file_surat: 'surat_dinkeskota_012.pdf',
-      tanggal_pengajuan: '2025-02-01',
-      nama_kegiatan: 'Audiensi Program Vaksinasi',
-      tanggal_kegiatan: '2025-02-10',
-      lokasi_kegiatan: 'Kantor Walikota',
-      jam_mulai: '10:00',
-      jam_selesai: '11:30',
-      jumlah_peserta: 5,
-      status: 'Pending'
-    },
-    {
-      id: 2,
-      nomor_surat: '013/SP/II/2025',
-      tanggal_surat: '2025-02-02',
-      pemohon: 'Camat Sukamaju',
-      instansi: 'Kecamatan Sukamaju',
-      perihal: 'Permohonan kunjungan kerja monitoring infrastruktur',
-      file_surat: 'surat_camat_013.pdf',
-      tanggal_pengajuan: '2025-02-02',
-      nama_kegiatan: 'Kunjungan Kerja Monitoring Infrastruktur',
-      tanggal_kegiatan: '2025-02-12',
-      lokasi_kegiatan: 'Kecamatan Sukamaju',
-      jam_mulai: '09:00',
-      jam_selesai: '11:00',
-      jumlah_peserta: 8,
-      status: 'Pending'
-    },
-    {
-      id: 3,
-      nomor_surat: '014/SP/II/2025',
-      tanggal_surat: '2025-02-03',
-      pemohon: 'Ketua DPRD',
-      instansi: 'DPRD Kota',
-      perihal: 'Rapat koordinasi program kerja 2025',
-      file_surat: 'surat_dprd_014.pdf',
-      tanggal_pengajuan: '2025-02-03',
-      nama_kegiatan: 'Rapat Koordinasi Program Kerja 2025',
-      tanggal_kegiatan: '2025-02-15',
-      lokasi_kegiatan: 'Ruang Rapat DPRD',
-      jam_mulai: '13:00',
-      jam_selesai: '15:00',
-      jumlah_peserta: 15,
-      status: 'Disetujui'
-    },
-    {
-      id: 4,
-      nomor_surat: '015/SP/II/2025',
-      tanggal_surat: '2025-02-01',
-      pemohon: 'Kepala Dinas Pendidikan',
-      instansi: 'Dinas Pendidikan Kota',
-      perihal: 'Permohonan pembukaan event Festival Seni Pelajar',
-      file_surat: 'surat_disdik_015.pdf',
-      tanggal_pengajuan: '2025-02-01',
-      nama_kegiatan: 'Pembukaan Festival Seni Pelajar',
-      tanggal_kegiatan: '2025-02-20',
-      lokasi_kegiatan: 'Lapangan Utama Kota',
-      jam_mulai: '08:00',
-      jam_selesai: '10:00',
-      jumlah_peserta: 200,
-      status: 'Ditolak'
-    },
-  ];
+  const fetchAgendas = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await agendaApi.getAll();
+      if (response.success && response.data) {
+        setAgendaList(response.data);
+      } else {
+        setError(response.message || 'Gagal mengambil data');
+      }
+    } catch (err) {
+      setError('Tidak dapat terhubung ke server');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleDetail = (permohonan: any) => {
-    setSelectedPermohonan(permohonan);
+  useEffect(() => {
+    fetchAgendas();
+  }, []);
+
+  const handleDetail = (agenda: Agenda) => {
+    setSelectedPermohonan(agenda);
     setShowDetailModal(true);
   };
 
-  const handleVerifikasi = (permohonan: any) => {
-    setSelectedPermohonan(permohonan);
-    setVerifikasiData({
-      status: 'Disetujui',
-      catatan: ''
-    });
+  const handleVerifikasi = (agenda: Agenda) => {
+    setSelectedPermohonan(agenda);
+    setVerifikasiData({ status: 'approved_sespri', catatan: '' });
     setShowVerifikasiModal(true);
   };
 
-  const handleSubmitVerifikasi = (e: React.FormEvent) => {
+  const handleSubmitVerifikasi = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Permohonan ${selectedPermohonan?.nomor_surat} ${verifikasiData.status}!`);
-    setShowVerifikasiModal(false);
+    if (!selectedPermohonan) return;
+
+    setSubmitting(true);
+    try {
+      const response = await agendaApi.verify(selectedPermohonan.id_agenda, {
+        status: verifikasiData.status,
+        catatan: verifikasiData.catatan || undefined,
+      });
+
+      if (response.success) {
+        setShowVerifikasiModal(false);
+        fetchAgendas(); // Refresh data
+      } else {
+        alert(response.message || 'Gagal memverifikasi');
+      }
+    } catch (err) {
+      alert('Gagal terhubung ke server');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -114,77 +154,68 @@ export default function VerifikasiPermohonanPage() {
     });
   };
 
-  const filteredData = permohonanList.filter(item => {
-    const matchSearch = 
+  const filteredData = agendaList.filter(item => {
+    const latestStatus = getLatestStatus(item);
+    const matchSearch =
       item.nomor_surat.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.pemohon.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.perihal.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchStatus = filterStatus === 'all' || item.status === filterStatus;
-    
+      (item.pemohon?.nama || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.perihal || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchStatus = filterStatus === 'all' || latestStatus === filterStatus;
+
     return matchSearch && matchStatus;
   });
 
+  // Count by status
+  const statusCounts = agendaList.reduce((acc, item) => {
+    const status = getLatestStatus(item);
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Verifikasi Permohonan</h1>
-        <p className="text-sm text-gray-600 mt-1">Review dan verifikasi surat permohonan masuk</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Verifikasi Permohonan</h1>
+          <p className="text-sm text-gray-600 mt-1">Review dan verifikasi surat permohonan masuk</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={fetchAgendas} disabled={loading}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Pending</p>
-                <p className="text-2xl font-semibold text-yellow-600">
-                  {permohonanList.filter(p => p.status === 'Pending').length}
-                </p>
-              </div>
-              <FileText className="w-8 h-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Disetujui</p>
-                <p className="text-2xl font-semibold text-green-600">
-                  {permohonanList.filter(p => p.status === 'Disetujui').length}
-                </p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Ditolak</p>
-                <p className="text-2xl font-semibold text-red-600">
-                  {permohonanList.filter(p => p.status === 'Ditolak').length}
-                </p>
-              </div>
-              <XCircle className="w-8 h-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total</p>
-                <p className="text-2xl font-semibold text-blue-600">{permohonanList.length}</p>
-              </div>
-              <FileText className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {(Object.keys(STATUS_CONFIG) as StatusType[]).map((status) => {
+          const config = STATUS_CONFIG[status];
+          const Icon = config.icon;
+          return (
+            <Card key={status} className={`cursor-pointer hover:shadow-md transition-shadow border-l-4 ${config.borderColor} ${filterStatus === status ? 'ring-2 ring-blue-300' : ''}`}
+              onClick={() => setFilterStatus(filterStatus === status ? 'all' : status)}>
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">{config.label}</p>
+                    <p className="text-xl font-bold text-gray-900 mt-0.5">{statusCounts[status] || 0}</p>
+                  </div>
+                  <div className={`p-1.5 rounded-lg ${config.bg}`}>
+                    <Icon className={`w-4 h-4 ${config.color}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -209,73 +240,99 @@ export default function VerifikasiPermohonanPage() {
                   className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm appearance-none bg-white"
                 >
                   <option value="all">Semua Status</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Disetujui">Disetujui</option>
-                  <option value="Ditolak">Ditolak</option>
+                  <option value="pending">Pending</option>
+                  <option value="revision">Revisi</option>
+                  <option value="approved_sespri">Diverifikasi</option>
+                  <option value="approved_ajudan">Disetujui Ajudan</option>
+                  <option value="delegated">Diwakilkan</option>
+                  <option value="rejected_sespri">Ditolak Sespri</option>
+                  <option value="rejected_ajudan">Ditolak Ajudan</option>
+                  <option value="canceled">Dibatalkan</option>
+                  <option value="completed">Selesai</option>
                 </select>
               </div>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nomor Surat</TableHead>
-                <TableHead>Pemohon</TableHead>
-                <TableHead>Perihal</TableHead>
-                <TableHead>Tanggal Kegiatan</TableHead>
-                <TableHead>Waktu</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredData.map((permohonan) => (
-                <TableRow key={permohonan.id}>
-                  <TableCell className="font-medium">{permohonan.nomor_surat}</TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium text-sm">{permohonan.pemohon}</p>
-                      <p className="text-xs text-gray-500">{permohonan.instansi}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm max-w-xs">{permohonan.perihal}</TableCell>
-                  <TableCell className="text-sm">
-                    {new Date(permohonan.tanggal_kegiatan).toLocaleDateString('id-ID', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </TableCell>
-                  <TableCell className="text-sm">{permohonan.jam_mulai} - {permohonan.jam_selesai}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={
-                        permohonan.status === 'Disetujui' ? 'success' : 
-                        permohonan.status === 'Ditolak' ? 'danger' : 
-                        'warning'
-                      }
-                    >
-                      {permohonan.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleDetail(permohonan)}>
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      {permohonan.status === 'Pending' && (
-                        <Button variant="ghost" size="sm" onClick={() => handleVerifikasi(permohonan)}>
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          {loading ? (
+            <div className="px-6 py-12 text-center">
+              <RefreshCw className="w-8 h-8 text-gray-300 mx-auto mb-3 animate-spin" />
+              <p className="text-gray-500">Memuat data...</p>
+            </div>
+          ) : filteredData.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">Tidak ada permohonan ditemukan</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table className="min-w-[800px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[140px]">Nomor Surat</TableHead>
+                    <TableHead className="w-[160px]">Pemohon</TableHead>
+                    <TableHead className="w-[200px]">Perihal</TableHead>
+                    <TableHead className="w-[120px]">Tanggal Kegiatan</TableHead>
+                    <TableHead className="w-[100px]">Waktu</TableHead>
+                    <TableHead className="w-[100px]">Status</TableHead>
+                    <TableHead className="w-[80px] text-center">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredData.map((agenda) => {
+                    const latestStatus = getLatestStatus(agenda);
+                    const config = STATUS_CONFIG[latestStatus];
+                    return (
+                      <TableRow key={agenda.id_agenda}>
+                        <TableCell className="font-medium truncate max-w-[140px]" title={agenda.nomor_surat}>{agenda.nomor_surat}</TableCell>
+                        <TableCell>
+                          <div className="max-w-[160px]">
+                            <p className="font-medium text-sm truncate" title={agenda.pemohon?.nama}>{agenda.pemohon?.nama || '-'}</p>
+                            <p className="text-xs text-gray-500 truncate" title={agenda.pemohon?.instansi}>{agenda.pemohon?.instansi || '-'}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm max-w-[200px]">
+                          <p className="truncate" title={agenda.perihal}>{agenda.perihal}</p>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {agenda.tanggal_kegiatan
+                            ? new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
+                              day: '2-digit', month: 'short', year: 'numeric'
+                            })
+                            : '-'
+                          }
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {agenda.waktu_mulai && agenda.waktu_selesai
+                            ? `${agenda.waktu_mulai.slice(0, 5)} - ${agenda.waktu_selesai.slice(0, 5)}`
+                            : '-'
+                          }
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={config.variant as any}>
+                            {config.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleDetail(agenda)}>
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            {(latestStatus === 'pending' || latestStatus === 'revision') && (
+                              <Button variant="ghost" size="sm" onClick={() => handleVerifikasi(agenda)}>
+                                <CheckCircle className="w-4 h-4 text-green-600" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -304,14 +361,8 @@ export default function VerifikasiPermohonanPage() {
                   <div>
                     <label className="text-sm font-medium text-gray-700">Status</label>
                     <div className="mt-1">
-                      <Badge 
-                        variant={
-                          selectedPermohonan.status === 'Disetujui' ? 'success' : 
-                          selectedPermohonan.status === 'Ditolak' ? 'danger' : 
-                          'warning'
-                        }
-                      >
-                        {selectedPermohonan.status}
+                      <Badge variant={STATUS_CONFIG[getLatestStatus(selectedPermohonan)].variant as any}>
+                        {STATUS_CONFIG[getLatestStatus(selectedPermohonan)].label}
                       </Badge>
                     </div>
                   </div>
@@ -319,12 +370,12 @@ export default function VerifikasiPermohonanPage() {
 
                 <div>
                   <label className="text-sm font-medium text-gray-700">Pemohon</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.pemohon}</p>
+                  <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.pemohon?.nama || '-'}</p>
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-gray-700">Instansi</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.instansi}</p>
+                  <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.pemohon?.instansi || '-'}</p>
                 </div>
 
                 <div>
@@ -341,21 +392,23 @@ export default function VerifikasiPermohonanPage() {
                   <div>
                     <label className="text-sm font-medium text-gray-700">Tanggal Surat</label>
                     <p className="text-sm text-gray-900 mt-1">
-                      {new Date(selectedPermohonan.tanggal_surat).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                      {selectedPermohonan.tanggal_surat
+                        ? new Date(selectedPermohonan.tanggal_surat).toLocaleDateString('id-ID', {
+                          day: '2-digit', month: 'long', year: 'numeric'
+                        })
+                        : '-'
+                      }
                     </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700">Tanggal Pengajuan</label>
                     <p className="text-sm text-gray-900 mt-1">
-                      {new Date(selectedPermohonan.tanggal_pengajuan).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                      {selectedPermohonan.tanggal_pengajuan
+                        ? new Date(selectedPermohonan.tanggal_pengajuan).toLocaleDateString('id-ID', {
+                          day: '2-digit', month: 'long', year: 'numeric'
+                        })
+                        : '-'
+                      }
                     </p>
                   </div>
                 </div>
@@ -364,45 +417,106 @@ export default function VerifikasiPermohonanPage() {
                   <div>
                     <label className="text-sm font-medium text-gray-700">Tanggal Kegiatan</label>
                     <p className="text-sm text-gray-900 mt-1">
-                      {new Date(selectedPermohonan.tanggal_kegiatan).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                      {selectedPermohonan.tanggal_kegiatan
+                        ? new Date(selectedPermohonan.tanggal_kegiatan).toLocaleDateString('id-ID', {
+                          day: '2-digit', month: 'long', year: 'numeric'
+                        })
+                        : '-'
+                      }
                     </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700">Jam Kegiatan</label>
-                    <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.jam_mulai} - {selectedPermohonan.jam_selesai} WIB</p>
+                    <p className="text-sm text-gray-900 mt-1">
+                      {selectedPermohonan.waktu_mulai && selectedPermohonan.waktu_selesai
+                        ? `${selectedPermohonan.waktu_mulai.slice(0, 5)} - ${selectedPermohonan.waktu_selesai.slice(0, 5)} WIB`
+                        : '-'
+                      }
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-700">Lokasi Kegiatan</label>
-                    <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.lokasi_kegiatan}</p>
+                    <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.lokasi_kegiatan || '-'}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Jumlah Peserta</label>
-                    <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.jumlah_peserta} orang</p>
+                    <label className="text-sm font-medium text-gray-700">Contact Person</label>
+                    <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.contact_person || '-'}</p>
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700">File Surat</label>
-                  <p className="text-sm text-blue-600 mt-1 hover:underline cursor-pointer">{selectedPermohonan.file_surat}</p>
-                </div>
+                {/* Pimpinan yang diundang */}
+                {selectedPermohonan.agendaPimpinans && selectedPermohonan.agendaPimpinans.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Pimpinan Diundang</label>
+                    <div className="mt-1 space-y-1">
+                      {selectedPermohonan.agendaPimpinans.map((ap, i) => (
+                        <div key={i} className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
+                          {ap.periodeJabatan?.pimpinan?.nama_pimpinan || '-'} — {ap.periodeJabatan?.jabatan?.nama_jabatan || '-'}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedPermohonan.keterangan && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Keterangan</label>
+                    <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.keterangan}</p>
+                  </div>
+                )}
+
+                {selectedPermohonan.surat_permohonan && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">File Surat</label>
+                    <p className="text-sm text-blue-600 mt-1 hover:underline cursor-pointer">
+                      {selectedPermohonan.surat_permohonan.split('/').pop()}
+                    </p>
+                  </div>
+                )}
+
+                {/* Status History */}
+                {selectedPermohonan.statusAgendas && selectedPermohonan.statusAgendas.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Riwayat Status</label>
+                    <div className="space-y-2">
+                      {[...selectedPermohonan.statusAgendas]
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .map((s) => (
+                          <div key={s.id_status_agenda} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <Badge variant={STATUS_CONFIG[s.status_agenda]?.variant as any || 'secondary'}>
+                                {STATUS_CONFIG[s.status_agenda]?.label || s.status_agenda}
+                              </Badge>
+                              <span className="text-xs text-gray-500">
+                                {s.tanggal_status
+                                  ? new Date(s.tanggal_status).toLocaleDateString('id-ID', {
+                                    day: '2-digit', month: 'short', year: 'numeric'
+                                  })
+                                  : '-'
+                                }
+                              </span>
+                            </div>
+                            {s.catatan && <p className="text-sm text-gray-600 mt-1">{s.catatan}</p>}
+                            {s.sespri && <p className="text-xs text-gray-400 mt-1">Oleh: {s.sespri.nama}</p>}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex gap-3 pt-4">
                   <Button variant="outline" onClick={() => setShowDetailModal(false)} className="flex-1">
                     Tutup
                   </Button>
-                  {selectedPermohonan.status === 'Pending' && (
-                    <Button 
+                  {(getLatestStatus(selectedPermohonan) === 'pending' || getLatestStatus(selectedPermohonan) === 'revision') && (
+                    <Button
                       onClick={() => {
                         setShowDetailModal(false);
                         handleVerifikasi(selectedPermohonan);
-                      }} 
+                      }}
                       className="flex-1"
                     >
                       Verifikasi
@@ -434,7 +548,7 @@ export default function VerifikasiPermohonanPage() {
               <form onSubmit={handleSubmitVerifikasi} className="space-y-4">
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <p className="text-sm font-medium text-gray-900">{selectedPermohonan.nomor_surat}</p>
-                  <p className="text-xs text-gray-600 mt-1">{selectedPermohonan.pemohon}</p>
+                  <p className="text-xs text-gray-600 mt-1">{selectedPermohonan.pemohon?.nama || '-'}</p>
                   <p className="text-xs text-gray-500 mt-1">{selectedPermohonan.perihal}</p>
                 </div>
 
@@ -449,8 +563,10 @@ export default function VerifikasiPermohonanPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     required
                   >
-                    <option value="Disetujui">Disetujui</option>
-                    <option value="Ditolak">Ditolak</option>
+                    <option value="approved_sespri">Diverifikasi (Setujui)</option>
+                    <option value="revision">Perlu Revisi</option>
+                    <option value="rejected_sespri">Ditolak</option>
+                    <option value="canceled">Dibatalkan</option>
                   </select>
                 </div>
 
@@ -470,16 +586,16 @@ export default function VerifikasiPermohonanPage() {
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-sm text-blue-900">
-                    <strong>Catatan:</strong> Setelah verifikasi, permohonan akan diteruskan ke pimpinan untuk konfirmasi final.
+                    <strong>Catatan:</strong> Setelah verifikasi, status permohonan akan diperbarui dan pemohon akan diberitahu.
                   </p>
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <Button type="button" variant="outline" onClick={() => setShowVerifikasiModal(false)} className="flex-1">
+                  <Button type="button" variant="outline" onClick={() => setShowVerifikasiModal(false)} className="flex-1" disabled={submitting}>
                     Batal
                   </Button>
-                  <Button type="submit" className="flex-1">
-                    Submit Verifikasi
+                  <Button type="submit" className="flex-1" disabled={submitting}>
+                    {submitting ? 'Memproses...' : 'Submit Verifikasi'}
                   </Button>
                 </div>
               </form>

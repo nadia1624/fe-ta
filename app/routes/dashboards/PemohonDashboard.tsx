@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
-import { FileText, Clock, CheckCircle, XCircle, PlusCircle, Eye, Loader2 } from 'lucide-react';
+import { FileText, Clock, CheckCircle, XCircle, PlusCircle, Eye, Loader2, RotateCcw, Edit3 } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { Link } from 'react-router';
 import { Button } from '../../components/ui/button';
@@ -29,24 +29,30 @@ export default function PemohonDashboard() {
   };
 
   const getLatestStatus = (agenda: any) => {
-    const latest = agenda.statusAgendas?.[0];
-    return latest?.status_agenda || 'pending';
+    const sorted = agenda.statusAgendas
+      ? [...agenda.statusAgendas].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      : [];
+    return sorted[0]?.status_agenda || 'pending';
   };
 
   const getLatestCatatan = (agenda: any) => {
-    const latest = agenda.statusAgendas?.[0];
-    return latest?.catatan || null;
+    const sorted = agenda.statusAgendas
+      ? [...agenda.statusAgendas].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      : [];
+    return sorted[0]?.catatan || null;
   };
 
   // Compute stats from real data
   const totalCount = agendas.length;
   const pendingCount = agendas.filter(a => getLatestStatus(a) === 'pending').length;
-  const approvedCount = agendas.filter(a => getLatestStatus(a) === 'disetujui').length;
-  const rejectedCount = agendas.filter(a => getLatestStatus(a) === 'ditolak').length;
+  const revisionCount = agendas.filter(a => getLatestStatus(a) === 'revision').length;
+  const approvedCount = agendas.filter(a => getLatestStatus(a) === 'approved').length;
+  const rejectedCount = agendas.filter(a => getLatestStatus(a) === 'rejected').length;
 
   const stats = [
     { label: 'Total Permohonan', value: totalCount, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Menunggu', value: pendingCount, icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+    { label: 'Revisi', value: revisionCount, icon: RotateCcw, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Disetujui', value: approvedCount, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
     { label: 'Ditolak', value: rejectedCount, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50' },
   ];
@@ -55,16 +61,22 @@ export default function PemohonDashboard() {
   const recentRequests = agendas.slice(0, 3);
 
   // Approved agendas for the "Agenda yang Disetujui" card
-  const approvedAgendas = agendas.filter(a => getLatestStatus(a) === 'disetujui').slice(0, 3);
+  const approvedAgendas = agendas.filter(a => getLatestStatus(a) === 'approved').slice(0, 3);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'disetujui':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Disetujui</Badge>;
+      case 'approved':
+        return <Badge variant="success">Disetujui</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">Menunggu</Badge>;
-      case 'ditolak':
-        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Ditolak</Badge>;
+        return <Badge variant="warning">Menunggu</Badge>;
+      case 'revision':
+        return <Badge variant="info">Perlu Revisi</Badge>;
+      case 'rejected':
+        return <Badge variant="danger">Ditolak</Badge>;
+      case 'canceled':
+        return <Badge variant="secondary">Dibatalkan</Badge>;
+      case 'completed':
+        return <Badge variant="success">Selesai</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -87,7 +99,7 @@ export default function PemohonDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (

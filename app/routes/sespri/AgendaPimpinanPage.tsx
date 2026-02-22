@@ -1,24 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Trash2, Eye, Calendar, X, AlertTriangle, Search, Filter, List, CalendarDays } from 'lucide-react';
+import {
+  Plus, Edit2, Trash2, Eye, Calendar, X,
+  AlertTriangle, Search, Filter, List,
+  CalendarDays, RefreshCw, CheckCircle,
+  Clock, UserCheck, ExternalLink, FileText
+} from 'lucide-react';
+import { agendaApi, pimpinanApi } from '../../lib/api';
+import Swal from 'sweetalert2';
 
 export default function AgendaPimpinanPage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [loading, setLoading] = useState(true);
+  const [agendaList, setAgendaList] = useState<any[]>([]);
+  const [pimpinanOptions, setPimpinanOptions] = useState<any[]>([]);
+
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedAgenda, setSelectedAgenda] = useState<any>(null);
-  const [agendaToDelete, setAgendaToDelete] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPimpinan, setFilterPimpinan] = useState('all');
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  const [selectedPimpinans, setSelectedPimpinans] = useState<string[]>([]);
   const [formData, setFormData] = useState({
-    pimpinan_id: '',
     nomor_surat: '',
     tanggal_surat: '',
     perihal: '',
@@ -27,322 +36,47 @@ export default function AgendaPimpinanPage() {
     alamat: '',
     no_telepon: '',
     email: '',
-    judul_kegiatan: '',
-    tanggal: '',
+    nama_kegiatan: '',
+    tanggal_kegiatan: '',
     waktu_mulai: '',
     waktu_selesai: '',
-    tempat: '',
+    lokasi_kegiatan: '',
     keterangan: '',
     file_surat: null as File | null,
-    status: 'Menunggu Konfirmasi'
   });
 
-  const agendaList = [
-    {
-      id: 1,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Rapat Koordinasi Bulanan OPD',
-      tanggal: '2026-02-10',
-      waktu_mulai: '09:00',
-      waktu_selesai: '12:00',
-      tempat: 'Ruang Rapat Utama Kantor Walikota',
-      keterangan: 'Rapat koordinasi rutin dengan seluruh kepala OPD',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 2,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Kunjungan Kerja ke Dinas Kesehatan',
-      tanggal: '2026-02-12',
-      waktu_mulai: '10:00',
-      waktu_selesai: '11:30',
-      tempat: 'Kantor Dinas Kesehatan',
-      keterangan: 'Monitoring program vaksinasi dan kesehatan masyarakat',
-      status: 'Menunggu Konfirmasi',
-      sumber: 'Permohonan',
-      created_by: 'Kepala Dinas Kesehatan',
-      nomor_surat: '012/SP/II/2026'
-    },
-    {
-      id: 3,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Pembukaan Festival Seni Budaya',
-      tanggal: '2026-02-15',
-      waktu_mulai: '08:00',
-      waktu_selesai: '10:00',
-      tempat: 'Lapangan Utama Kota',
-      keterangan: 'Acara pembukaan festival seni dan budaya daerah',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 4,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Rapat dengan DPRD',
-      tanggal: '2026-02-08',
-      waktu_mulai: '13:00',
-      waktu_selesai: '16:00',
-      tempat: 'Gedung DPRD',
-      keterangan: 'Rapat pembahasan APBD 2026',
-      status: 'Selesai',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 5,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Audiensi dengan Tokoh Masyarakat',
-      tanggal: '2026-02-20',
-      waktu_mulai: '14:00',
-      waktu_selesai: '15:30',
-      tempat: 'Kantor Walikota',
-      keterangan: 'Mendengarkan aspirasi masyarakat terkait pembangunan',
-      status: 'Menunggu Konfirmasi',
-      sumber: 'Permohonan',
-      created_by: 'RT 05 Kelurahan Maju',
-      nomor_surat: '015/SP/II/2026'
-    },
-    {
-      id: 6,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Upacara Bendera',
-      tanggal: '2026-02-02',
-      waktu_mulai: '07:30',
-      waktu_selesai: '08:30',
-      tempat: 'Halaman Kantor Walikota',
-      keterangan: 'Upacara bendera rutin setiap Senin',
-      status: 'Selesai',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 7,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Peresmian Jembatan Baru',
-      tanggal: '2026-02-06',
-      waktu_mulai: '09:00',
-      waktu_selesai: '10:30',
-      tempat: 'Jembatan Sungai Jernih',
-      keterangan: 'Peresmian jembatan penghubung antar desa',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 8,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Rapat Tim Satgas COVID-19',
-      tanggal: '2026-02-04',
-      waktu_mulai: '09:00',
-      waktu_selesai: '11:00',
-      tempat: 'Ruang Rapat Utama',
-      keterangan: 'Evaluasi penanganan COVID-19',
-      status: 'Selesai',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 9,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Kunjungan Puskesmas',
-      tanggal: '2026-02-04',
-      waktu_mulai: '13:00',
-      waktu_selesai: '15:00',
-      tempat: 'Puskesmas Sejahtera',
-      keterangan: 'Monitoring pelayanan kesehatan',
-      status: 'Selesai',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 10,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Rapat Evaluasi Kinerja',
-      tanggal: '2026-02-07',
-      waktu_mulai: '10:00',
-      waktu_selesai: '12:00',
-      tempat: 'Ruang Rapat Utama',
-      keterangan: 'Evaluasi kinerja bulanan OPD',
-      status: 'Selesai',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 11,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Sosialisasi Program UMKM',
-      tanggal: '2026-02-11',
-      waktu_mulai: '09:00',
-      waktu_selesai: '11:30',
-      tempat: 'Aula Dinas Koperasi',
-      keterangan: 'Sosialisasi bantuan modal UMKM',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 12,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Pelantikan Pejabat',
-      tanggal: '2026-02-13',
-      waktu_mulai: '10:00',
-      waktu_selesai: '11:00',
-      tempat: 'Ruang Aula Utama',
-      keterangan: 'Pelantikan Kepala Dinas baru',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 13,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Dialog Interaktif dengan Mahasiswa',
-      tanggal: '2026-02-14',
-      waktu_mulai: '13:00',
-      waktu_selesai: '15:00',
-      tempat: 'Universitas Negeri',
-      keterangan: 'Dialog tentang pembangunan daerah',
-      status: 'Terkonfirmasi',
-      sumber: 'Permohonan',
-      created_by: 'BEM Universitas Negeri',
-      nomor_surat: '025/BEM/II/2026'
-    },
-    {
-      id: 14,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Launching Smart City',
-      tanggal: '2026-02-17',
-      waktu_mulai: '08:00',
-      waktu_selesai: '10:00',
-      tempat: 'Gedung ICT Center',
-      keterangan: 'Peluncuran program Smart City',
-      status: 'Menunggu Konfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 15,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Penghargaan Guru Berprestasi',
-      tanggal: '2026-02-18',
-      waktu_mulai: '09:00',
-      waktu_selesai: '11:00',
-      tempat: 'Aula Dinas Pendidikan',
-      keterangan: 'Pemberian penghargaan guru berprestasi',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 16,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Safari Jum\'at',
-      tanggal: '2026-02-21',
-      waktu_mulai: '11:30',
-      waktu_selesai: '13:00',
-      tempat: 'Masjid Al-Ikhlas',
-      keterangan: 'Sholat Jum\'at berjamaah dengan warga',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 17,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Senam Pagi Bersama',
-      tanggal: '2026-02-23',
-      waktu_mulai: '06:30',
-      waktu_selesai: '07:30',
-      tempat: 'Lapangan Merdeka',
-      keterangan: 'Senam pagi dengan ASN',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 18,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Apel Pagi ASN',
-      tanggal: '2026-02-24',
-      waktu_mulai: '07:30',
-      waktu_selesai: '08:00',
-      tempat: 'Halaman Kantor Walikota',
-      keterangan: 'Apel pagi rutin ASN',
-      status: 'Menunggu Konfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 19,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Rapat Koordinasi SKPD',
-      tanggal: '2026-02-25',
-      waktu_mulai: '10:00',
-      waktu_selesai: '12:00',
-      tempat: 'Ruang Rapat Wakil Walikota',
-      keterangan: 'Koordinasi program kerja SKPD',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 20,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Musrenbang Kota',
-      tanggal: '2026-02-27',
-      waktu_mulai: '08:00',
-      waktu_selesai: '16:00',
-      tempat: 'Gedung Serbaguna',
-      keterangan: 'Musyawarah Perencanaan Pembangunan Kota',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-    {
-      id: 21,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Peninjauan Pasar Tradisional',
-      tanggal: '2026-02-28',
-      waktu_mulai: '09:00',
-      waktu_selesai: '11:00',
-      tempat: 'Pasar Sentral',
-      keterangan: 'Peninjauan kondisi dan fasilitas pasar',
-      status: 'Menunggu Konfirmasi',
-      sumber: 'Sespri Input',
-      created_by: 'Sespri - Ahmad'
-    },
-  ];
+  // For attendance management within detail modal
+  const [showAttendanceForm, setShowAttendanceForm] = useState(false);
+  const [selectedPimpinanItem, setSelectedPimpinanItem] = useState<any>(null);
+  const [attendanceForm, setAttendanceForm] = useState({
+    status_kehadiran: 'hadir',
+    nama_perwakilan: '',
+    keterangan: '',
+    file_disposisi: null as File | null
+  });
 
-  const pimpinanOptions = [
-    { id: 1, nama: 'Dr. H. Ahmad Suryadi, M.Si', jabatan: 'Walikota' },
-    { id: 2, nama: 'Ir. Hj. Siti Rahmawati, M.T', jabatan: 'Wakil Walikota' },
-  ];
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [agendaRes, pimpinanRes] = await Promise.all([
+        agendaApi.getLeaderAgendas({}),
+        pimpinanApi.getActiveAssignments()
+      ]);
 
-  // Calendar helper functions
+      if (agendaRes.success) setAgendaList(agendaRes.data);
+      if (pimpinanRes.success) setPimpinanOptions(pimpinanRes.data);
+    } catch (error) {
+      console.error('Fetch error:', error);
+      Swal.fire('Error', 'Gagal mengambil data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -352,14 +86,8 @@ export default function AgendaPimpinanPage() {
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-    // Add empty cells for days before month starts
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-    // Add days of month
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(i);
-    }
+    for (let i = 0; i < startingDayOfWeek; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(i);
     return days;
   };
 
@@ -367,7 +95,7 @@ export default function AgendaPimpinanPage() {
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth();
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return agendaList.filter(agenda => agenda.tanggal === dateStr);
+    return agendaList.filter(agenda => agenda.tanggal_kegiatan === dateStr);
   };
 
   const changeMonth = (direction: number) => {
@@ -378,9 +106,8 @@ export default function AgendaPimpinanPage() {
 
   const handleAdd = () => {
     setModalMode('add');
-    setSelectedAgenda(null);
+    setSelectedPimpinans([]);
     setFormData({
-      pimpinan_id: '',
       nomor_surat: '',
       tanggal_surat: '',
       perihal: '',
@@ -389,87 +116,141 @@ export default function AgendaPimpinanPage() {
       alamat: '',
       no_telepon: '',
       email: '',
-      judul_kegiatan: '',
-      tanggal: '',
+      nama_kegiatan: '',
+      tanggal_kegiatan: '',
       waktu_mulai: '',
       waktu_selesai: '',
-      tempat: '',
+      lokasi_kegiatan: '',
       keterangan: '',
       file_surat: null,
-      status: 'Menunggu Konfirmasi'
     });
     setShowModal(true);
   };
 
-  const handleEdit = (agenda: any) => {
-    setModalMode('edit');
-    setSelectedAgenda(agenda);
-    setFormData({
-      pimpinan_id: '1',
-      nomor_surat: agenda.nomor_surat || '',
-      tanggal_surat: agenda.tanggal_surat || '',
-      perihal: agenda.perihal || '',
-      nama_pemohon: agenda.nama_pemohon || '',
-      instansi: agenda.instansi || '',
-      alamat: agenda.alamat || '',
-      no_telepon: agenda.no_telepon || '',
-      email: agenda.email || '',
-      judul_kegiatan: agenda.judul_kegiatan,
-      tanggal: agenda.tanggal,
-      waktu_mulai: agenda.waktu_mulai,
-      waktu_selesai: agenda.waktu_selesai,
-      tempat: agenda.tempat,
-      keterangan: agenda.keterangan,
-      file_surat: null,
-      status: agenda.status
-    });
-    setShowModal(true);
-  };
-
-  const handleDetail = (agenda: any) => {
-    setSelectedAgenda(agenda);
-    setShowDetailModal(true);
-  };
-
-  const handleDelete = (agenda: any) => {
-    setAgendaToDelete(agenda);
-    setShowDeleteModal(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (agendaToDelete) {
-      alert(`Agenda "${agendaToDelete.judul_kegiatan}" berhasil dihapus!`);
-      setShowDeleteModal(false);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (modalMode === 'add') {
-      alert('Agenda berhasil ditambahkan! Menunggu konfirmasi Ajudan.');
-    } else {
-      alert('Agenda berhasil diupdate!');
+    try {
+      const data = new FormData();
+      data.append('nomor_surat', formData.nomor_surat);
+      data.append('tanggal_surat', formData.tanggal_surat);
+      data.append('perihal', formData.perihal);
+      data.append('nama_kegiatan', formData.nama_kegiatan);
+      data.append('lokasi_kegiatan', formData.lokasi_kegiatan);
+      data.append('tanggal_kegiatan', formData.tanggal_kegiatan);
+      data.append('waktu_mulai', formData.waktu_mulai);
+      data.append('waktu_selesai', formData.waktu_selesai);
+      data.append('keterangan', formData.keterangan);
+
+      if (selectedPimpinans.length === 0) {
+        Swal.fire('Peringatan', 'Pilih minimal satu pimpinan', 'warning');
+        return;
+      }
+
+      if (!formData.file_surat) {
+        Swal.fire('Peringatan', 'Surat permohonan wajib diupload', 'warning');
+        return;
+      }
+
+      const invited = selectedPimpinans.map(val => {
+        const [id_jabatan, id_periode] = val.split(':');
+        return { id_jabatan, id_periode };
+      });
+      data.append('invited_pimpinan', JSON.stringify(invited));
+
+      data.append('surat_permohonan', formData.file_surat);
+
+      const res = await agendaApi.create(data);
+      if (res.success) {
+        Swal.fire('Berhasil', 'Agenda berhasil ditambahkan (Langsung Disetujui)', 'success');
+        setShowModal(false);
+        fetchData();
+      } else {
+        Swal.fire('Gagal', res.message, 'error');
+      }
+    } catch (error) {
+      Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
     }
-    setShowModal(false);
+  };
+
+  const handleOpenAttendance = (pimpinanItem: any) => {
+    setSelectedPimpinanItem(pimpinanItem);
+    setAttendanceForm({
+      status_kehadiran: pimpinanItem.status_kehadiran || 'hadir',
+      nama_perwakilan: pimpinanItem.nama_perwakilan || '',
+      keterangan: pimpinanItem.keterangan || '',
+      file_disposisi: null
+    });
+    setShowAttendanceForm(true);
+  };
+
+  const handleUpdateAttendance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const data = new FormData();
+      data.append('status_kehadiran', attendanceForm.status_kehadiran);
+      data.append('nama_perwakilan', attendanceForm.nama_perwakilan);
+      data.append('keterangan', attendanceForm.keterangan);
+      if (attendanceForm.file_disposisi) {
+        data.append('surat_disposisi', attendanceForm.file_disposisi);
+      }
+
+      const res = await agendaApi.updateLeaderAttendance(
+        selectedAgenda.id_agenda,
+        selectedPimpinanItem.id_jabatan,
+        selectedPimpinanItem.id_periode,
+        data
+      );
+
+      if (res.success) {
+        Swal.fire('Berhasil', 'Status kehadiran diperbarui', 'success');
+        setShowAttendanceForm(false);
+        // Refresh details
+        const updatedAgendaRes = await agendaApi.getLeaderAgendas({});
+        if (updatedAgendaRes.success) {
+          setAgendaList(updatedAgendaRes.data);
+          const found = updatedAgendaRes.data.find((a: any) => a.id_agenda === selectedAgenda.id_agenda);
+          if (found) setSelectedAgenda(found);
+        }
+      } else {
+        Swal.fire('Gagal', res.message, 'error');
+      }
+    } catch (error) {
+      Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+    }
+  };
+
+  const handlePimpinanToggle = (value: string) => {
+    setSelectedPimpinans(prev =>
+      prev.includes(value)
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    );
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const filteredData = agendaList.filter(item => {
     const matchSearch =
-      item.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.tempat.toLowerCase().includes(searchTerm.toLowerCase());
+      item.nama_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.perihal.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.lokasi_kegiatan.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchPimpinan = filterPimpinan === 'all' || item.pimpinan === filterPimpinan;
-
-    return matchSearch && matchPimpinan;
+    if (filterPimpinan === 'all') return matchSearch;
+    const [idJ, idP] = filterPimpinan.split(':');
+    return matchSearch && item.agendaPimpinans.some((ap: any) => ap.id_jabatan === idJ && ap.id_periode === idP);
   });
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'hadir': return <Badge variant="success">Hadir</Badge>;
+      case 'tidak_hadir': return <Badge variant="danger">Tidak Hadir</Badge>;
+      case 'diwakilkan': return <Badge variant="info">Diwakilkan</Badge>;
+      default: return <Badge variant="secondary">Belum Diatur</Badge>;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -483,8 +264,8 @@ export default function AgendaPimpinanPage() {
             <button
               onClick={() => setViewMode('calendar')}
               className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${viewMode === 'calendar'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
               <CalendarDays className="w-4 h-4" />
@@ -493,8 +274,8 @@ export default function AgendaPimpinanPage() {
             <button
               onClick={() => setViewMode('list')}
               className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${viewMode === 'list'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
                 }`}
             >
               <List className="w-4 h-4" />
@@ -509,28 +290,13 @@ export default function AgendaPimpinanPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Menunggu Konfirmasi</p>
-                <p className="text-2xl font-semibold text-yellow-600">
-                  {agendaList.filter(a => a.status === 'Menunggu Konfirmasi').length}
-                </p>
-              </div>
-              <Calendar className="w-8 h-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Terkonfirmasi</p>
-                <p className="text-2xl font-semibold text-blue-600">
-                  {agendaList.filter(a => a.status === 'Terkonfirmasi').length}
-                </p>
+                <p className="text-sm text-gray-600">Total Agenda</p>
+                <p className="text-2xl font-semibold text-blue-600">{agendaList.length}</p>
               </div>
               <Calendar className="w-8 h-8 text-blue-600" />
             </div>
@@ -540,12 +306,12 @@ export default function AgendaPimpinanPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Selesai</p>
+                <p className="text-sm text-gray-600">Terlaksana</p>
                 <p className="text-2xl font-semibold text-green-600">
-                  {agendaList.filter(a => a.status === 'Selesai').length}
+                  {agendaList.filter(a => a.status_pelaksanaan === 'Terlaksana').length}
                 </p>
               </div>
-              <Calendar className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -553,116 +319,126 @@ export default function AgendaPimpinanPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total</p>
-                <p className="text-2xl font-semibold text-gray-900">{agendaList.length}</p>
+                <p className="text-sm text-gray-600">Belum Terlaksana</p>
+                <p className="text-2xl font-semibold text-orange-600">
+                  {agendaList.filter(a => a.status_pelaksanaan === 'Belum Terlaksana').length}
+                </p>
               </div>
-              <Calendar className="w-8 h-8 text-gray-600" />
+              <Clock className="w-8 h-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Calendar View */}
-      {viewMode === 'calendar' && (
+      {loading ? (
+        <div className="py-20 text-center">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-500 mb-4" />
+          <p className="text-gray-500">Memuat data...</p>
+        </div>
+      ) : viewMode === 'calendar' ? (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 capitalize">
                 {selectedDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
               </h3>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => changeMonth(-1)}>
-                  ←
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setSelectedDate(new Date())}>
-                  Hari Ini
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => changeMonth(1)}>
-                  →
-                </Button>
+                <Button variant="outline" size="sm" onClick={() => changeMonth(-1)}>←</Button>
+                <Button variant="outline" size="sm" onClick={() => setSelectedDate(new Date())}>Hari Ini</Button>
+                <Button variant="outline" size="sm" onClick={() => changeMonth(1)}>→</Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-7 gap-2">
-              {/* Day headers */}
-              {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map((day) => (
-                <div key={day} className="text-center font-semibold text-sm text-gray-600 py-2">
-                  {day}
-                </div>
-              ))}
-
-              {/* Calendar days */}
-              {getDaysInMonth(selectedDate).map((day, index) => {
-                const agendas = day ? getAgendaForDate(day) : [];
-                const isToday = day &&
-                  day === new Date().getDate() &&
-                  selectedDate.getMonth() === new Date().getMonth() &&
-                  selectedDate.getFullYear() === new Date().getFullYear();
-
-                return (
-                  <div
-                    key={index}
-                    className={`min-h-[100px] border rounded-lg p-2 ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
-                      } ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
-                  >
-                    {day && (
-                      <>
-                        <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
-                          {day}
-                        </div>
-                        <div className="space-y-1">
-                          {agendas.slice(0, 2).map((agenda) => (
-                            <div
-                              key={agenda.id}
-                              onClick={() => handleDetail(agenda)}
-                              className={`text-xs p-1 rounded cursor-pointer truncate ${agenda.status === 'Terkonfirmasi' ? 'bg-blue-100 text-blue-700' :
-                                  agenda.status === 'Menunggu Konfirmasi' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-green-100 text-green-700'
-                                }`}
-                              title={agenda.judul_kegiatan}
-                            >
-                              {agenda.waktu_mulai} {agenda.judul_kegiatan}
-                            </div>
-                          ))}
-                          {agendas.length > 2 && (
-                            <div className="text-xs text-gray-500 pl-1">
-                              +{agendas.length - 2} lainnya
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-4 flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-yellow-100 rounded"></div>
-                <span className="text-gray-600">Menunggu Konfirmasi</span>
+          <CardContent className="pt-4 p-0 md:p-6 overflow-x-auto">
+            <div className="min-w-[800px]">
+              <div className="grid grid-cols-7 gap-2 text-center font-semibold text-sm text-gray-400 mb-2 uppercase tracking-wide">
+                {['Mgg', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => <div key={d}>{d}</div>)}
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-100 rounded"></div>
-                <span className="text-gray-600">Terkonfirmasi</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-100 rounded"></div>
-                <span className="text-gray-600">Selesai</span>
+              <div className="grid grid-cols-7 gap-1 md:gap-2">
+                {getDaysInMonth(selectedDate).map((day, index) => {
+                  const agendas = day ? getAgendaForDate(day) : [];
+                  const isToday = day &&
+                    day === new Date().getDate() &&
+                    selectedDate.getMonth() === new Date().getMonth() &&
+                    selectedDate.getFullYear() === new Date().getFullYear();
+
+                  return (
+                    <div
+                      key={index}
+                      className={`min-h-[100px] border rounded-lg p-2 ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
+                        } ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
+                    >
+                      {day && (
+                        <>
+                          <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                            {day}
+                          </div>
+                          <div className="space-y-1">
+                            {agendas.slice(0, 3).map((agenda) => {
+                              let dominantColor = 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50';
+                              let attendeeName = '';
+
+                              if (agenda.agendaPimpinans && agenda.agendaPimpinans.length > 0) {
+                                const hasTidakHadir = agenda.agendaPimpinans.some((l: any) => l.status_kehadiran === 'tidak_hadir');
+                                const delegated = agenda.agendaPimpinans.find((l: any) => l.status_kehadiran === 'diwakilkan');
+                                const present = agenda.agendaPimpinans.find((l: any) => l.status_kehadiran === 'hadir');
+
+                                if (hasTidakHadir) dominantColor = 'bg-red-50/50 text-red-600 border-red-100 hover:bg-red-50';
+                                else if (present) dominantColor = 'bg-green-50/50 text-green-600 border-green-100 hover:bg-green-50';
+                                else if (delegated) dominantColor = 'bg-blue-50/50 text-blue-600 border-blue-100 hover:bg-blue-50';
+
+                                if (present) {
+                                  attendeeName = present.periodeJabatan?.pimpinan?.nama_pimpinan || '';
+                                } else if (delegated) {
+                                  attendeeName = delegated.nama_perwakilan || 'Diwakilkan';
+                                }
+                              }
+
+                              return (
+                                <div
+                                  key={agenda.id_agenda}
+                                  onClick={() => { setSelectedAgenda(agenda); setShowDetailModal(true); }}
+                                  className={`text-[10px] p-1.5 rounded cursor-pointer truncate border transition-colors ${dominantColor}`}
+                                  title={`${agenda.nama_kegiatan}${attendeeName ? ' - ' + attendeeName : ''}`}
+                                >
+                                  <strong>{agenda.waktu_mulai.slice(0, 5)}</strong> {agenda.nama_kegiatan}
+                                  {attendeeName && (
+                                    <div className="mt-0.5 text-[9px] font-medium opacity-80 border-t border-black/10 pt-0.5 truncate">
+                                      {attendeeName}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            {agendas.length > 3 && (
+                              <div className="text-[10px] text-gray-400 font-medium">
+                                +{agendas.length - 3} lainnya
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </CardContent>
+          <div className="bg-white rounded-b-xl border-t px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex flex-wrap gap-4 sm:gap-6 text-xs font-semibold text-gray-500">
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-green-50 border border-green-200"></div> Hadir</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-blue-50 border border-blue-200"></div> Diwakilkan</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-red-50 border border-red-200"></div> Tidak Hadir</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-white border border-gray-200"></div> Belum Konfirmasi</div>
+            </div>
+          </div>
         </Card>
-      )}
-
-      {/* List View */}
-      {viewMode === 'list' && (
+      ) : (
         <Card>
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h3 className="text-lg font-semibold text-gray-900">Daftar Agenda</h3>
-              <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
@@ -670,7 +446,7 @@ export default function AgendaPimpinanPage() {
                     placeholder="Cari agenda..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm"
                   />
                 </div>
                 <div className="relative">
@@ -678,11 +454,14 @@ export default function AgendaPimpinanPage() {
                   <select
                     value={filterPimpinan}
                     onChange={(e) => setFilterPimpinan(e.target.value)}
-                    className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm appearance-none bg-white"
+                    className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white"
                   >
                     <option value="all">Semua Pimpinan</option>
-                    <option value="Dr. H. Ahmad Suryadi, M.Si">Walikota</option>
-                    <option value="Ir. Hj. Siti Rahmawati, M.T">Wakil Walikota</option>
+                    {pimpinanOptions.map(p => (
+                      <option key={`${p.id_jabatan}:${p.id_periode}`} value={`${p.id_jabatan}:${p.id_periode}`}>
+                        {p.jabatan?.nama_jabatan} - {p.pimpinan?.nama_pimpinan}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -692,57 +471,39 @@ export default function AgendaPimpinanPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Pimpinan</TableHead>
-                  <TableHead>Judul Kegiatan</TableHead>
-                  <TableHead>Tanggal</TableHead>
-                  <TableHead>Waktu</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Kegiatan</TableHead>
+                  <TableHead>Tanggal & Waktu</TableHead>
+                  <TableHead>Pimpinan & Status</TableHead>
                   <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredData.map((agenda) => (
-                  <TableRow key={agenda.id}>
+                  <TableRow key={agenda.id_agenda}>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-sm">{agenda.pimpinan}</p>
-                        <p className="text-xs text-gray-500">{agenda.jabatan}</p>
+                        <p className="font-semibold text-sm">{agenda.nama_kegiatan}</p>
+                        <p className="text-xs text-gray-500">{agenda.lokasi_kegiatan}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{agenda.judul_kegiatan}</TableCell>
-                    <TableCell className="text-sm">
-                      {new Date(agenda.tanggal).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {agenda.waktu_mulai} - {agenda.waktu_selesai}
+                    <TableCell>
+                      <p className="text-sm font-medium">{new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                      <p className="text-xs text-gray-500">{agenda.waktu_mulai} - {agenda.waktu_selesai}</p>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          agenda.status === 'Terkonfirmasi' ? 'info' :
-                            agenda.status === 'Selesai' ? 'success' :
-                              'warning'
-                        }
-                      >
-                        {agenda.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleDetail(agenda)}>
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(agenda)}>
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(agenda)}>
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </Button>
+                      <div className="flex flex-wrap gap-1">
+                        {agenda.agendaPimpinans.map((ap: any, i: number) => (
+                          <div key={i} className="flex items-center gap-1.5 border rounded-full px-2 py-0.5 bg-gray-50">
+                            <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
+                            {getStatusBadge(ap.status_kehadiran)}
+                          </div>
+                        ))}
                       </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button variant="ghost" size="sm" onClick={() => { setSelectedAgenda(agenda); setShowDetailModal(true); }}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -758,276 +519,95 @@ export default function AgendaPimpinanPage() {
           <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {modalMode === 'add' ? 'Tambah Agenda Langsung' : 'Edit Agenda'}
-                </h3>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <h3 className="text-lg font-semibold text-gray-900">Tambah Agenda Langsung</h3>
+                <button onClick={() => setShowModal(false)}><X className="w-5 h-5 text-gray-400" /></button>
               </div>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {modalMode === 'add' && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p className="text-sm text-blue-900">
-                      <strong>Info:</strong> Agenda yang ditambahkan akan menunggu konfirmasi dari Ajudan pimpinan.
-                    </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
+                  <strong>Info:</strong> Agenda ini akan langsung berstatus <strong>Disetujui</strong> karena ditambahkan oleh Sespri.
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Pimpinan <span className="text-red-500">*</span></label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto p-3 border rounded-lg bg-gray-50">
+                    {pimpinanOptions.map((p) => {
+                      const value = `${p.id_jabatan}:${p.id_periode}`;
+                      return (
+                        <label key={value} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={selectedPimpinans.includes(value)}
+                            onChange={() => handlePimpinanToggle(value)}
+                            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-xs text-gray-700">
+                            {p.pimpinan?.nama_pimpinan}
+                            <span className="block text-[10px] text-gray-400">{p.jabatan?.nama_jabatan}</span>
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Pimpinan <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="pimpinan_id"
-                    value={formData.pimpinan_id}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    required
-                  >
-                    <option value="">Pilih Pimpinan...</option>
-                    {pimpinanOptions.map((pimpinan) => (
-                      <option key={pimpinan.id} value={pimpinan.id}>
-                        {pimpinan.nama} - {pimpinan.jabatan}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nomor Surat
-                  </label>
-                  <input
-                    type="text"
-                    name="nomor_surat"
-                    value={formData.nomor_surat}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="012/SP/II/2026"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tanggal Surat
-                  </label>
-                  <input
-                    type="date"
-                    name="tanggal_surat"
-                    value={formData.tanggal_surat}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Perihal
-                  </label>
-                  <input
-                    type="text"
-                    name="perihal"
-                    value={formData.perihal}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Rapat Koordinasi Bulanan"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nama Pemohon
-                  </label>
-                  <input
-                    type="text"
-                    name="nama_pemohon"
-                    value={formData.nama_pemohon}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Nama Pemohon"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Instansi
-                  </label>
-                  <input
-                    type="text"
-                    name="instansi"
-                    value={formData.instansi}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Instansi"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Alamat
-                  </label>
-                  <input
-                    type="text"
-                    name="alamat"
-                    value={formData.alamat}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Alamat"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    No. Telepon
-                  </label>
-                  <input
-                    type="text"
-                    name="no_telepon"
-                    value={formData.no_telepon}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="No. Telepon"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Email"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Judul Kegiatan <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="judul_kegiatan"
-                    value={formData.judul_kegiatan}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Rapat Koordinasi Bulanan"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tanggal <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    name="tanggal"
-                    value={formData.tanggal}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    required
-                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Waktu Mulai <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="time"
-                      name="waktu_mulai"
-                      value={formData.waktu_mulai}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Surat <span className="text-red-500">*</span></label>
+                    <input name="nomor_surat" value={formData.nomor_surat} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Waktu Selesai <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="time"
-                      name="waktu_selesai"
-                      value={formData.waktu_selesai}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Surat</label>
+                    <input type="date" name="tanggal_surat" value={formData.tanggal_surat} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tempat <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="tempat"
-                    value={formData.tempat}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Ruang Rapat Utama"
-                    required
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Perihal <span className="text-red-500">*</span></label>
+                  <textarea name="perihal" value={formData.perihal} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" rows={2} required />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Keterangan
-                  </label>
-                  <textarea
-                    name="keterangan"
-                    value={formData.keterangan}
-                    onChange={handleChange}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Deskripsi kegiatan..."
-                  />
+                <div className="border-t pt-4">
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Detail Kegiatan</label>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nama Kegiatan <span className="text-red-500">*</span></label>
+                      <input name="nama_kegiatan" value={formData.nama_kegiatan} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal <span className="text-red-500">*</span></label>
+                        <input type="date" name="tanggal_kegiatan" value={formData.tanggal_kegiatan} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Mulai <span className="text-red-500">*</span></label>
+                        <input type="time" name="waktu_mulai" value={formData.waktu_mulai} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Selesai <span className="text-red-500">*</span></label>
+                        <input type="time" name="waktu_selesai" value={formData.waktu_selesai} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Lokasi <span className="text-red-500">*</span></label>
+                      <input name="lokasi_kegiatan" value={formData.lokasi_kegiatan} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Upload Surat <span className="text-red-500">*</span></label>
+                      <input
+                        type="file"
+                        onChange={(e) => setFormData(prev => ({ ...prev, file_surat: e.target.files?.[0] || null }))}
+                        className="w-full text-sm border p-2 rounded-lg bg-white"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    File Surat <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setFormData({
-                          ...formData,
-                          file_surat: e.target.files[0]
-                        });
-                      }
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    required={modalMode === 'add'}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Format: PDF, JPG, PNG. Maksimal 5MB</p>
-                  {formData.file_surat && (
-                    <p className="text-sm text-green-600 mt-2">✓ {formData.file_surat.name}</p>
-                  )}
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setShowModal(false)} className="flex-1">
-                    Batal
-                  </Button>
-                  <Button type="submit" className="flex-1">
-                    {modalMode === 'add' ? 'Tambah' : 'Update'}
-                  </Button>
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowModal(false)}>Batal</Button>
+                  <Button type="submit" className="flex-1">Simpan Agenda</Button>
                 </div>
               </form>
             </CardContent>
@@ -1038,183 +618,131 @@ export default function AgendaPimpinanPage() {
       {/* Modal Detail */}
       {showDetailModal && selectedAgenda && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-2xl w-full">
-            <CardHeader>
+          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <CardHeader className="border-b">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Detail Agenda</h3>
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <h3 className="text-lg font-semibold">Detail Agenda</h3>
+                <button onClick={() => setShowDetailModal(false)}><X className="w-5 h-5 text-gray-400" /></button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+            <CardContent className="py-6 space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Pimpinan</label>
-                    <p className="text-sm text-gray-900 mt-1">{selectedAgenda.pimpinan}</p>
-                    <p className="text-xs text-gray-500">{selectedAgenda.jabatan}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Status</label>
-                    <div className="mt-1">
-                      <Badge
-                        variant={
-                          selectedAgenda.status === 'Terkonfirmasi' ? 'info' :
-                            selectedAgenda.status === 'Selesai' ? 'success' :
-                              'warning'
-                        }
-                      >
-                        {selectedAgenda.status}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Judul Kegiatan</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedAgenda.judul_kegiatan}</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Tanggal</label>
-                    <p className="text-sm text-gray-900 mt-1">
-                      {new Date(selectedAgenda.tanggal).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </p>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kegiatan</label>
+                    <p className="text-sm font-semibold">{selectedAgenda.nama_kegiatan}</p>
+                    <p className="text-xs text-gray-500">{selectedAgenda.perihal}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Waktu</label>
-                    <p className="text-sm text-gray-900 mt-1">
-                      {selectedAgenda.waktu_mulai} - {selectedAgenda.waktu_selesai} WIB
-                    </p>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Waktu & Tempat</label>
+                    <p className="text-sm">{new Date(selectedAgenda.tanggal_kegiatan).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                    <p className="text-sm font-medium">{selectedAgenda.waktu_mulai} - {selectedAgenda.waktu_selesai} WIB</p>
+                    <p className="text-sm">{selectedAgenda.lokasi_kegiatan}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Pemohon</label>
+                    <p className="text-sm font-medium">{selectedAgenda.pemohon?.nama}</p>
+                    <p className="text-xs text-gray-500">{selectedAgenda.pemohon?.instansi}</p>
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Tempat</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedAgenda.tempat}</p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Keterangan</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedAgenda.keterangan}</p>
-                </div>
-
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-gray-600">Sumber</label>
-                      <p className="text-sm text-gray-900">{selectedAgenda.sumber}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-600">Dibuat Oleh</label>
-                      <p className="text-sm text-gray-900">{selectedAgenda.created_by}</p>
-                    </div>
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Pimpinan Terkait</label>
+                  <div className="space-y-3">
+                    {selectedAgenda.agendaPimpinans?.map((ap: any, i: number) => (
+                      <div key={i} className="p-3 border rounded-lg bg-gray-50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-bold">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
+                            <p className="text-[10px] text-gray-500">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-7 text-[10px] text-blue-600 hover:text-blue-700 p-1" onClick={() => handleOpenAttendance(ap)}>
+                            <Edit2 className="w-3 h-3 mr-1" /> Atur Kehadiran
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400">Status:</span>
+                          {getStatusBadge(ap.status_kehadiran)}
+                        </div>
+                        {ap.status_kehadiran === 'diwakilkan' && (
+                          <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {ap.nama_perwakilan}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  {selectedAgenda.nomor_surat && (
-                    <div className="mt-2">
-                      <label className="text-xs text-gray-600">Nomor Surat</label>
-                      <p className="text-sm text-gray-900">{selectedAgenda.nomor_surat}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setShowDetailModal(false)} className="flex-1">
-                    Tutup
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setShowDetailModal(false);
-                      handleEdit(selectedAgenda);
-                    }}
-                    className="flex-1"
-                  >
-                    Edit Agenda
-                  </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
-      {/* Modal Delete */}
-      {showDeleteModal && agendaToDelete && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Konfirmasi Hapus Agenda
-                </h3>
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-700 mb-2">
-                      Apakah Anda yakin ingin menghapus agenda berikut?
-                    </p>
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
-                      <p className="text-sm font-semibold text-gray-900">{agendaToDelete.judul_kegiatan}</p>
-                      <p className="text-xs text-gray-600">
-                        <span className="font-medium">Pimpinan:</span> {agendaToDelete.pimpinan}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        <span className="font-medium">Tanggal:</span> {new Date(agendaToDelete.tanggal).toLocaleDateString('id-ID')}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        <span className="font-medium">Waktu:</span> {agendaToDelete.waktu_mulai} - {agendaToDelete.waktu_selesai}
-                      </p>
+              {showAttendanceForm && selectedPimpinanItem && (
+                <div className="border-t pt-6 animate-in slide-in-from-top-4 duration-300">
+                  <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                        <UserCheck className="w-4 h-4 text-blue-600" />
+                        Atur Kehadiran: {selectedPimpinanItem.periodeJabatan?.pimpinan?.nama_pimpinan}
+                      </h4>
+                      <button onClick={() => setShowAttendanceForm(false)} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
                     </div>
+
+                    <form onSubmit={handleUpdateAttendance} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Status Kehadiran</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {['hadir', 'tidak_hadir', 'diwakilkan'].map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setAttendanceForm(prev => ({ ...prev, status_kehadiran: s }))}
+                              className={`py-2 px-1 rounded-lg border text-[10px] font-bold uppercase transition-all ${attendanceForm.status_kehadiran === s
+                                ? 'bg-blue-600 border-blue-600 text-white'
+                                : 'bg-white border-gray-200 text-gray-500'
+                                }`}
+                            >
+                              {s.replace('_', ' ')}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {attendanceForm.status_kehadiran === 'diwakilkan' && (
+                        <div>
+                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nama Perwakilan</label>
+                          <input
+                            type="text"
+                            value={attendanceForm.nama_perwakilan}
+                            onChange={(e) => setAttendanceForm(prev => ({ ...prev, nama_perwakilan: e.target.value }))}
+                            className="w-full px-4 py-2 border rounded-lg text-sm"
+                            required
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Catatan</label>
+                        <textarea
+                          value={attendanceForm.keterangan}
+                          onChange={(e) => setAttendanceForm(prev => ({ ...prev, keterangan: e.target.value }))}
+                          className="w-full px-4 py-2 border rounded-lg text-sm"
+                          rows={2}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Upload Disposisi (Opsi)</label>
+                        <input type="file" onChange={(e) => setAttendanceForm(prev => ({ ...prev, file_disposisi: e.target.files?.[0] || null }))} className="w-full text-xs" />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button type="button" variant="ghost" className="flex-1 text-xs" onClick={() => setShowAttendanceForm(false)}>Batal</Button>
+                        <Button type="submit" className="flex-1 text-xs bg-blue-600 hover:bg-blue-700">Simpan Status</Button>
+                      </div>
+                    </form>
                   </div>
                 </div>
+              )}
 
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800">
-                    <strong>Peringatan:</strong> Data agenda yang dihapus tidak dapat dikembalikan.
-                  </p>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowDeleteModal(false)}
-                    className="flex-1"
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={handleConfirmDelete}
-                    className="flex-1"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Hapus Agenda
-                  </Button>
-                </div>
+              <div className="pt-4 border-t flex justify-end">
+                <Button variant="outline" onClick={() => setShowDetailModal(false)}>Tutup</Button>
               </div>
             </CardContent>
           </Card>

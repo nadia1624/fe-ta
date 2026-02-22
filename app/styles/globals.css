@@ -217,3 +217,15 @@ html {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #7c3aed;
 }
+
+/* Ensure date/time input icons are visible */
+input[type="date"],
+input[type="time"] {
+  color-scheme: light;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+}
