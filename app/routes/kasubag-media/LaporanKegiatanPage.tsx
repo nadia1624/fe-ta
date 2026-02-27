@@ -240,7 +240,7 @@ export default function LaporanKegiatanPage() {
                   <TableCell>{getStatusBadge(item.status_laporan)}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center">
-                      <Link to={`/dashboard/detail-laporan-media/${item.id}`}>
+                      <Link to={`/kasubag-media/laporan-kegiatan/${item.id}`}>
                         <Button variant="ghost" size="sm">
                           <ArrowRight className="w-4 h-4" />
                         </Button>

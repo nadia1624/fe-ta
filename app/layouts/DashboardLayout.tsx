@@ -16,20 +16,12 @@ export default function DashboardLayout() {
   });
 
   useEffect(() => {
-    const token = getToken();
     const userRole = localStorage.getItem('userRole');
-
-    if (!token || !userRole) {
-      // If not logged in, redirect to login
-      clearAuthData();
-      navigate('/login');
-      return;
-    }
 
     // Gunakan cached data dari localStorage untuk tampilan awal (UX cepat)
     setCurrentUser({
       nama: localStorage.getItem('userName') || '',
-      role: userRole,
+      role: userRole || '',
       jabatan: '',
       email: localStorage.getItem('userEmail') || ''
     });
@@ -40,32 +32,16 @@ export default function DashboardLayout() {
         const user = response.data;
         setCurrentUser({
           nama: user.nama,
-          role: user.role?.nama_role || userRole,
+          role: user.role?.nama_role || userRole || '',
           jabatan: '',
           email: user.email
         });
       }
     }).catch(() => {
-      // Jika token invalid/expired, redirect ke login
-      clearAuthData();
-      navigate('/login');
+      // Loader handles auth, we just fail silently here or assume token is still valid
+      // if it was invalid, loader would have redirected already.
     });
-
-    // Redirect to appropriate dashboard if on /dashboard root
-    if (location.pathname === '/dashboard' || location.pathname === '/dashboard/') {
-      const roleMap: Record<string, string> = {
-        'Admin': '/dashboard/admin',
-        'Sespri': '/dashboard/sespri',
-        'Kasubag Protokol': '/dashboard/kasubag-protokol',
-        'Kasubag Media': '/dashboard/kasubag-media',
-        'Ajudan': '/dashboard/ajudan',
-        'Staf Protokol': '/dashboard/staf-protokol',
-        'Staf Media': '/dashboard/staf-media',
-        'Pemohon': '/dashboard/pemohon',
-      };
-      navigate(roleMap[userRole] || '/dashboard/admin', { replace: true });
-    }
-  }, [navigate, location.pathname]);
+  }, [location.pathname]);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {

@@ -277,7 +277,7 @@ export default function DraftBeritaMediaPage() {
                       {getStatusBadge(draft.status)}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Link to={`/dashboard/detail-draft-berita/${draft.id}`}>
+                      <Link to={`/staf-media/draft-berita/${draft.id}`}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -334,7 +334,7 @@ export default function DraftBeritaMediaPage() {
                     <span>📷 {draft.foto_count} foto</span>
                   </div>
 
-                  <Link to={`/dashboard/detail-draft-berita/${draft.id}`} className="w-full">
+                  <Link to={`/staf-media/draft-berita/${draft.id}`} className="w-full">
                     <Button
                       variant="outline"
                       size="sm"

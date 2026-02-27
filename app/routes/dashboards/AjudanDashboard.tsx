@@ -167,7 +167,7 @@ export default function AjudanDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Perlu Konfirmasi</h3>
-              <Link to="/dashboard/konfirmasi-agenda">
+              <Link to="/ajudan/konfirmasi-agenda">
                 <Button variant="outline" size="sm">Lihat Semua</Button>
               </Link>
             </div>
@@ -193,7 +193,7 @@ export default function AjudanDashboard() {
                       </p>
                       <p className="text-xs text-gray-500">{agenda.waktu_mulai.slice(0, 5)} - {agenda.waktu_selesai.slice(0, 5)} WIB</p>
                     </div>
-                    <Link to="/dashboard/agenda-pimpinan-ajudan">
+                    <Link to="/ajudan/agenda-pimpinan">
                       <Button variant="ghost" size="sm" className="text-blue-600">Tentukan Kehadiran</Button>
                     </Link>
                   </div>
@@ -250,7 +250,7 @@ export default function AjudanDashboard() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Agenda Mendatang</h3>
-            <Link to="/dashboard/agenda-pimpinan-ajudan">
+            <Link to="/ajudan/agenda-pimpinan">
               <Button variant="outline" size="sm">Lihat Kalender</Button>
             </Link>
           </div>
@@ -279,7 +279,7 @@ export default function AjudanDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link to="/dashboard/konfirmasi-agenda">
+        <Link to="/ajudan/konfirmasi-agenda">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-6 text-center">
               <CheckCircle className="w-8 h-8 text-blue-600 mx-auto mb-3" />
@@ -288,7 +288,7 @@ export default function AjudanDashboard() {
             </CardContent>
           </Card>
         </Link>
-        <Link to="/dashboard/agenda-pimpinan-ajudan">
+        <Link to="/ajudan/agenda-pimpinan">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-6 text-center">
               <Calendar className="w-8 h-8 text-green-600 mx-auto mb-3" />
@@ -297,7 +297,7 @@ export default function AjudanDashboard() {
             </CardContent>
           </Card>
         </Link>
-        <Link to="/dashboard/agenda-pimpinan-ajudan">
+        <Link to="/ajudan/agenda-pimpinan">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-6 text-center">
               <Clock className="w-8 h-8 text-purple-600 mx-auto mb-3" />

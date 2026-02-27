@@ -2,14 +2,14 @@ import { Navigate } from "react-router";
 import { getToken } from "../lib/api";
 
 const roleMap: Record<string, string> = {
-    'Admin': '/dashboard/admin',
-    'Sespri': '/dashboard/sespri',
-    'Kasubag Protokol': '/dashboard/kasubag-protokol',
-    'Kasubag Media': '/dashboard/kasubag-media',
-    'Ajudan': '/dashboard/ajudan',
-    'Staf Protokol': '/dashboard/staf-protokol',
-    'Staf Media': '/dashboard/staf-media',
-    'Pemohon': '/dashboard/pemohon',
+    'Admin': '/admin/dashboard',
+    'Sespri': '/sespri',
+    'Kasubag Protokol': '/kasubag-protokol',
+    'Kasubag Media': '/kasubag-media',
+    'Ajudan': '/ajudan',
+    'Staf Protokol': '/staf-protokol',
+    'Staf Media': '/staf-media',
+    'Pemohon': '/pemohon',
 };
 
 export default function DashboardRedirect() {
@@ -20,6 +20,6 @@ export default function DashboardRedirect() {
         return <Navigate to="/login" replace />;
     }
 
-    const target = roleMap[userRole] || '/dashboard/admin';
+    const target = roleMap[userRole] || '/admin/dashboard';
     return <Navigate to={target} replace />;
 }

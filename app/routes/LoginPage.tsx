@@ -26,17 +26,17 @@ export default function LoginPage() {
 
         const role = response.data.user.role.nama_role;
         const roleMap: Record<string, string> = {
-          'Admin': '/dashboard/admin',
-          'Sespri': '/dashboard/sespri',
-          'Kasubag Protokol': '/dashboard/kasubag-protokol',
-          'Kasubag Media': '/dashboard/kasubag-media',
-          'Ajudan': '/dashboard/ajudan',
-          'Staf Protokol': '/dashboard/staf-protokol',
-          'Staf Media': '/dashboard/staf-media',
-          'Pemohon': '/dashboard/pemohon',
+          'Admin': '/admin/dashboard',
+          'Sespri': '/sespri/dashboard',
+          'Kasubag Protokol': '/kasubag-protokol/dashboard',
+          'Kasubag Media': '/kasubag-media/dashboard',
+          'Ajudan': '/ajudan/dashboard',
+          'Staff Protokol': '/staff-protokol/dashboard',
+          'Staff Media': '/staff-media/dashboard',
+          'Pemohon': '/pemohon/dashboard',
         };
 
-        navigate(roleMap[role] || '/dashboard/admin');
+        navigate(roleMap[role] || '/admin/dashboard');
       } else {
         setError(response.message || 'Login gagal');
       }

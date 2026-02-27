@@ -11,78 +11,110 @@ export default [
   route("login", "routes/LoginPage.tsx"),
   route("register", "routes/RegisterPage.tsx"),
 
-  // Dashboard Layout & Children
-  route("dashboard", "layouts/DashboardLayout.tsx", [
-    index("routes/DashboardRedirect.tsx"),
+  // Protected Routes Group
+  layout("layouts/AuthGuard.tsx", [
+    layout("layouts/DashboardLayout.tsx", [
+      // ---------------------------------------------------------
+      // ADMIN ROUTES
+      // ---------------------------------------------------------
+      route("admin/dashboard", "routes/dashboards/AdminDashboard.tsx"),
+      route("admin/users", "routes/admin/UserManagementPage.tsx"),
+      route("admin/periode", "routes/admin/PeriodeManagementPage.tsx"),
+      route("admin/pimpinan", "routes/admin/PimpinanManagementPage.tsx"),
+      route("admin/agenda", "routes/AgendaManagementPage.tsx", { id: "admin-agenda" }),
+      route("admin/profile", "routes/ProfilePage.tsx", { id: "admin-profile" }),
+      route("admin/laporan", "routes/LaporanPage.tsx", { id: "admin-laporan" }),
 
-    // Role-based Dashboards
-    route("admin", "routes/dashboards/AdminDashboard.tsx"),
-    route("sespri", "routes/dashboards/SespriDashboard.tsx"),
-    route("kasubag-protokol", "routes/dashboards/KasubagProtokolDashboard.tsx"),
-    route("kasubag-media", "routes/dashboards/KasubagMediaDashboard.tsx"),
-    route("ajudan", "routes/dashboards/AjudanDashboard.tsx"),
-    route("staf-protokol", "routes/dashboards/StafProtokolDashboard.tsx"),
-    route("staf-media", "routes/dashboards/StafMediaDashboard.tsx"),
-    route("pemohon", "routes/dashboards/PemohonDashboard.tsx"),
+      // ---------------------------------------------------------
+      // SESPRI ROUTES
+      // ---------------------------------------------------------
+      route("sespri/dashboard", "routes/dashboards/SespriDashboard.tsx"),
+      route("sespri/verifikasi-permohonan", "routes/sespri/VerifikasiPermohonanPage.tsx"),
+      route("sespri/agenda-pimpinan", "routes/sespri/AgendaPimpinanPage.tsx"),
+      route("sespri/konfirmasi-pengganti", "routes/sespri/KonfirmasiPenggantiPage.tsx"),
+      route("sespri/laporan-kegiatan-jadwal", "routes/sespri/LaporanKegiatanJadwalPage.tsx"),
+      route("sespri/laporan-kegiatan-jadwal/:id", "routes/sespri/LaporanKegiatanJadwalDetailPage.tsx"),
+      route("sespri/agenda", "routes/AgendaManagementPage.tsx", { id: "sespri-agenda" }),
+      route("sespri/profile", "routes/ProfilePage.tsx", { id: "sespri-profile" }),
+      route("sespri/laporan", "routes/LaporanPage.tsx", { id: "sespri-laporan" }),
 
-    // Shared Routes
-    route("agenda", "routes/AgendaManagementPage.tsx"),
-    route("surat-permohonan", "routes/SuratPermohonanPage.tsx"),
-    route("penugasan", "routes/PenugasanStafPage.tsx"),
-    route("draft-berita", "routes/DraftBeritaPage.tsx"),
-    route("laporan", "routes/LaporanPage.tsx"),
-    route("profile", "routes/ProfilePage.tsx"),
+      // ---------------------------------------------------------
+      // KASUBAG PROTOKOL ROUTES
+      // ---------------------------------------------------------
+      route("kasubag-protokol/dashboard", "routes/dashboards/KasubagProtokolDashboard.tsx"),
+      route("kasubag-protokol/assign-staff", "routes/kasubag-protokol/AssignStaffPage.tsx"),
+      route("kasubag-protokol/monitor-penugasan", "routes/kasubag-protokol/MonitorPenugasanPage.tsx"),
+      route("kasubag-protokol/agenda-pimpinan", "routes/kasubag-protokol/AgendaPimpinanPage.tsx"),
+      route("kasubag-protokol/penugasan/:id", "routes/kasubag-protokol/DetailPenugasanPage.tsx"),
+      route("kasubag-protokol/laporan-kegiatan", "routes/staf-protokol/LaporanKegiatanProtokolPage.tsx"),
+      route("kasubag-protokol/laporan-kegiatan/:id", "routes/staf-protokol/LaporanKegiatanProtokolDetailPage.tsx"),
+      route("kasubag-protokol/agenda", "routes/AgendaManagementPage.tsx", { id: "kasubag-protokol-agenda" }),
+      route("kasubag-protokol/profile", "routes/ProfilePage.tsx", { id: "kasubag-protokol-profile" }),
+      route("kasubag-protokol/laporan", "routes/LaporanPage.tsx", { id: "kasubag-protokol-laporan" }),
 
-    // Admin Specific
-    route("periode", "routes/admin/PeriodeManagementPage.tsx"),
-    route("pimpinan", "routes/admin/PimpinanManagementPage.tsx"),
-    route("users", "routes/admin/UserManagementPage.tsx"),
+      // ---------------------------------------------------------
+      // KASUBAG MEDIA ROUTES
+      // ---------------------------------------------------------
+      route("kasubag-media/dashboard", "routes/dashboards/KasubagMediaDashboard.tsx"),
+      route("kasubag-media/assign-staff", "routes/kasubag-media/AssignStaffMediaPage.tsx"),
+      route("kasubag-media/draft-berita", "routes/kasubag-media/DraftBeritaPage.tsx"),
+      route("kasubag-media/review-draft", "routes/kasubag-media/ReviewDraftBeritaPage.tsx"),
+      route("kasubag-media/agenda-pimpinan", "routes/kasubag-media/AgendaPimpinanMediaPage.tsx"),
+      route("kasubag-media/laporan-kegiatan", "routes/kasubag-media/LaporanKegiatanPage.tsx"),
+      route("kasubag-media/laporan-kegiatan/:id", "routes/kasubag-media/DetailLaporanPage.tsx"),
+      route("kasubag-media/agenda", "routes/AgendaManagementPage.tsx", { id: "kasubag-media-agenda" }),
+      route("kasubag-media/profile", "routes/ProfilePage.tsx", { id: "kasubag-media-profile" }),
+      route("kasubag-media/laporan", "routes/LaporanPage.tsx", { id: "kasubag-media-laporan" }),
 
-    // Sespri Specific
-    route("verifikasi-permohonan", "routes/sespri/VerifikasiPermohonanPage.tsx"),
-    route("agenda-pimpinan", "routes/sespri/AgendaPimpinanPage.tsx"),
-    route("konfirmasi-pengganti", "routes/sespri/KonfirmasiPenggantiPage.tsx"),
-    route("laporan-kegiatan-jadwal", "routes/sespri/LaporanKegiatanJadwalPage.tsx"),
-    route("laporan-kegiatan-jadwal/:id", "routes/sespri/LaporanKegiatanJadwalDetailPage.tsx"),
+      // ---------------------------------------------------------
+      // AJUDAN ROUTES
+      // ---------------------------------------------------------
+      route("ajudan/dashboard", "routes/dashboards/AjudanDashboard.tsx"),
+      route("ajudan/konfirmasi-agenda", "routes/ajudan/KonfirmasiAgendaPage.tsx"),
+      route("ajudan/agenda-pimpinan", "routes/ajudan/AgendaPimpinanPage.tsx"),
+      route("ajudan/agenda", "routes/AgendaManagementPage.tsx", { id: "ajudan-agenda" }),
+      route("ajudan/profile", "routes/ProfilePage.tsx", { id: "ajudan-profile" }),
+      route("ajudan/laporan", "routes/LaporanPage.tsx", { id: "ajudan-laporan" }),
 
-    // Kasubag & Other Specific
-    route("assign-staff", "routes/kasubag/AssignStaffPage.tsx"),
-    route("review-draft", "routes/kasubag-media/ReviewDraftBeritaPage.tsx"),
-    route("konfirmasi-agenda", "routes/ajudan/KonfirmasiAgendaPage.tsx"),
-    route("agenda-pimpinan-ajudan", "routes/ajudan/AgendaPimpinanPage.tsx"),
-    route("monitor-penugasan-protokol", "routes/kasubag-protokol/MonitorPenugasanPage.tsx"),
-    route("agenda-pimpinan-kasubag", "routes/kasubag-protokol/AgendaPimpinanPage.tsx"),
-    route("detail-penugasan/:id", "routes/kasubag-protokol/DetailPenugasanPage.tsx"),
-    route("my-assignments", "routes/staf/MyAssignmentsPage.tsx"),
-    route("submit-report", "routes/staf/SubmitReportPage.tsx"),
-    route("riwayat-permohonan-pemohon", "routes/pemohon/RiwayatPermohonanPage.tsx"),
-    route("submit-request", "routes/pemohon/SubmitRequestPage.tsx"),
-    route("upload-draft-berita", "routes/staf-media/UploadDraftBeritaPage.tsx"),
+      // ---------------------------------------------------------
+      // STAF PROTOKOL ROUTES
+      // ---------------------------------------------------------
+      route("staff-protokol/dashboard", "routes/dashboards/StafProtokolDashboard.tsx"),
+      route("staff-protokol/agenda-pimpinan", "routes/staf-protokol/AgendaPimpinanStafProtokolPage.tsx"),
+      route("staff-protokol/tugas-saya", "routes/staf-protokol/TugasSayaPage.tsx"),
+      route("staff-protokol/tugas-detail/:id", "routes/staf-protokol/TugasDetailPage.tsx"),
+      route("staff-protokol/laporan-kegiatan-staf", "routes/staf-protokol/LaporanKegiatanStafProtokolPage.tsx"),
+      route("staff-protokol/laporan-kegiatan", "routes/staf-protokol/LaporanKegiatanPage.tsx"),
+      route("staff-protokol/tambah-laporan/:id", "routes/staf-protokol/TambahLaporanPage.tsx"),
+      route("staff-protokol/tambah-progress/:id", "routes/staf-protokol/TambahProgressPage.tsx"),
+      route("staff-protokol/agenda", "routes/AgendaManagementPage.tsx", { id: "staf-protokol-agenda" }),
+      route("staff-protokol/profile", "routes/ProfilePage.tsx", { id: "staf-protokol-profile" }),
+      route("staff-protokol/laporan", "routes/LaporanPage.tsx", { id: "staf-protokol-laporan" }),
 
-    // Kasubag Media
-    route("assign-staff-media", "routes/kasubag-media/AssignStaffMediaPage.tsx"),
-    route("agenda-pimpinan-kasubag-media", "routes/kasubag-media/AgendaPimpinanMediaPage.tsx"),
-    route("laporan-kegiatan-media", "routes/kasubag-media/LaporanKegiatanPage.tsx"),
-    route("detail-laporan-media/:id", "routes/kasubag-media/DetailLaporanPage.tsx"),
+      // ---------------------------------------------------------
+      // STAF MEDIA ROUTES
+      // ---------------------------------------------------------
+      route("staff-media/dashboard", "routes/dashboards/StafMediaDashboard.tsx"),
+      route("staff-media/tugas-saya", "routes/staf-media/TugasSayaMediaPage.tsx"),
+      route("staff-media/draft-berita", "routes/staf-media/DraftBeritaMediaPage.tsx"),
+      route("staff-media/agenda-pimpinan", "routes/staf-media/AgendaPimpinanStafMediaPage.tsx"),
+      route("staff-media/laporan-kegiatan", "routes/staf-media/LaporanKegiatanStafMediaPage.tsx"),
+      route("staff-media/laporan-kegiatan/:id", "routes/staf-media/DetailLaporanStafMediaPage.tsx"),
+      route("staff-media/draft-berita/:id", "routes/staf-media/DetailDraftBeritaPage.tsx"),
+      route("staff-media/agenda", "routes/AgendaManagementPage.tsx", { id: "staf-media-agenda" }),
+      route("staff-media/profile", "routes/ProfilePage.tsx", { id: "staf-media-profile" }),
+      route("staff-media/laporan", "routes/LaporanPage.tsx", { id: "staf-media-laporan" }),
 
-    // Staf Protokol
-    route("staf-protokol/laporan", "routes/staf-protokol/LaporanKegiatanPage.tsx"),
-    route("tugas-saya", "routes/staf-protokol/TugasSayaPage.tsx"),
-    route("tugas-detail/:id", "routes/staf-protokol/TugasDetailPage.tsx"),
-    route("laporan-kegiatan-protokol", "routes/staf-protokol/LaporanKegiatanProtokolPage.tsx"),
-    route("laporan-kegiatan-protokol/:id", "routes/staf-protokol/LaporanKegiatanProtokolDetailPage.tsx"),
-    route("tambah-laporan-protokol/:id", "routes/staf-protokol/TambahLaporanPage.tsx"),
-    route("agenda-pimpinan-staf-protokol", "routes/staf-protokol/AgendaPimpinanStafProtokolPage.tsx"),
-    route("tambah-progress/:id", "routes/staf-protokol/TambahProgressPage.tsx"),
-    route("laporan-kegiatan-staf-protokol", "routes/staf-protokol/LaporanKegiatanStafProtokolPage.tsx"),
-
-    // Staf Media
-    route("tugas-saya-media", "routes/staf-media/TugasSayaMediaPage.tsx"),
-    route("draft-berita-media", "routes/staf-media/DraftBeritaMediaPage.tsx"),
-    route("agenda-pimpinan-staf-media", "routes/staf-media/AgendaPimpinanStafMediaPage.tsx"),
-    route("laporan-kegiatan-staf-media", "routes/staf-media/LaporanKegiatanStafMediaPage.tsx"),
-    route("detail-laporan-staf-media/:id", "routes/staf-media/DetailLaporanStafMediaPage.tsx"),
-    route("detail-draft-berita/:id", "routes/staf-media/DetailDraftBeritaPage.tsx"),
+      // ---------------------------------------------------------
+      // PEMOHON ROUTES
+      // ---------------------------------------------------------
+      route("pemohon/dashboard", "routes/dashboards/PemohonDashboard.tsx"),
+      route("pemohon/riwayat-permohonan", "routes/pemohon/RiwayatPermohonanPage.tsx"),
+      route("pemohon/submit-request", "routes/pemohon/SubmitRequestPage.tsx"),
+      route("pemohon/agenda", "routes/AgendaManagementPage.tsx", { id: "pemohon-agenda" }),
+      route("pemohon/profile", "routes/ProfilePage.tsx", { id: "pemohon-profile" }),
+      route("pemohon/laporan", "routes/LaporanPage.tsx", { id: "pemohon-laporan" }),
+    ]),
   ]),
 
   // Catch-all

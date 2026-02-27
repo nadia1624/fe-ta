@@ -232,7 +232,7 @@ export default function SespriDashboard() {
                                 </div>
                               </div>
                             ))}
-                            <Link to={`/dashboard/detail-laporan-protokol/${agenda.id}`}>
+                            <Link to={`/kasubag-protokol/laporan-kegiatan/${agenda.id}`}>
                               <Button variant="outline" size="sm" className="w-full mt-2">
                                 Lihat Semua Progress ({agenda.progress_reports.length})
                               </Button>
@@ -266,7 +266,7 @@ export default function SespriDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Perlu Verifikasi</h3>
-              <Link to="/dashboard/verifikasi-permohonan">
+              <Link to="/sespri/verifikasi-permohonan">
                 <Button variant="outline" size="sm">Lihat Semua</Button>
               </Link>
             </div>
@@ -289,7 +289,7 @@ export default function SespriDashboard() {
                         year: 'numeric'
                       })}
                     </p>
-                    <Link to="/dashboard/verifikasi-permohonan">
+                    <Link to="/sespri/verifikasi-permohonan">
                       <Button variant="ghost" size="sm">Verifikasi</Button>
                     </Link>
                   </div>
@@ -304,7 +304,7 @@ export default function SespriDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Agenda Pimpinan</h3>
-              <Link to="/dashboard/agenda-pimpinan">
+              <Link to="/sespri/agenda-pimpinan">
                 <Button variant="outline" size="sm">Lihat Kalender</Button>
               </Link>
             </div>
@@ -339,7 +339,7 @@ export default function SespriDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Link
-          to="/dashboard/verifikasi-permohonan"
+          to="/sespri/verifikasi-permohonan"
           className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
         >
           <CardContent className="p-6 text-center">
@@ -350,7 +350,7 @@ export default function SespriDashboard() {
         </Link>
 
         <Link
-          to="/dashboard/agenda-pimpinan"
+          to="/sespri/agenda-pimpinan"
           className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
         >
           <CardContent className="p-6 text-center">
@@ -361,7 +361,7 @@ export default function SespriDashboard() {
         </Link>
 
         <Link
-          to="/dashboard/konfirmasi-pengganti"
+          to="/sespri/konfirmasi-pengganti"
           className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
         >
           <CardContent className="p-6 text-center">
@@ -372,7 +372,7 @@ export default function SespriDashboard() {
         </Link>
 
         <Link
-          to="/dashboard/laporan-kegiatan-jadwal"
+          to="/sespri/laporan-kegiatan-jadwal"
           className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
         >
           <CardContent className="p-6 text-center">

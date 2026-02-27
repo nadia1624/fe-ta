@@ -230,7 +230,7 @@ export default function KasubagProtokolDashboard() {
                                 </div>
                               </div>
                             ))}
-                            <Link to={`/dashboard/detail-laporan-protokol/${agenda.id}`}>
+                            <Link to={`/kasubag-protokol/laporan-kegiatan/${agenda.id}`}>
                               <Button variant="outline" size="sm" className="w-full mt-2">
                                 Lihat Semua Progress ({agenda.progress_reports.length})
                               </Button>
@@ -309,7 +309,7 @@ export default function KasubagProtokolDashboard() {
                         year: 'numeric'
                       })}
                     </p>
-                    <Link to="/dashboard/assign-staff-protokol">
+                    <Link to="/kasubag-protokol/assign-staff">
                       <Button variant="ghost" size="sm" className="text-blue-600">Tugaskan →</Button>
                     </Link>
                   </div>
@@ -322,7 +322,7 @@ export default function KasubagProtokolDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link to="/dashboard/assign-staff-protokol">
+        <Link to="/kasubag-protokol/assign-staff">
           <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 border-transparent hover:border-blue-200">
             <CardContent className="p-6 text-center">
               <Users className="w-8 h-8 text-blue-600 mx-auto mb-3" />
@@ -331,7 +331,7 @@ export default function KasubagProtokolDashboard() {
             </CardContent>
           </Card>
         </Link>
-        <Link to="/dashboard/agenda-pimpinan-kasubag-protokol">
+        <Link to="/kasubag-protokol/agenda-pimpinan">
           <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 border-transparent hover:border-green-200">
             <CardContent className="p-6 text-center">
               <Calendar className="w-8 h-8 text-green-600 mx-auto mb-3" />
@@ -340,7 +340,7 @@ export default function KasubagProtokolDashboard() {
             </CardContent>
           </Card>
         </Link>
-        <Link to="/dashboard/laporan-kegiatan-protokol">
+        <Link to="/kasubag-protokol/laporan-kegiatan">
           <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 border-transparent hover:border-purple-200">
             <CardContent className="p-6 text-center">
               <TrendingUp className="w-8 h-8 text-purple-600 mx-auto mb-3" />

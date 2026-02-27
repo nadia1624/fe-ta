@@ -161,7 +161,7 @@ export default function DetailPenugasanPage() {
     setTimeout(() => {
       alert('Penugasan telah ditandai sebagai SELESAI!');
       setIsMarkingComplete(false);
-      navigate('/dashboard/monitor-penugasan-protokol');
+      navigate('/kasubag-protokol/monitor-penugasan');
     }, 1000);
   };
 

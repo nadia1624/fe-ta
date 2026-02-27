@@ -243,7 +243,7 @@ export default function LaporanKegiatanStafMediaPage() {
                     <TableCell>{getStatusBadge(item.status_laporan)}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center">
-                        <Link to={`/dashboard/detail-laporan-staf-media/${item.id}`}>
+                        <Link to={`/staf-media/laporan-kegiatan/${item.id}`}>
                           <Button variant="ghost" size="sm">
                             <ArrowRight className="w-4 h-4" />
                           </Button>
@@ -293,7 +293,7 @@ export default function LaporanKegiatanStafMediaPage() {
                       <TrendingUp className="w-4 h-4 text-purple-600" />
                       <span className="text-xs font-medium text-purple-600">{item.jumlah_progress} update</span>
                     </div>
-                    <Link to={`/dashboard/detail-laporan-staf-media/${item.id}`}>
+                    <Link to={`/staf-media/laporan-kegiatan/${item.id}`}>
                       <Button variant="outline" size="sm">
                         Lihat <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>

@@ -31,6 +31,19 @@ export function clearAuthData(): void {
     localStorage.removeItem('userId');
 }
 
+export function getActorSlug(roleName: string | null): string {
+    const role = roleName?.toLowerCase() || '';
+    if (role === 'admin') return 'admin';
+    if (role === 'sespri') return 'sespri';
+    if (role === 'kasubag protokol') return 'kasubag-protokol';
+    if (role === 'kasubag media') return 'kasubag-media';
+    if (role === 'ajudan') return 'ajudan';
+    if (role === 'staf protokol' || role === 'staff protokol') return 'staf-protokol';
+    if (role === 'staf media' || role === 'staff media') return 'staf-media';
+    if (role === 'pemohon') return 'pemohon';
+    return 'user';
+}
+
 // ==================== API Response Type ====================
 
 interface ApiResponse<T = any> {
@@ -43,7 +56,7 @@ interface ApiResponse<T = any> {
 
 export const authApi = {
     async login(email: string, password: string): Promise<ApiResponse<{ token: string; user: any }>> {
-        console.log('[API] Login request:', { email, password });
+        console.log('[API] Login request:', { email });
         const res = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -383,5 +396,52 @@ export const agendaApi = {
         });
         return res.json();
     }
+};
+
+// ==================== Penugasan API ====================
+
+export const penugasanApi = {
+    async getStaffProtokol(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/penugasan/staff-protokol`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getAgendasForAssignment(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/penugasan/agendas-for-assignment`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async assignStaff(data: {
+        id_agenda: string;
+        tanggal: string;
+        id_slot_waktu: string;
+        id_jabatan_hadir: string;
+        id_periode_hadir: string;
+        staff_ids: string[];
+        deskripsi_penugasan: string;
+    }): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/penugasan/assign`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
 };
 

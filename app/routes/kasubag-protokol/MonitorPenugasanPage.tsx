@@ -295,7 +295,7 @@ export default function MonitorPenugasanPage() {
                   <TableCell>{getStatusBadge(penugasan.status_pelaksanaan)}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-2">
-                      <Link to={`/dashboard/detail-penugasan/${penugasan.id}`}>
+                      <Link to={`/kasubag-protokol/penugasan/${penugasan.id}`}>
                         <Button variant="ghost" size="sm">
                           <ArrowRight className="w-4 h-4" />
                         </Button>

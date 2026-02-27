@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router';
+import { getActorSlug } from '../../lib/api';
 import {
   LayoutDashboard,
   Calendar,
@@ -27,58 +28,60 @@ interface SidebarProps {
 
 export default function Sidebar({ currentRole, isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const actorSlug = getActorSlug(currentRole);
 
   // Menu items for each role
   const menuConfig: Record<string, any[]> = {
     'Admin': [
-      { path: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/dashboard/users', label: 'User Management', icon: Users },
-      { path: '/dashboard/periode', label: 'Periode Management', icon: Calendar },
-      { path: '/dashboard/pimpinan', label: 'Pimpinan Management', icon: UserCheck },
+      { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/admin/users', label: 'User Management', icon: Users },
+      { path: '/admin/periode', label: 'Periode Management', icon: Calendar },
+      { path: '/admin/pimpinan', label: 'Pimpinan Management', icon: UserCheck },
     ],
     'Sespri': [
-      { path: '/dashboard/sespri', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/dashboard/verifikasi-permohonan', label: 'Verifikasi Permohonan', icon: CheckSquare },
-      { path: '/dashboard/agenda-pimpinan', label: 'Mengelola Agenda Pimpinan', icon: CalendarCheck },
-      { path: '/dashboard/konfirmasi-pengganti', label: 'Konfirmasi Pengganti', icon: UserCheck },
-      { path: '/dashboard/laporan-kegiatan-jadwal', label: 'Laporan Kegiatan', icon: ClipboardList },
+      { path: '/sespri/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/sespri/verifikasi-permohonan', label: 'Verifikasi Permohonan', icon: CheckSquare },
+      { path: '/sespri/agenda-pimpinan', label: 'Mengelola Agenda Pimpinan', icon: CalendarCheck },
+      { path: '/sespri/konfirmasi-pengganti', label: 'Konfirmasi Pengganti', icon: UserCheck },
+      { path: '/sespri/laporan-kegiatan-jadwal', label: 'Laporan Kegiatan', icon: ClipboardList },
     ],
     'Kasubag Protokol': [
-      { path: '/dashboard/kasubag-protokol', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/dashboard/assign-staff', label: 'Tugaskan Staf', icon: UserCheck },
-      { path: '/dashboard/monitor-penugasan-protokol', label: 'Monitor Penugasan', icon: ClipboardList },
-      { path: '/dashboard/agenda-pimpinan-kasubag', label: 'Agenda Pimpinan', icon: Calendar },
+      { path: '/kasubag-protokol/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/kasubag-protokol/assign-staff', label: 'Tugaskan Staf', icon: UserCheck },
+      { path: '/kasubag-protokol/monitor-penugasan', label: 'Monitor Penugasan', icon: ClipboardList },
+      { path: '/kasubag-protokol/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
     ],
     'Kasubag Media': [
-      { path: '/dashboard/kasubag-media', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/dashboard/assign-staff-media', label: 'Tugaskan Staf Media', icon: UserCheck },
-      { path: '/dashboard/draft-berita', label: 'Draft Berita', icon: Newspaper },
-      { path: '/dashboard/review-draft', label: 'Review Draft Berita', icon: MessageSquare },
-      { path: '/dashboard/agenda-pimpinan-kasubag-media', label: 'Agenda Pimpinan', icon: Calendar },
-      { path: '/dashboard/laporan-kegiatan-media', label: 'Laporan Kegiatan', icon: FileBarChart },
+      { path: '/kasubag-media/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/kasubag-media/assign-staff', label: 'Tugaskan Staf Media', icon: UserCheck },
+      { path: '/kasubag-media/draft-berita', label: 'Draft Berita', icon: Newspaper },
+      { path: '/kasubag-media/review-draft', label: 'Review Draft Berita', icon: MessageSquare },
+      { path: '/kasubag-media/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
+      { path: '/kasubag-media/laporan-kegiatan', label: 'Laporan Kegiatan', icon: FileBarChart },
     ],
     'Ajudan': [
-      { path: '/dashboard/ajudan', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/dashboard/konfirmasi-agenda', label: 'Konfirmasi Agenda', icon: CheckSquare },
-      { path: '/dashboard/agenda-pimpinan-ajudan', label: 'Agenda Pimpinan', icon: CalendarCheck },
+      { path: '/ajudan/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/ajudan/konfirmasi-agenda', label: 'Konfirmasi Agenda', icon: CheckSquare },
+      { path: '/ajudan/agenda-pimpinan', label: 'Agenda Pimpinan', icon: CalendarCheck },
     ],
-    'Staf Protokol': [
-      { path: '/dashboard/staf-protokol', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/dashboard/agenda-pimpinan-staf-protokol', label: 'Agenda Pimpinan', icon: Calendar },
-      { path: '/dashboard/tugas-saya', label: 'Tugas Saya', icon: ClipboardList },
-      { path: '/dashboard/laporan-kegiatan-staf-protokol', label: 'Laporan Kegiatan', icon: FileBarChart },
+    'Staff Protokol': [
+      { path: '/staff-protokol/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/staff-protokol/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
+      { path: '/staff-protokol/tugas-saya', label: 'Tugas Saya', icon: ClipboardList },
+      { path: '/staff-protokol/laporan-kegiatan-staf', label: 'Laporan Kegiatan', icon: FileBarChart },
     ],
-    'Staf Media': [
-      { path: '/dashboard/staf-media', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/dashboard/agenda-pimpinan-staf-media', label: 'Agenda Pimpinan', icon: Calendar },
-      { path: '/dashboard/tugas-saya-media', label: 'Tugas Saya', icon: ClipboardList },
-      { path: '/dashboard/draft-berita-media', label: 'Draft Berita', icon: Newspaper },
-      { path: '/dashboard/laporan-kegiatan-staf-media', label: 'Laporan Kegiatan', icon: FileBarChart },
+    'Staff Media': [
+      { path: '/staff-media/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/staff-media/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
+      { path: '/staff-media/tugas-saya', label: 'Tugas Saya', icon: ClipboardList },
+      { path: '/staff-media/draft-berita', label: 'Draft Berita', icon: Newspaper },
+      { path: '/staff-media/laporan-kegiatan', label: 'Laporan Kegiatan', icon: FileBarChart },
     ],
+
     'Pemohon': [
-      { path: '/dashboard/pemohon', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/dashboard/submit-request', label: 'Ajukan Permohonan', icon: PlusCircle },
-      { path: '/dashboard/riwayat-permohonan-pemohon', label: 'Riwayat Permohonan', icon: FileText },
+      { path: '/pemohon/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/pemohon/submit-request', label: 'Ajukan Permohonan', icon: PlusCircle },
+      { path: '/pemohon/riwayat-permohonan', label: 'Riwayat Permohonan', icon: FileText },
     ],
   };
 
@@ -137,8 +140,8 @@ export default function Sidebar({ currentRole, isOpen, onClose }: SidebarProps) 
                     to={item.path}
                     onClick={onClose}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-gray-700 hover:bg-gray-50'
                       }`}
                   >
                     <Icon className="w-5 h-5 shrink-0" />
@@ -153,11 +156,11 @@ export default function Sidebar({ currentRole, isOpen, onClose }: SidebarProps) 
         {/* Profile Menu at Bottom */}
         <div className="absolute bottom-16 left-0 right-0 px-4">
           <Link
-            to="/dashboard/profile"
+            to={`/${actorSlug}/profile`}
             onClick={onClose}
-            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${location.pathname === '/dashboard/profile'
-                ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-700 hover:bg-gray-50'
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${location.pathname === `/${actorSlug}/profile`
+              ? 'bg-blue-50 text-blue-700'
+              : 'text-gray-700 hover:bg-gray-50'
               }`}
           >
             <User className="w-5 h-5 shrink-0" />

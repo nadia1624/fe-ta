@@ -208,7 +208,7 @@ export default function LaporanKegiatanDetailPage() {
     <div className="space-y-6">
       {/* Header with Back Button */}
       <div className="flex items-center gap-4">
-        <Link to="/dashboard/staf-protokol/laporan">
+        <Link to="/staf-protokol/laporan-kegiatan">
           <Button variant="outline" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali

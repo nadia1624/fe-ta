@@ -328,7 +328,7 @@ export default function LaporanKegiatanPage() {
                         )}
                       </div>
                       
-                      <Link to={`/dashboard/staf-protokol/laporan/${kegiatan.id}`}>
+                      <Link to={`/staf-protokol/laporan-kegiatan/${kegiatan.id}`}>
                         <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 hover:shadow-md active:scale-95 transition-all">
                           <Eye className="w-4 h-4 mr-2" />
                           Lihat Detail

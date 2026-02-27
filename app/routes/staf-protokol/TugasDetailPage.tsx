@@ -244,7 +244,7 @@ export default function TugasDetailPage() {
               <p className="text-xs md:text-sm text-gray-500 mt-1">Riwayat laporan progress protokol</p>
             </div>
             {tugas.status_laporan !== 'Sudah Dilaporkan' && (
-              <Link to={`/dashboard/tambah-laporan-protokol/${tugas.agenda_id}`}>
+              <Link to={`/staf-protokol/tambah-laporan/${tugas.agenda_id}`}>
                 <Button variant="default" size="sm" className="w-full md:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
                   Tambah Progress
@@ -288,7 +288,7 @@ export default function TugasDetailPage() {
             <div className="text-center py-8">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 text-gray-400" />
               <p className="text-gray-500 mb-4">Belum ada progress yang dilaporkan</p>
-              <Link to={`/dashboard/tambah-laporan-protokol/${tugas.agenda_id}`}>
+              <Link to={`/staf-protokol/tambah-laporan/${tugas.agenda_id}`}>
                 <Button variant="default" size="sm">
                   <Plus className="w-4 h-4 mr-2" />
                   Mulai Laporan
@@ -300,15 +300,15 @@ export default function TugasDetailPage() {
       </Card>
 
       {/* Action Buttons */}
-      {tugas.status_laporan !== 'Sudah Dilaporkan' && (
+            {tugas.status_laporan !== 'Sudah Dilaporkan' && (
         <div className="flex flex-col md:flex-row gap-3">
-          <Link to={`/dashboard/tambah-laporan-protokol/${tugas.agenda_id}`} className="flex-1">
+          <Link to={`/staf-protokol/tambah-laporan/${tugas.agenda_id}`} className="flex-1">
             <Button variant="default" className="w-full">
               <Plus className="w-4 h-4 mr-2" />
               Tambah Progress Baru
             </Button>
           </Link>
-          <Link to={`/dashboard/detail-agenda-protokol/${tugas.agenda_id}`} className="flex-1">
+          <Link to={`/kasubag-protokol/laporan-kegiatan/${tugas.agenda_id}`} className="flex-1">
             <Button variant="outline" className="w-full">
               <FileText className="w-4 h-4 mr-2" />
               Lihat Detail Agenda

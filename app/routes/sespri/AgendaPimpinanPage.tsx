@@ -42,17 +42,14 @@ export default function AgendaPimpinanPage() {
     waktu_selesai: '',
     lokasi_kegiatan: '',
     keterangan: '',
+    contact_person: '',
     file_surat: null as File | null,
   });
 
-  // For attendance management within detail modal
-  const [showAttendanceForm, setShowAttendanceForm] = useState(false);
-  const [selectedPimpinanItem, setSelectedPimpinanItem] = useState<any>(null);
-  const [attendanceForm, setAttendanceForm] = useState({
-    status_kehadiran: 'hadir',
-    nama_perwakilan: '',
-    keterangan: '',
-    file_disposisi: null as File | null
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [editNotesForm, setEditNotesForm] = useState({
+    contact_person: '',
+    keterangan: ''
   });
 
   const fetchData = async () => {
@@ -104,6 +101,33 @@ export default function AgendaPimpinanPage() {
     setSelectedDate(newDate);
   };
 
+  const handleSaveNotes = async () => {
+    try {
+      const data = new FormData();
+      data.append('contact_person', editNotesForm.contact_person);
+      data.append('keterangan', editNotesForm.keterangan);
+
+      const res = await agendaApi.update(selectedAgenda.id_agenda, data);
+
+      if (res.success) {
+        Swal.fire('Berhasil', 'Kontak Person dan Catatan berhasil diperbarui', 'success');
+        setIsEditingNotes(false);
+        fetchData(); // Refresh the list
+
+        // Update the selected agenda to reflect changes in the modal immediately
+        setSelectedAgenda((prev: any) => ({
+          ...prev,
+          contact_person: editNotesForm.contact_person,
+          keterangan: editNotesForm.keterangan
+        }));
+      } else {
+        Swal.fire('Gagal', res.message, 'error');
+      }
+    } catch (error) {
+      Swal.fire('Error', 'Terjadi kesalahan sistem saat menyimpan catatan', 'error');
+    }
+  };
+
   const handleAdd = () => {
     setModalMode('add');
     setSelectedPimpinans([]);
@@ -122,6 +146,7 @@ export default function AgendaPimpinanPage() {
       waktu_selesai: '',
       lokasi_kegiatan: '',
       keterangan: '',
+      contact_person: '',
       file_surat: null,
     });
     setShowModal(true);
@@ -140,6 +165,9 @@ export default function AgendaPimpinanPage() {
       data.append('waktu_mulai', formData.waktu_mulai);
       data.append('waktu_selesai', formData.waktu_selesai);
       data.append('keterangan', formData.keterangan);
+      if (formData.contact_person) {
+        data.append('contact_person', formData.contact_person);
+      }
 
       if (selectedPimpinans.length === 0) {
         Swal.fire('Peringatan', 'Pilih minimal satu pimpinan', 'warning');
@@ -164,53 +192,6 @@ export default function AgendaPimpinanPage() {
         Swal.fire('Berhasil', 'Agenda berhasil ditambahkan (Langsung Disetujui)', 'success');
         setShowModal(false);
         fetchData();
-      } else {
-        Swal.fire('Gagal', res.message, 'error');
-      }
-    } catch (error) {
-      Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
-    }
-  };
-
-  const handleOpenAttendance = (pimpinanItem: any) => {
-    setSelectedPimpinanItem(pimpinanItem);
-    setAttendanceForm({
-      status_kehadiran: pimpinanItem.status_kehadiran || 'hadir',
-      nama_perwakilan: pimpinanItem.nama_perwakilan || '',
-      keterangan: pimpinanItem.keterangan || '',
-      file_disposisi: null
-    });
-    setShowAttendanceForm(true);
-  };
-
-  const handleUpdateAttendance = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const data = new FormData();
-      data.append('status_kehadiran', attendanceForm.status_kehadiran);
-      data.append('nama_perwakilan', attendanceForm.nama_perwakilan);
-      data.append('keterangan', attendanceForm.keterangan);
-      if (attendanceForm.file_disposisi) {
-        data.append('surat_disposisi', attendanceForm.file_disposisi);
-      }
-
-      const res = await agendaApi.updateLeaderAttendance(
-        selectedAgenda.id_agenda,
-        selectedPimpinanItem.id_jabatan,
-        selectedPimpinanItem.id_periode,
-        data
-      );
-
-      if (res.success) {
-        Swal.fire('Berhasil', 'Status kehadiran diperbarui', 'success');
-        setShowAttendanceForm(false);
-        // Refresh details
-        const updatedAgendaRes = await agendaApi.getLeaderAgendas({});
-        if (updatedAgendaRes.success) {
-          setAgendaList(updatedAgendaRes.data);
-          const found = updatedAgendaRes.data.find((a: any) => a.id_agenda === selectedAgenda.id_agenda);
-          if (found) setSelectedAgenda(found);
-        }
       } else {
         Swal.fire('Gagal', res.message, 'error');
       }
@@ -397,7 +378,15 @@ export default function AgendaPimpinanPage() {
                               return (
                                 <div
                                   key={agenda.id_agenda}
-                                  onClick={() => { setSelectedAgenda(agenda); setShowDetailModal(true); }}
+                                  onClick={() => {
+                                    setSelectedAgenda(agenda);
+                                    setEditNotesForm({
+                                      contact_person: agenda.contact_person || '',
+                                      keterangan: agenda.keterangan || ''
+                                    });
+                                    setIsEditingNotes(false);
+                                    setShowDetailModal(true);
+                                  }}
                                   className={`text-[10px] p-1.5 rounded cursor-pointer truncate border transition-colors ${dominantColor}`}
                                   title={`${agenda.nama_kegiatan}${attendeeName ? ' - ' + attendeeName : ''}`}
                                 >
@@ -491,17 +480,37 @@ export default function AgendaPimpinanPage() {
                       <p className="text-xs text-gray-500">{agenda.waktu_mulai} - {agenda.waktu_selesai}</p>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-col gap-1.5">
                         {agenda.agendaPimpinans.map((ap: any, i: number) => (
-                          <div key={i} className="flex items-center gap-1.5 border rounded-full px-2 py-0.5 bg-gray-50">
-                            <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
-                            {getStatusBadge(ap.status_kehadiran)}
+                          <div key={i} className="flex flex-col border rounded-lg px-2 py-1 bg-gray-50 w-fit">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
+                              {getStatusBadge(ap.status_kehadiran)}
+                            </div>
+                            {ap.status_kehadiran === 'diwakilkan' && ap.surat_disposisi && (
+                              <a
+                                href={`http://localhost:3000/api/${ap.surat_disposisi.replace(/\\/g, '/')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1 w-fit"
+                              >
+                                <FileText className="w-3 h-3" /> Surat Disposisi
+                              </a>
+                            )}
                           </div>
                         ))}
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="sm" onClick={() => { setSelectedAgenda(agenda); setShowDetailModal(true); }}>
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setSelectedAgenda(agenda);
+                        setEditNotesForm({
+                          contact_person: agenda.contact_person || '',
+                          keterangan: agenda.keterangan || ''
+                        });
+                        setIsEditingNotes(false);
+                        setShowDetailModal(true);
+                      }}>
                         <Eye className="w-4 h-4" />
                       </Button>
                     </TableCell>
@@ -644,6 +653,55 @@ export default function AgendaPimpinanPage() {
                     <p className="text-sm font-medium">{selectedAgenda.pemohon?.nama}</p>
                     <p className="text-xs text-gray-500">{selectedAgenda.pemohon?.instansi}</p>
                   </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kontak & Catatan Khusus</label>
+                      {!isEditingNotes && (
+                        <Button variant="ghost" size="sm" className="h-6 text-[10px] text-blue-600 p-1" onClick={() => setIsEditingNotes(true)}>
+                          <Edit2 className="w-3 h-3 mr-1" /> Edit
+                        </Button>
+                      )}
+                    </div>
+                    {isEditingNotes ? (
+                      <div className="space-y-3 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                        <div>
+                          <label className="text-xs font-medium text-gray-700 block mb-1">Contact Person (Opsional)</label>
+                          <input
+                            type="text"
+                            className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5"
+                            value={editNotesForm.contact_person}
+                            onChange={e => setEditNotesForm(prev => ({ ...prev, contact_person: e.target.value }))}
+                            placeholder="Contoh: Bpk. Budi (0812xxxx)"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-700 block mb-1">Catatan Tambahan (Opsional)</label>
+                          <textarea
+                            className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5"
+                            rows={2}
+                            value={editNotesForm.keterangan}
+                            onChange={e => setEditNotesForm(prev => ({ ...prev, keterangan: e.target.value }))}
+                            placeholder="Catatan dari sespri..."
+                          />
+                        </div>
+                        <div className="flex gap-2 justify-end pt-1">
+                          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
+                            setIsEditingNotes(false);
+                            setEditNotesForm({
+                              contact_person: selectedAgenda.contact_person || '',
+                              keterangan: selectedAgenda.keterangan || ''
+                            });
+                          }}>Batal</Button>
+                          <Button size="sm" className="h-7 text-xs bg-blue-600" onClick={handleSaveNotes}>Simpan</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium">CP: {selectedAgenda.contact_person || '-'}</p>
+                        <p className="text-sm">Catatan: {selectedAgenda.keterangan || '-'}</p>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -656,16 +714,25 @@ export default function AgendaPimpinanPage() {
                             <p className="text-sm font-bold">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
                             <p className="text-[10px] text-gray-500">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
                           </div>
-                          <Button variant="ghost" size="sm" className="h-7 text-[10px] text-blue-600 hover:text-blue-700 p-1" onClick={() => handleOpenAttendance(ap)}>
-                            <Edit2 className="w-3 h-3 mr-1" /> Atur Kehadiran
-                          </Button>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-gray-400">Status:</span>
                           {getStatusBadge(ap.status_kehadiran)}
                         </div>
                         {ap.status_kehadiran === 'diwakilkan' && (
-                          <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {ap.nama_perwakilan}</p>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {ap.nama_perwakilan}</p>
+                            {ap.surat_disposisi && (
+                              <a
+                                href={`http://localhost:3000/${ap.surat_disposisi.replace(/\\/g, '/')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1"
+                              >
+                                <FileText className="w-3 h-3" /> Lihat Disposisi
+                              </a>
+                            )}
+                          </div>
                         )}
                       </div>
                     ))}
@@ -673,73 +740,6 @@ export default function AgendaPimpinanPage() {
                 </div>
               </div>
 
-              {showAttendanceForm && selectedPimpinanItem && (
-                <div className="border-t pt-6 animate-in slide-in-from-top-4 duration-300">
-                  <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                        <UserCheck className="w-4 h-4 text-blue-600" />
-                        Atur Kehadiran: {selectedPimpinanItem.periodeJabatan?.pimpinan?.nama_pimpinan}
-                      </h4>
-                      <button onClick={() => setShowAttendanceForm(false)} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
-                    </div>
-
-                    <form onSubmit={handleUpdateAttendance} className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Status Kehadiran</label>
-                        <div className="grid grid-cols-3 gap-2">
-                          {['hadir', 'tidak_hadir', 'diwakilkan'].map((s) => (
-                            <button
-                              key={s}
-                              type="button"
-                              onClick={() => setAttendanceForm(prev => ({ ...prev, status_kehadiran: s }))}
-                              className={`py-2 px-1 rounded-lg border text-[10px] font-bold uppercase transition-all ${attendanceForm.status_kehadiran === s
-                                ? 'bg-blue-600 border-blue-600 text-white'
-                                : 'bg-white border-gray-200 text-gray-500'
-                                }`}
-                            >
-                              {s.replace('_', ' ')}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {attendanceForm.status_kehadiran === 'diwakilkan' && (
-                        <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nama Perwakilan</label>
-                          <input
-                            type="text"
-                            value={attendanceForm.nama_perwakilan}
-                            onChange={(e) => setAttendanceForm(prev => ({ ...prev, nama_perwakilan: e.target.value }))}
-                            className="w-full px-4 py-2 border rounded-lg text-sm"
-                            required
-                          />
-                        </div>
-                      )}
-
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Catatan</label>
-                        <textarea
-                          value={attendanceForm.keterangan}
-                          onChange={(e) => setAttendanceForm(prev => ({ ...prev, keterangan: e.target.value }))}
-                          className="w-full px-4 py-2 border rounded-lg text-sm"
-                          rows={2}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Upload Disposisi (Opsi)</label>
-                        <input type="file" onChange={(e) => setAttendanceForm(prev => ({ ...prev, file_disposisi: e.target.files?.[0] || null }))} className="w-full text-xs" />
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button type="button" variant="ghost" className="flex-1 text-xs" onClick={() => setShowAttendanceForm(false)}>Batal</Button>
-                        <Button type="submit" className="flex-1 text-xs bg-blue-600 hover:bg-blue-700">Simpan Status</Button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
 
               <div className="pt-4 border-t flex justify-end">
                 <Button variant="outline" onClick={() => setShowDetailModal(false)}>Tutup</Button>

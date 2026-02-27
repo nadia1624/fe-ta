@@ -130,7 +130,7 @@ export default function PemohonDashboard() {
                 Isi formulir permohonan agenda kegiatan dengan Walikota/Wakil Walikota
               </p>
             </div>
-            <Link to="/dashboard/submit-request">
+            <Link to="/pemohon/submit-request">
               <Button size="lg">
                 <PlusCircle className="w-5 h-5 mr-2" />
                 Buat Permohonan
@@ -146,7 +146,7 @@ export default function PemohonDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Permohonan Terbaru</h3>
-              <Link to="/dashboard/riwayat-permohonan-pemohon">
+              <Link to="/pemohon/riwayat-permohonan">
                 <Button variant="outline" size="sm">Lihat Semua</Button>
               </Link>
             </div>
@@ -177,7 +177,7 @@ export default function PemohonDashboard() {
                         <p className="text-xs text-blue-800">{catatan}</p>
                       </div>
                     )}
-                    <Link to="/dashboard/riwayat-permohonan-pemohon">
+                    <Link to="/pemohon/riwayat-permohonan">
                       <Button variant="ghost" size="sm">
                         <Eye className="w-4 h-4 mr-1" />
                         Detail
@@ -281,7 +281,7 @@ export default function PemohonDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link to="/dashboard/submit-request">
+        <Link to="/pemohon/submit-request">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-6 text-center">
               <PlusCircle className="w-8 h-8 text-blue-600 mx-auto mb-3" />
@@ -290,7 +290,7 @@ export default function PemohonDashboard() {
             </CardContent>
           </Card>
         </Link>
-        <Link to="/dashboard/riwayat-permohonan-pemohon">
+        <Link to="/pemohon/riwayat-permohonan">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-6 text-center">
               <FileText className="w-8 h-8 text-green-600 mx-auto mb-3" />

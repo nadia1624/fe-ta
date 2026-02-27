@@ -38,14 +38,14 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
   // Get page title based on current route
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path.includes('/admin')) return 'Admin Dashboard';
-    if (path.includes('/sespri')) return 'Sespri Dashboard';
-    if (path.includes('/kasubag-protokol')) return 'Kasubag Protokol Dashboard';
-    if (path.includes('/kasubag-media')) return 'Kasubag Media Dashboard';
-    if (path.includes('/ajudan')) return 'Ajudan Dashboard';
-    if (path.includes('/staf-protokol')) return 'Staf Protokol Dashboard';
-    if (path.includes('/staf-media')) return 'Staf Media Dashboard';
-    if (path.includes('/pemohon')) return 'Pemohon Dashboard';
+    if (path.includes('/admin')) return 'Admin';
+    if (path.includes('/sespri')) return 'Sespri';
+    if (path.includes('/kasubag-protokol')) return 'Kasubag Protokol';
+    if (path.includes('/kasubag-media')) return 'Kasubag Media';
+    if (path.includes('/ajudan')) return 'Ajudan';
+    if (path.includes('/staf-protokol')) return 'Staf Protokol';
+    if (path.includes('/staf-media')) return 'Staf Media';
+    if (path.includes('/pemohon')) return 'Pemohon';
     if (path.includes('/agenda-pimpinan')) return 'Agenda Pimpinan';
     if (path.includes('/agenda')) return 'Agenda Management';
     if (path.includes('/surat-permohonan')) return 'Surat Permohonan';
@@ -64,7 +64,7 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
     if (path.includes('/review-draft')) return 'Review Draft Berita';
     if (path.includes('/my-assignments')) return 'Tugas Saya';
     if (path.includes('/submit-report')) return 'Submit Laporan';
-    if (path.includes('/riwayat-permohonan-pemohon')) return 'Riwayat Permohonan';
+    if (path.includes('/riwayat-permohonan')) return 'Riwayat Permohonan';
     if (path.includes('/submit-request')) return 'Ajukan Permohonan';
     if (path.includes('/upload-draft-berita')) return 'Upload Draft Berita';
     if (path.includes('/profile')) return 'Profil Saya';
@@ -127,7 +127,20 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
                 </div>
                 <button
                   onClick={() => {
-                    navigate('/dashboard/profile');
+                    const rolePathMap: Record<string, string> = {
+                      'Admin': 'admin',
+                      'Sespri': 'sespri',
+                      'Kasubag Protokol': 'kasubag-protokol',
+                      'Kasubag Media': 'kasubag-media',
+                      'Ajudan': 'ajudan',
+                      'Staf Protokol': 'staf-protokol',
+                      'Staff Protokol': 'staf-protokol',
+                      'Staf Media': 'staf-media',
+                      'Staff Media': 'staf-media',
+                      'Pemohon': 'pemohon',
+                    };
+                    const pathPrefix = rolePathMap[user.role] || 'admin';
+                    navigate(`/${pathPrefix}/profile`);
                     setShowProfileMenu(false);
                   }}
                   className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"

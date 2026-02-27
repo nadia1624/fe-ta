@@ -105,7 +105,7 @@ export default function TambahLaporanPage() {
     setTimeout(() => {
       setSubmitting(false);
       alert('Progress laporan berhasil ditambahkan!');
-      navigate('/dashboard/staf-protokol');
+      navigate('/staf-protokol');
     }, 2000);
   };
 

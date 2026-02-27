@@ -311,7 +311,7 @@ export default function TugasSayaPage() {
 
                 {/* Actions */}
                 <div>
-                  <Link to={`/dashboard/detail-agenda-protokol/${tugas.agenda_id}`}>
+                  <Link to={`/kasubag-protokol/laporan-kegiatan/${tugas.agenda_id}`}>
                     <Button variant="primary" size="sm" className="w-full">
                       <Eye className="w-4 h-4 mr-2" />
                       Detail Agenda

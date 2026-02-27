@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar, List, CalendarDays, Eye, X, Search, Filter, UserCheck, RefreshCw, Clock, Edit2 } from 'lucide-react';
+import { Calendar, List, CalendarDays, Eye, X, Search, Filter, UserCheck, RefreshCw, Clock, Edit2, FileText } from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
 import Swal from 'sweetalert2';
 
@@ -28,7 +28,6 @@ export default function AgendaPimpinanPage() {
     id_periode_perwakilan: 'PD001',
     nama_perwakilan: '',
     keterangan: '',
-    file_disposisi: null as File | null,
     representative_type: 'pimpinan' as 'pimpinan' | 'manual'
   });
 
@@ -71,7 +70,6 @@ export default function AgendaPimpinanPage() {
       id_periode_perwakilan: ap.id_periode_perwakilan || 'PD001',
       nama_perwakilan: ap.nama_perwakilan || '',
       keterangan: ap.keterangan || '',
-      file_disposisi: null,
       representative_type: ap.id_jabatan_perwakilan || !ap.nama_perwakilan ? 'pimpinan' : 'manual'
     });
     setShowAttendanceForm(true);
@@ -93,9 +91,6 @@ export default function AgendaPimpinanPage() {
         }
       }
       data.append('keterangan', attendanceForm.keterangan);
-      if (attendanceForm.file_disposisi) {
-        data.append('surat_disposisi', attendanceForm.file_disposisi);
-      }
 
       const res = await agendaApi.updateLeaderAttendance(
         selectedAgenda.id_agenda,
@@ -474,7 +469,19 @@ export default function AgendaPimpinanPage() {
                           {getStatusBadge(ap.status_kehadiran)}
                         </div>
                         {ap.status_kehadiran === 'diwakilkan' && (
-                          <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {ap.nama_perwakilan}</p>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {ap.nama_perwakilan}</p>
+                            {ap.surat_disposisi && (
+                              <a
+                                href={`http://localhost:3000/api/${ap.surat_disposisi.replace(/\\/g, '/')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1"
+                              >
+                                <FileText className="w-3 h-3" /> Lihat Disposisi
+                              </a>
+                            )}
+                          </div>
                         )}
                       </div>
                     ))}
@@ -580,15 +587,6 @@ export default function AgendaPimpinanPage() {
                           onChange={(e) => setAttendanceForm(prev => ({ ...prev, keterangan: e.target.value }))}
                           className="w-full px-4 py-2 border rounded-lg text-sm"
                           rows={2}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Upload Disposisi (Opsi)</label>
-                        <input
-                          type="file"
-                          onChange={(e) => setAttendanceForm(prev => ({ ...prev, file_disposisi: e.target.files?.[0] || null }))}
-                          className="w-full text-xs"
                         />
                       </div>
 

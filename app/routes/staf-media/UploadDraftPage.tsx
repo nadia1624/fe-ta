@@ -56,7 +56,7 @@ export default function UploadDraftPage() {
     setTimeout(() => {
       setUploading(false);
       alert('Draft berita berhasil diupload!');
-      navigate('/dashboard/staf-media');
+      navigate('/staff-media');
     }, 2000);
   };
 

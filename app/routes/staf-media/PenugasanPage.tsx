@@ -192,7 +192,7 @@ export default function PenugasanPage() {
                   </p>
                 </div>
 
-                <Link to={`/dashboard/upload-draft/${item.id}`}>
+                <Link to={`/staf-media/upload-draft-berita`}>
                   <Button variant="outline" size="sm" className="w-full">
                     <ArrowRight className="w-4 h-4 mr-2" />
                     {item.status_draft === 'Belum Upload' ? 'Upload Draft' :
@@ -254,7 +254,7 @@ export default function PenugasanPage() {
                     <TableCell>{getStatusBadge(item.status_draft)}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center">
-                        <Link to={`/dashboard/upload-draft/${item.id}`}>
+                        <Link to={`/staf-media/upload-draft-berita`}>
                           <Button variant="ghost" size="sm">
                             <ArrowRight className="w-4 h-4" />
                           </Button>

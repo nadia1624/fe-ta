@@ -290,7 +290,7 @@ export default function KasubagMediaDashboard() {
                                 </div>
                               </div>
                             ))}
-                            <Link to={`/dashboard/detail-laporan-protokol/${agenda.id}`}>
+                            <Link to={`/kasubag-protokol/laporan-kegiatan/${agenda.id}`}>
                               <Button variant="outline" size="sm" className="w-full mt-2">
                                 Lihat Semua Progress ({agenda.progress_reports.length})
                               </Button>
@@ -387,7 +387,7 @@ export default function KasubagMediaDashboard() {
                 <p className="text-[12px] text-[#6b7280] mb-2">{item.deskripsi}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] text-[#9ca3af]">📅 {item.tanggal}</span>
-                  <Link to="/dashboard/assign-staff-media">
+                  <Link to="/kasubag-media/assign-staff">
                     <button className="text-[11px] text-[#155DFC] hover:underline">
                       Tugaskan →
                     </button>
@@ -401,7 +401,7 @@ export default function KasubagMediaDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link to="/dashboard/review-draft">
+        <Link to="/kasubag-media/review-draft">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border border-[#e5e7eb]">
             <CardContent className="p-6 text-center">
               <div className="bg-[#eff6ff] w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -413,7 +413,7 @@ export default function KasubagMediaDashboard() {
           </Card>
         </Link>
 
-        <Link to="/dashboard/assign-staff-media">
+        <Link to="/kasubag-media/assign-staff">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border border-[#e5e7eb]">
             <CardContent className="p-6 text-center">
               <div className="bg-[#dcfce7] w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -425,7 +425,7 @@ export default function KasubagMediaDashboard() {
           </Card>
         </Link>
 
-        <Link to="/dashboard/laporan-kegiatan-media">
+        <Link to="/kasubag-media/laporan-kegiatan">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border border-[#e5e7eb]">
             <CardContent className="p-6 text-center">
               <div className="bg-[#faf5ff] w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">

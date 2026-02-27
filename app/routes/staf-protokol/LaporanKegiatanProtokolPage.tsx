@@ -291,7 +291,7 @@ export default function LaporanKegiatanProtokolPage() {
                     <TableCell>{getStatusBadge(item.status_laporan)}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center">
-                        <Link to={`/dashboard/laporan-kegiatan-protokol/${item.id}`}>
+                        <Link to={`/kasubag-protokol/laporan-kegiatan/${item.id}`}>
                           <Button variant="ghost" size="sm">
                             <ArrowRight className="w-4 h-4" />
                           </Button>
@@ -345,7 +345,7 @@ export default function LaporanKegiatanProtokolPage() {
                       <TrendingUp className="w-4 h-4 text-blue-600" />
                       <span className="text-xs font-medium text-blue-600">{item.jumlah_progress} update</span>
                     </div>
-                    <Link to={`/dashboard/laporan-kegiatan-protokol/${item.id}`}>
+                    <Link to={`/kasubag-protokol/laporan-kegiatan/${item.id}`}>
                       <Button variant="outline" size="sm">
                         Lihat <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
