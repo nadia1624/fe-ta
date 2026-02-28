@@ -107,7 +107,7 @@ export default function AssignStaffPage() {
 
   const filteredAgenda = agendaSlots.filter(agenda =>
     agenda.nama_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agenda.slotAgendaPimpinans?.some((s: any) => s.periodeJabatanHadir?.pimpinan?.nama.toLowerCase().includes(searchTerm.toLowerCase()))
+    agenda.agendaPimpinans?.some((ap: any) => ap.periodeJabatan?.pimpinan?.nama_pimpinan?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   if (loading) {
@@ -149,26 +149,22 @@ export default function AssignStaffPage() {
             {filteredAgenda.length > 0 ? (
               <div className="divide-y divide-gray-200">
                 {filteredAgenda.map((agenda) => {
-                  const sortedSlots = [...(agenda.slotAgendaPimpinans || [])].sort((a, b) =>
-                    (a.slotWaktu?.waktu_mulai || '').localeCompare(b.slotWaktu?.waktu_mulai || '')
-                  );
-
-                  const firstSlot = sortedSlots[0];
-                  const lastSlot = sortedSlots[sortedSlots.length - 1];
-                  const pimpinanName = firstSlot?.periodeJabatanHadir?.pimpinan?.nama || 'N/A';
-                  const startTime = firstSlot?.slotWaktu?.waktu_mulai || '--:--';
-                  const endTime = lastSlot?.slotWaktu?.waktu_selesai || '--:--';
+                  const pimpinans = agenda.agendaPimpinans || [];
+                  const pimpinanNames = pimpinans
+                    .map((ap: any) => ap.periodeJabatan?.pimpinan?.nama_pimpinan)
+                    .filter(Boolean)
+                    .join(', ');
 
                   return (
                     <div key={agenda.id_agenda} className="px-6 py-4 hover:bg-gray-50 transition-colors border-l-4 border-blue-500">
                       <div className="flex items-start justify-between mb-2">
                         <p className="font-medium text-gray-900 flex-1">{agenda.nama_kegiatan}</p>
                         <Badge variant="outline" className="whitespace-nowrap ml-2 text-blue-700 bg-blue-50 border-blue-200">
-                          {startTime} - {endTime}
+                          {agenda.waktu_mulai?.slice(0, 5)} - {agenda.waktu_selesai?.slice(0, 5)}
                         </Badge>
                       </div>
                       <div className="space-y-1 text-sm text-gray-600 mb-3">
-                        <p>👤 <strong>{pimpinanName}</strong></p>
+                        <p>👤 <strong>{pimpinanNames || 'N/A'}</strong></p>
                         <p>📍 {agenda.lokasi_kegiatan}</p>
                         <p>📅 {new Date(agenda.tanggal_kegiatan || '').toLocaleDateString('id-ID', {
                           day: '2-digit',
@@ -246,27 +242,23 @@ export default function AssignStaffPage() {
                   <div className="space-y-1 text-sm text-gray-700">
                     {/* Access first slot for summary info */}
                     {(() => {
-                      const sortedSlots = [...(selectedSlot.slotAgendaPimpinans || [])].sort((a, b) =>
-                        (a.slotWaktu?.waktu_mulai || '').localeCompare(b.slotWaktu?.waktu_mulai || '')
-                      );
-                      const firstSlot = sortedSlots[0];
-                      const lastSlot = sortedSlots[sortedSlots.length - 1];
-                      const pimpinanName = firstSlot?.periodeJabatanHadir?.pimpinan?.nama || 'N/A';
-                      const startTime = firstSlot?.slotWaktu?.waktu_mulai || '--:--';
-                      const endTime = lastSlot?.slotWaktu?.waktu_selesai || '--:--';
+                      const pimpinans = selectedSlot.agendaPimpinans || [];
+                      const pimpinanNames = pimpinans
+                        .map((ap: any) => `${ap.periodeJabatan?.pimpinan?.nama_pimpinan}${ap.status_kehadiran === 'diwakilkan' ? ` (diwakili: ${ap.nama_perwakilan || '-'})` : ''}`)
+                        .filter(Boolean)
+                        .join(' | ');
 
                       return (
                         <>
-                          <p>👤 <strong>Pimpinan:</strong> {pimpinanName}</p>
+                          <p>👤 <strong>Pimpinan:</strong> {pimpinanNames || 'N/A'}</p>
                           <p>📅 <strong>Tanggal:</strong> {new Date(selectedSlot.tanggal_kegiatan || '').toLocaleDateString('id-ID', {
                             weekday: 'long',
                             day: '2-digit',
                             month: 'long',
                             year: 'numeric'
                           })}</p>
-                          <p>⏰ <strong>Waktu Agenda:</strong> {startTime} - {endTime}</p>
+                          <p>⏰ <strong>Waktu Agenda:</strong> {selectedSlot.waktu_mulai?.slice(0, 5)} - {selectedSlot.waktu_selesai?.slice(0, 5)}</p>
                           <p>📍 <strong>Lokasi:</strong> {selectedSlot.lokasi_kegiatan}</p>
-                          <p className="mt-2 text-xs text-blue-600 italic">✓ Penugasan akan otomatis diterapkan ke seluruh ({selectedSlot.slotAgendaPimpinans?.length}) slot pimpinan hadir pada agenda ini.</p>
                         </>
                       );
                     })()}
@@ -372,8 +364,8 @@ export default function AssignStaffPage() {
               <Button
                 onClick={() => setStatusModal({ ...statusModal, show: false })}
                 className={`w-full py-6 text-base font-semibold transition-all ${statusModal.type === 'success'
-                    ? 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200'
-                    : 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200'
+                  ? 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200'
+                  : 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200'
                   }`}
               >
                 {statusModal.type === 'success' ? 'Mengerti' : 'Coba Lagi'}

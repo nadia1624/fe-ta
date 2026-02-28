@@ -15,7 +15,6 @@ export default function SubmitRequestPage() {
     perihal: '',
     nama_kegiatan: '',
     lokasi_kegiatan: '',
-    keterangan: '',
     tanggal_kegiatan: '',
     waktu_mulai: '',
     waktu_selesai: '',
@@ -75,7 +74,7 @@ export default function SubmitRequestPage() {
       submitData.append('perihal', formData.perihal);
       submitData.append('nama_kegiatan', formData.nama_kegiatan);
       submitData.append('lokasi_kegiatan', formData.lokasi_kegiatan);
-      submitData.append('keterangan', formData.keterangan);
+
 
       // Send as JSON string for backend parsing
       submitData.append('invited_pimpinan', JSON.stringify(selectedPimpinan.map(p => ({
@@ -270,19 +269,7 @@ export default function SubmitRequestPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Deskripsi Kegiatan
-              </label>
-              <textarea
-                name="keterangan"
-                value={formData.keterangan}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                placeholder="Jelaskan detail kegiatan yang akan dilaksanakan..."
-              />
-            </div>
+
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

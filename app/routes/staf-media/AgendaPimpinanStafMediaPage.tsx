@@ -1,12 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Eye, Calendar, X, Search, Filter, List, CalendarDays } from 'lucide-react';
+import {
+  Eye, Calendar, X, Search, Filter, List,
+  CalendarDays, RefreshCw, Clock, CheckCircle, FileText
+} from 'lucide-react';
+import { agendaApi } from '../../lib/api';
 
 export default function AgendaPimpinanStafMediaPage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [loading, setLoading] = useState(true);
+  const [agendaList, setAgendaList] = useState<any[]>([]);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAgenda, setSelectedAgenda] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,571 +20,544 @@ export default function AgendaPimpinanStafMediaPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const agendaList = [
-    {
-      id: 1,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Rapat Koordinasi Bulanan OPD',
-      tanggal: '2026-02-10',
-      waktu_mulai: '09:00',
-      waktu_selesai: '12:00',
-      tempat: 'Ruang Rapat Utama Kantor Walikota',
-      keterangan: 'Rapat koordinasi rutin dengan seluruh kepala OPD',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      nomor_surat: '012/SP/II/2026',
-      perihal: 'Permohonan kehadiran Walikota dalam Rapat Koordinasi OPD'
-    },
-    {
-      id: 2,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Kunjungan Kerja ke Dinas Kesehatan',
-      tanggal: '2026-02-12',
-      waktu_mulai: '10:00',
-      waktu_selesai: '11:30',
-      tempat: 'Kantor Dinas Kesehatan',
-      keterangan: 'Monitoring program vaksinasi dan kesehatan masyarakat',
-      status: 'Terkonfirmasi',
-      sumber: 'Permohonan',
-      nomor_surat: '013/SP/II/2026',
-      perihal: 'Permohonan kunjungan kerja Walikota'
-    },
-    {
-      id: 3,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Pembukaan Festival Seni Budaya',
-      tanggal: '2026-02-15',
-      waktu_mulai: '08:00',
-      waktu_selesai: '10:00',
-      tempat: 'Lapangan Utama Kota',
-      keterangan: 'Acara pembukaan festival seni dan budaya daerah',
-      status: 'Terkonfirmasi',
-      sumber: 'Sespri Input',
-      nomor_surat: '014/SP/II/2026',
-      perihal: 'Undangan pembukaan Festival Seni Budaya'
-    },
-    {
-      id: 4,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Rapat dengan DPRD',
-      tanggal: '2026-02-08',
-      waktu_mulai: '13:00',
-      waktu_selesai: '16:00',
-      tempat: 'Gedung DPRD',
-      keterangan: 'Rapat pembahasan APBD 2026',
-      status: 'Selesai',
-      sumber: 'Sespri Input',
-      nomor_surat: '010/SP/II/2026',
-      perihal: 'Rapat pembahasan APBD dengan DPRD'
-    },
-    {
-      id: 5,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Audiensi dengan Tokoh Masyarakat',
-      tanggal: '2026-02-20',
-      waktu_mulai: '14:00',
-      waktu_selesai: '15:30',
-      tempat: 'Kantor Walikota',
-      keterangan: 'Mendengarkan aspirasi masyarakat terkait pembangunan',
-      status: 'Terkonfirmasi',
-      sumber: 'Permohonan',
-      nomor_surat: '015/SP/II/2026',
-      perihal: 'Permohonan audiensi dengan Wakil Walikota'
-    },
-    {
-      id: 6,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      judul_kegiatan: 'Peresmian Gedung RSUD',
-      tanggal: '2026-02-05',
-      waktu_mulai: '09:00',
-      waktu_selesai: '12:00',
-      tempat: 'RSUD Kota',
-      keterangan: 'Peresmian gedung baru RSUD',
-      status: 'Selesai',
-      sumber: 'Sespri Input',
-      nomor_surat: '011/SP/II/2026',
-      perihal: 'Peresmian infrastruktur RSUD'
-    },
-    {
-      id: 7,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      judul_kegiatan: 'Launching Program Smart City',
-      tanggal: '2026-02-05',
-      waktu_mulai: '19:00',
-      waktu_selesai: '21:00',
-      tempat: 'Gedung Serbaguna',
-      keterangan: 'Peluncuran program smart city',
-      status: 'Selesai',
-      sumber: 'Sespri Input',
-      nomor_surat: '009/SP/II/2026',
-      perihal: 'Launching program digitalisasi kota'
-    }
-  ];
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Terkonfirmasi':
-        return <Badge variant="success">Terkonfirmasi</Badge>;
-      case 'Selesai':
-        return <Badge>Selesai</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await agendaApi.getLeaderAgendas({});
+      if (res.success && res.data) {
+        // Hanya tampilkan agenda yang punya minimal 1 pimpinan terkonfirmasi (hadir/diwakilkan)
+        const confirmed = res.data.filter((agenda: any) =>
+          agenda.agendaPimpinans?.some((ap: any) =>
+            ap.status_kehadiran === 'hadir' || ap.status_kehadiran === 'diwakilkan'
+          )
+        );
+        setAgendaList(confirmed);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDetail = (agenda: any) => {
-    setSelectedAgenda(agenda);
-    setShowDetailModal(true);
-  };
+  useEffect(() => { fetchData(); }, []);
 
-  const filteredAgenda = agendaList.filter(agenda => {
-    const matchesSearch = 
-      agenda.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agenda.pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agenda.tempat.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (agenda.nomor_surat && agenda.nomor_surat.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesPimpinan = filterPimpinan === 'all' || agenda.pimpinan === filterPimpinan;
-    const matchesStatus = filterStatus === 'all' || agenda.status === filterStatus;
-    
-    return matchesSearch && matchesPimpinan && matchesStatus;
-  });
-
-  const pimpinanList = Array.from(new Set(agendaList.map(a => a.pimpinan)));
-
+  // Calendar helpers
   const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const days: (number | null)[] = [];
+    for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
+    for (let i = 1; i <= lastDay.getDate(); i++) days.push(i);
+    return days;
   };
 
   const getAgendaForDate = (day: number) => {
-    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return filteredAgenda.filter(agenda => agenda.tanggal === dateStr);
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return filteredData.filter(a => a.tanggal_kegiatan === dateStr);
   };
 
-  const prevMonth = () => {
-    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1));
+  const changeMonth = (dir: number) => {
+    const d = new Date(selectedDate);
+    d.setMonth(d.getMonth() + dir);
+    setSelectedDate(d);
   };
 
-  const nextMonth = () => {
-    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1));
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'hadir': return <Badge variant="success">Hadir</Badge>;
+      case 'tidak_hadir': return <Badge variant="danger">Tidak Hadir</Badge>;
+      case 'diwakilkan': return <Badge variant="info">Diwakilkan</Badge>;
+      default: return <Badge variant="secondary">Belum Diatur</Badge>;
+    }
   };
 
-  const daysInMonth = getDaysInMonth(selectedDate);
-  const firstDay = getFirstDayOfMonth(selectedDate);
-  const monthName = selectedDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+  // Extract unique pimpinan options from agenda list
+  const pimpinanOptions: any[] = [];
+  const seen = new Set();
+  agendaList.forEach(a => {
+    a.agendaPimpinans?.forEach((ap: any) => {
+      const key = `${ap.id_jabatan}:${ap.id_periode}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        pimpinanOptions.push(ap);
+      }
+    });
+  });
 
-  const statsTerkonfirmasi = agendaList.filter(a => a.status === 'Terkonfirmasi').length;
-  const statsSelesai = agendaList.filter(a => a.status === 'Selesai').length;
+  // Deklarasikan 'now' sebelum digunakan oleh filteredData
+  const now = new Date();
+
+  const filteredData = agendaList.filter(item => {
+    // 1. Search filter
+    const matchSearch =
+      item.nama_kegiatan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.perihal?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.lokasi_kegiatan?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // 2. Pimpinan filter
+    let matchPimpinan = true;
+    if (filterPimpinan !== 'all') {
+      const [idJ, idP] = filterPimpinan.split(':');
+      matchPimpinan = item.agendaPimpinans?.some((ap: any) =>
+        ap.id_jabatan?.toString() === idJ && ap.id_periode?.toString() === idP
+      );
+    }
+
+    // 3. Status filter (Terlaksana vs Belum)
+    let matchStatus = true;
+    if (filterStatus !== 'all') {
+      const agendaDateTime = new Date(item.tanggal_kegiatan);
+      if (item.waktu_mulai) {
+        const [hours, minutes] = item.waktu_mulai.split(':');
+        agendaDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+      } else {
+        agendaDateTime.setHours(23, 59, 59, 999);
+      }
+      const isPast = agendaDateTime < now;
+
+      if (filterStatus === 'terlaksana') matchStatus = isPast;
+      if (filterStatus === 'belum') matchStatus = !isPast;
+    }
+
+    return matchSearch && matchPimpinan && matchStatus;
+  });
+
+  // KPI Calculations
+  const statsTotal = agendaList.length;
+  let statsTerlaksana = 0;
+  let statsBelum = 0;
+
+  agendaList.forEach(a => {
+    // Gabungkan tanggal kegiatan dengan waktu mulai
+    // Asumsi waktu_mulai berupa string "HH:mm" atau "HH:mm:ss"
+    const agendaDateTime = new Date(a.tanggal_kegiatan);
+    if (a.waktu_mulai) {
+      const [hours, minutes] = a.waktu_mulai.split(':');
+      agendaDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    } else {
+      // Jika tidak ada waktu mulai, fallback bandingkan hari
+      agendaDateTime.setHours(23, 59, 59, 999);
+    }
+
+    if (agendaDateTime < now) {
+      statsTerlaksana++;
+    } else {
+      statsBelum++;
+    }
+  });
 
   return (
-    <div className="space-y-4 md:space-y-6 pb-6">
-      <div>
-        <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Agenda Pimpinan</h1>
-        <p className="text-xs md:text-sm text-gray-600 mt-1">Lihat jadwal agenda pimpinan (Read Only)</p>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Agenda Pimpinan</h1>
+          <p className="text-sm text-gray-600 mt-1">Jadwal agenda pimpinan untuk peliputan media</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchData}
+            className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            title="Refresh"
+          >
+            <RefreshCw className="w-4 h-4 text-gray-500" />
+          </button>
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-2 md:px-4 py-2 rounded-md flex items-center gap-2 text-sm transition-colors ${viewMode === 'calendar'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
+            >
+              <CalendarDays className="w-4 h-4" />
+              <span className="hidden sm:inline">Kalender</span>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-2 md:px-4 py-2 rounded-md flex items-center gap-2 text-sm transition-colors ${viewMode === 'list'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
+            >
+              <List className="w-4 h-4" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+      {/* Stats - Custom for Media */}
+      <div className="grid grid-cols-3 gap-3 md:gap-4">
         <Card>
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs md:text-sm text-gray-600">Total Agenda</p>
-                <p className="text-2xl md:text-3xl font-semibold text-purple-600">{agendaList.length}</p>
+                <p className="text-2xl font-semibold text-blue-600">{statsTotal}</p>
               </div>
-              <Calendar className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
+              <Calendar className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-600">Terkonfirmasi</p>
-                <p className="text-2xl md:text-3xl font-semibold text-green-600">{statsTerkonfirmasi}</p>
+                <p className="text-xs md:text-sm text-gray-600">Terlaksana</p>
+                <p className="text-2xl font-semibold text-green-600">{statsTerlaksana}</p>
               </div>
-              <CalendarDays className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
+              <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-600">Selesai</p>
-                <p className="text-2xl md:text-3xl font-semibold text-gray-600">{statsSelesai}</p>
+                <p className="text-xs md:text-sm text-gray-600">Belum Terlaksana</p>
+                <p className="text-2xl font-semibold text-yellow-600">{statsBelum}</p>
               </div>
-              <CalendarDays className="w-6 h-6 md:w-8 md:h-8 text-gray-600" />
+              <Clock className="w-6 h-6 md:w-8 md:h-8 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Global Search & Filters */}
       <Card>
-        <CardHeader className="border-b border-gray-200">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-            <h3 className="text-base md:text-lg font-semibold text-gray-900">
-              Daftar Agenda ({filteredAgenda.length})
-            </h3>
-            <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 md:gap-3">
-              <div className="relative flex-1 md:flex-none md:w-56">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Cari agenda..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm"
-                />
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Cari agenda..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <select
+                  value={filterPimpinan}
+                  onChange={(e) => setFilterPimpinan(e.target.value)}
+                  className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg text-sm appearance-none bg-white w-full sm:w-auto focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="all">Semua Pimpinan</option>
+                  {pimpinanOptions.map(ap => (
+                    <option key={`${ap.id_jabatan}:${ap.id_periode}`} value={`${ap.id_jabatan}:${ap.id_periode}`}>
+                      {ap.periodeJabatan?.jabatan?.nama_jabatan} - {ap.periodeJabatan?.pimpinan?.nama_pimpinan}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <select
-                    value={filterPimpinan}
-                    onChange={(e) => setFilterPimpinan(e.target.value)}
-                    className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm appearance-none bg-white"
-                  >
-                    <option value="all">Semua Pimpinan</option>
-                    {pimpinanList.map((p, idx) => (
-                      <option key={idx} value={p}>{p.split(' ')[0]}...</option>
-                    ))}
-                  </select>
-                </div>
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm appearance-none bg-white"
+                  className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg text-sm appearance-none bg-white w-full sm:w-auto focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   <option value="all">Semua Status</option>
-                  <option value="Terkonfirmasi">Terkonfirmasi</option>
-                  <option value="Selesai">Selesai</option>
+                  <option value="terlaksana">Terlaksana</option>
+                  <option value="belum">Belum Terlaksana</option>
                 </select>
-              </div>
-              <div className="flex gap-2 border border-gray-300 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('calendar')}
-                  className={`px-3 py-1.5 rounded transition-colors ${
-                    viewMode === 'calendar'
-                      ? 'bg-purple-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <Calendar className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`px-3 py-1.5 rounded transition-colors ${
-                    viewMode === 'list'
-                      ? 'bg-purple-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
               </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {viewMode === 'calendar' ? (
-            <div className="p-4 md:p-6">
-              {/* Calendar Header */}
-              <div className="flex items-center justify-between mb-6">
-                <button
-                  onClick={prevMonth}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                >
-                  ← Prev
-                </button>
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 capitalize">{monthName}</h3>
-                <button
-                  onClick={nextMonth}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                >
-                  Next →
-                </button>
+        </CardContent>
+      </Card>
+
+      {loading ? (
+        <div className="py-20 text-center">
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-500 mb-4" />
+          <p className="text-gray-500">Memuat data...</p>
+        </div>
+      ) : viewMode === 'calendar' ? (
+        /* ====== CALENDAR VIEW ====== */
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 capitalize">
+                {selectedDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+              </h3>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => changeMonth(-1)}>←</Button>
+                <Button variant="outline" size="sm" onClick={() => setSelectedDate(new Date())}>Hari Ini</Button>
+                <Button variant="outline" size="sm" onClick={() => changeMonth(1)}>→</Button>
               </div>
-
-              {/* Calendar Grid */}
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 md:p-6 overflow-x-auto">
+            <div className="min-w-[600px] md:min-w-0 p-3 md:p-0">
+              <div className="grid grid-cols-7 gap-1 md:gap-2 text-center font-semibold text-xs text-gray-400 mb-2 uppercase tracking-wide">
+                {['Mgg', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => <div key={d}>{d}</div>)}
+              </div>
               <div className="grid grid-cols-7 gap-1 md:gap-2">
-                {/* Days header */}
-                {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map((day) => (
-                  <div key={day} className="text-center font-semibold text-xs md:text-sm text-gray-600 py-2">
-                    {day}
-                  </div>
-                ))}
-
-                {/* Empty cells for first week */}
-                {Array.from({ length: firstDay }).map((_, index) => (
-                  <div key={`empty-${index}`} className="aspect-square" />
-                ))}
-
-                {/* Calendar days */}
-                {Array.from({ length: daysInMonth }).map((_, index) => {
-                  const day = index + 1;
-                  const agendas = getAgendaForDate(day);
-                  const hasAgenda = agendas.length > 0;
-                  const isToday =
+                {getDaysInMonth(selectedDate).map((day, index) => {
+                  const agendas = day ? getAgendaForDate(day) : [];
+                  const isToday = day &&
                     day === new Date().getDate() &&
                     selectedDate.getMonth() === new Date().getMonth() &&
                     selectedDate.getFullYear() === new Date().getFullYear();
 
                   return (
                     <div
-                      key={day}
-                      className={`aspect-square border rounded-lg p-1 md:p-2 ${
-                        isToday ? 'border-purple-500 bg-purple-50' : 'border-gray-200'
-                      } ${hasAgenda ? 'bg-green-50' : 'bg-white'}`}
+                      key={index}
+                      className={`min-h-[80px] md:min-h-[110px] border rounded-lg p-1 md:p-2 ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
+                        } ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
                     >
-                      <div className="text-xs md:text-sm font-semibold text-gray-900 mb-1">{day}</div>
-                      {agendas.map((agenda, idx) => (
-                        <div
-                          key={idx}
-                          className={`text-xs px-1 py-0.5 rounded mb-1 truncate cursor-pointer ${
-                            agenda.status === 'Terkonfirmasi'
-                              ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                          onClick={() => handleDetail(agenda)}
-                          title={`${agenda.waktu_mulai} - ${agenda.judul_kegiatan}`}
-                        >
-                          {agenda.waktu_mulai} {agenda.judul_kegiatan.substring(0, 15)}...
-                        </div>
-                      ))}
+                      {day && (
+                        <>
+                          <div className={`text-xs font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                            {day}
+                          </div>
+                          <div className="space-y-0.5">
+                            {agendas.slice(0, 3).map((agenda) => {
+                              let color = 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50';
+                              let attendeeName = '';
+
+                              if (agenda.agendaPimpinans?.length > 0) {
+                                const hasTidakHadir = agenda.agendaPimpinans.some((l: any) => l.status_kehadiran === 'tidak_hadir');
+                                const delegated = agenda.agendaPimpinans.find((l: any) => l.status_kehadiran === 'diwakilkan');
+                                const present = agenda.agendaPimpinans.find((l: any) => l.status_kehadiran === 'hadir');
+
+                                if (hasTidakHadir) color = 'bg-red-50/50 text-red-600 border-red-100 hover:bg-red-50';
+                                else if (present) color = 'bg-green-50/50 text-green-600 border-green-100 hover:bg-green-50';
+                                else if (delegated) color = 'bg-blue-50/50 text-blue-600 border-blue-100 hover:bg-blue-50';
+
+                                if (present) attendeeName = present.periodeJabatan?.pimpinan?.nama_pimpinan || '';
+                                else if (delegated) attendeeName = delegated.nama_perwakilan || 'Diwakilkan';
+                              }
+
+                              return (
+                                <div
+                                  key={agenda.id_agenda}
+                                  onClick={() => { setSelectedAgenda(agenda); setShowDetailModal(true); }}
+                                  className={`text-[10px] p-1 md:p-1.5 rounded cursor-pointer truncate border transition-colors ${color}`}
+                                  title={`${agenda.nama_kegiatan}${attendeeName ? ' - ' + attendeeName : ''}`}
+                                >
+                                  <strong>{agenda.waktu_mulai?.slice(0, 5)}</strong> {agenda.nama_kegiatan}
+                                  {attendeeName && (
+                                    <div className="mt-0.5 text-[9px] font-medium opacity-75 border-t border-black/10 pt-0.5 truncate">
+                                      {attendeeName}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            {agendas.length > 3 && (
+                              <div className="text-[10px] text-gray-400 font-medium">+{agendas.length - 3} lainnya</div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   );
                 })}
               </div>
-
-              {/* Legend */}
-              <div className="mt-6 flex items-center gap-4 md:gap-6 p-3 md:p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-green-100 border border-green-300"></div>
-                  <span className="text-xs md:text-sm text-gray-700">Terkonfirmasi</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 md:w-4 md:h-4 rounded bg-gray-100 border border-gray-300"></div>
-                  <span className="text-xs md:text-sm text-gray-700">Selesai</span>
-                </div>
-              </div>
             </div>
-          ) : (
-            /* Desktop Table View */
-            <div className="hidden md:block overflow-x-auto">
-              <Table>
-                <TableHeader>
+          </CardContent>
+          <div className="bg-white rounded-b-xl border-t px-4 py-3">
+            <div className="flex flex-wrap gap-4 text-xs font-semibold text-gray-500">
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-green-50 border border-green-200" /> Hadir</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-blue-50 border border-blue-200" /> Diwakilkan</div>
+              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded bg-red-50 border border-red-200" /> Tidak Hadir</div>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        /* ====== LIST VIEW ====== */
+        <Card>
+          <CardHeader>
+            <h3 className="text-base md:text-lg font-semibold text-gray-900">
+              Daftar Agenda ({filteredData.length})
+            </h3>
+          </CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Kegiatan</TableHead>
+                  <TableHead>Tanggal & Waktu</TableHead>
+                  <TableHead>Pimpinan & Status</TableHead>
+                  <TableHead className="text-center">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredData.length === 0 && (
                   <TableRow>
-                    <TableHead>Pimpinan</TableHead>
-                    <TableHead>Kegiatan</TableHead>
-                    <TableHead>Tanggal & Waktu</TableHead>
-                    <TableHead>Tempat</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-center">Aksi</TableHead>
+                    <TableCell colSpan={4} className="text-center py-10 text-gray-500">
+                      Tidak ada agenda terkonfirmasi yang ditemukan
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAgenda.map((agenda) => (
-                    <TableRow key={agenda.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-sm">{agenda.pimpinan}</p>
-                          <p className="text-xs text-gray-500">{agenda.jabatan}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-sm">{agenda.judul_kegiatan}</p>
-                          {agenda.nomor_surat && (
-                            <p className="text-xs text-gray-500">{agenda.nomor_surat}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="text-sm font-medium">
-                            {new Date(agenda.tanggal).toLocaleDateString('id-ID', {
-                              day: '2-digit',
-                              month: 'short',
-                              year: 'numeric'
-                            })}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {agenda.waktu_mulai} - {agenda.waktu_selesai}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm">{agenda.tempat}</p>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(agenda.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center">
-                          <Button variant="ghost" size="sm" onClick={() => handleDetail(agenda)}>
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredAgenda.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                        Tidak ada agenda yang ditemukan
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-
-          {/* Mobile List View (always list, not calendar) */}
-          {viewMode === 'list' && (
-            <div className="md:hidden divide-y divide-gray-200">
-              {filteredAgenda.map((agenda) => (
-                <div key={agenda.id} className="p-4 hover:bg-gray-50 transition-colors">
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-sm text-gray-900 mb-1">{agenda.judul_kegiatan}</h4>
-                        <p className="text-xs text-gray-600">{agenda.pimpinan} · {agenda.jabatan}</p>
+                )}
+                {filteredData.map((agenda) => (
+                  <TableRow key={agenda.id_agenda}>
+                    <TableCell>
+                      <p className="font-semibold text-sm">{agenda.nama_kegiatan}</p>
+                      <p className="text-xs text-gray-500">{agenda.lokasi_kegiatan}</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-sm font-medium">
+                        {new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </p>
+                      <p className="text-xs text-gray-500">{agenda.waktu_mulai?.slice(0, 5)} - {agenda.waktu_selesai?.slice(0, 5)}</p>
+                      {/* Terlaksana indicator check */}
+                      {(() => {
+                        const agendaDateTime = new Date(agenda.tanggal_kegiatan);
+                        if (agenda.waktu_mulai) {
+                          const [hours, minutes] = agenda.waktu_mulai.split(':');
+                          agendaDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+                        } else {
+                          agendaDateTime.setHours(23, 59, 59, 999);
+                        }
+                        const isPast = agendaDateTime < now;
+                        return isPast ? (
+                          <span className="inline-block mt-1 text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200">
+                            SELESAI
+                          </span>
+                        ) : null;
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1.5">
+                        {agenda.agendaPimpinans?.map((ap: any, i: number) => (
+                          <div key={i} className="flex flex-col border rounded-lg px-2 py-1 bg-gray-50 w-fit">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
+                              {getStatusBadge(ap.status_kehadiran)}
+                            </div>
+                            {ap.status_kehadiran === 'diwakilkan' && ap.surat_disposisi && (
+                              <a
+                                href={`http://localhost:3000/${ap.surat_disposisi.replace(/\\/g, '/')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1 w-fit"
+                              >
+                                <FileText className="w-3 h-3" /> Surat Disposisi
+                              </a>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                      {getStatusBadge(agenda.status)}
-                    </div>
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <p>📅 {new Date(agenda.tanggal).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })} · 🕒 {agenda.waktu_mulai} - {agenda.waktu_selesai}</p>
-                      <p>📍 {agenda.tempat}</p>
-                    </div>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => handleDetail(agenda)}>
-                      <Eye className="w-3 h-3 mr-2" />
-                      Lihat Detail
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {filteredAgenda.length === 0 && (
-                <div className="p-8 text-center text-gray-500">
-                  Tidak ada agenda yang ditemukan
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { setSelectedAgenda(agenda); setShowDetailModal(true); }}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Detail Modal */}
       {showDetailModal && selectedAgenda && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader className="border-b border-gray-200">
+          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <CardHeader className="border-b">
               <div className="flex items-center justify-between">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900">Detail Agenda</h3>
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
+                <h3 className="text-lg font-semibold">Detail Agenda</h3>
+                <button onClick={() => setShowDetailModal(false)}>
+                  <X className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
             </CardHeader>
-            <CardContent className="p-4 md:p-6">
-              <div className="space-y-4">
-                {/* Informasi Surat */}
-                {selectedAgenda.nomor_surat && (
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Informasi Surat</h4>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="text-xs font-medium text-gray-600">Nomor Surat</label>
-                        <p className="text-sm text-gray-900">{selectedAgenda.nomor_surat}</p>
-                      </div>
-                      {selectedAgenda.perihal && (
-                        <div>
-                          <label className="text-xs font-medium text-gray-600">Perihal</label>
-                          <p className="text-sm text-gray-900">{selectedAgenda.perihal}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Informasi Pimpinan */}
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-2">Pimpinan</label>
-                  <p className="text-base font-semibold text-gray-900">{selectedAgenda.pimpinan}</p>
-                  <p className="text-sm text-gray-600">{selectedAgenda.jabatan}</p>
-                </div>
-
-                {/* Kegiatan */}
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-2">Kegiatan</label>
-                  <p className="text-base text-gray-900">{selectedAgenda.judul_kegiatan}</p>
-                </div>
-
-                {/* Tanggal & Waktu */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="py-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Kiri */}
+                <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">Tanggal</label>
-                    <p className="text-sm text-gray-900">
-                      {new Date(selectedAgenda.tanggal).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kegiatan</label>
+                    <p className="text-sm font-semibold">{selectedAgenda.nama_kegiatan}</p>
+                    <p className="text-xs text-gray-500">{selectedAgenda.perihal}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Waktu & Tempat</label>
+                    <p className="text-sm">
+                      {new Date(selectedAgenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
+                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
                       })}
                     </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">Waktu</label>
-                    <p className="text-sm text-gray-900">
-                      {selectedAgenda.waktu_mulai} - {selectedAgenda.waktu_selesai}
+                    <p className="text-sm font-medium">
+                      {selectedAgenda.waktu_mulai?.slice(0, 5)} - {selectedAgenda.waktu_selesai?.slice(0, 5)} WIB
                     </p>
+                    <p className="text-sm">{selectedAgenda.lokasi_kegiatan}</p>
                   </div>
-                </div>
-
-                {/* Tempat */}
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-2">Tempat</label>
-                  <p className="text-sm text-gray-900">{selectedAgenda.tempat}</p>
-                </div>
-
-                {/* Keterangan */}
-                {selectedAgenda.keterangan && (
                   <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">Keterangan</label>
-                    <p className="text-sm text-gray-900">{selectedAgenda.keterangan}</p>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Pemohon</label>
+                    <p className="text-sm font-medium">{selectedAgenda.pemohon?.nama || '-'}</p>
+                    <p className="text-xs text-gray-500">{selectedAgenda.pemohon?.instansi}</p>
                   </div>
-                )}
-
-                {/* Status */}
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-2">Status</label>
-                  {getStatusBadge(selectedAgenda.status)}
+                  {(selectedAgenda.contact_person || selectedAgenda.keterangan) && (
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Catatan Sespri</label>
+                      {selectedAgenda.contact_person && (
+                        <p className="text-sm font-medium">CP: {selectedAgenda.contact_person}</p>
+                      )}
+                      {selectedAgenda.keterangan && (
+                        <p className="text-sm">Catatan: {selectedAgenda.keterangan}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* Sumber */}
-                {selectedAgenda.sumber && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">Sumber</label>
-                    <p className="text-sm text-gray-900">{selectedAgenda.sumber}</p>
+                {/* Kanan */}
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Pimpinan Terkait</label>
+                  <div className="space-y-3">
+                    {selectedAgenda.agendaPimpinans?.map((ap: any, i: number) => (
+                      <div key={i} className="p-3 border rounded-lg bg-gray-50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-bold">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
+                            <p className="text-[10px] text-gray-500">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400">Status:</span>
+                          {getStatusBadge(ap.status_kehadiran)}
+                        </div>
+                        {ap.status_kehadiran === 'diwakilkan' && (
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                              Diwakili oleh: {ap.nama_perwakilan}
+                            </p>
+                            {ap.surat_disposisi && (
+                              <a
+                                href={`http://localhost:3000/${ap.surat_disposisi.replace(/\\/g, '/')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1"
+                              >
+                                <FileText className="w-3 h-3" /> Lihat Disposisi
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t flex justify-end">
+                <Button variant="outline" onClick={() => setShowDetailModal(false)}>Tutup</Button>
               </div>
             </CardContent>
           </Card>

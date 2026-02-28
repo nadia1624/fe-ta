@@ -435,17 +435,22 @@ export default function KonfirmasiAgendaPage() {
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <h4 className="text-sm font-semibold text-gray-900 mb-2">Pimpinan yang Diminta Hadir</h4>
                   <div className="space-y-2">
-                    {selectedAgenda.agendaPimpinans?.filter((ap: any) =>
-                      activeAssignments.some(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
-                    ).map((ap: any, i: number) => (
-                      <div key={i} className="flex justify-between items-center bg-white p-2 rounded border">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
-                          <p className="text-xs text-gray-600">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                    {selectedAgenda.agendaPimpinans?.map((ap: any, i: number) => {
+                      const isMine = activeAssignments.some(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode);
+                      return (
+                        <div key={i} className="flex justify-between items-center bg-white p-2 rounded border">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
+                            <p className="text-xs text-gray-600">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                          </div>
+                          {isMine ? (
+                            <Button size="sm" onClick={() => { setShowDetailModal(false); handleKonfirmasi(selectedAgenda, ap); }}>Konfirmasi</Button>
+                          ) : (
+                            <></>
+                          )}
                         </div>
-                        <Button size="sm" onClick={() => { setShowDetailModal(false); handleKonfirmasi(selectedAgenda, ap); }}>Konfirmasi</Button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -571,11 +576,15 @@ export default function KonfirmasiAgendaPage() {
                             required
                           >
                             <option value="">-- Pilih Perwakilan --</option>
-                            {allPimpinan.map((p, idx) => (
-                              <option key={idx} value={`${p.id_jabatan}|${p.id_periode}`}>
-                                {p.pimpinan?.nama_pimpinan} ({p.jabatan?.nama_jabatan})
-                              </option>
-                            ))}
+                            {allPimpinan
+                              .filter(p => !selectedAgenda?.agendaPimpinans?.some(
+                                (ap: any) => ap.id_jabatan === p.id_jabatan && ap.id_periode === p.id_periode
+                              ))
+                              .map((p, idx) => (
+                                <option key={idx} value={`${p.id_jabatan}|${p.id_periode}`}>
+                                  {p.pimpinan?.nama_pimpinan} ({p.jabatan?.nama_jabatan})
+                                </option>
+                              ))}
                           </select>
                         </div>
 
