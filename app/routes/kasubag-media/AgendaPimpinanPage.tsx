@@ -5,9 +5,10 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
   Eye, Calendar, X, Search, Filter, List,
-  CalendarDays, RefreshCw, Clock, CheckCircle, FileText
+  CalendarDays, RefreshCw, Clock, CheckCircle, FileText, ChevronDown
 } from 'lucide-react';
 import { agendaApi } from '../../lib/api';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 export default function AgendaPimpinanPage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -232,44 +233,43 @@ export default function AgendaPimpinanPage() {
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="relative group flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Cari agenda..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm"
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
-                  value={filterPimpinan}
-                  onChange={(e) => setFilterPimpinan(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg text-sm appearance-none bg-white w-full sm:w-auto focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="all">Semua Pimpinan</option>
-                  {pimpinanOptions.map(ap => (
-                    <option key={`${ap.id_jabatan}:${ap.id_periode}`} value={`${ap.id_jabatan}:${ap.id_periode}`}>
-                      {ap.periodeJabatan?.jabatan?.nama_jabatan} - {ap.periodeJabatan?.pimpinan?.nama_pimpinan}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg text-sm appearance-none bg-white w-full sm:w-auto focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="terlaksana">Terlaksana</option>
-                  <option value="belum">Belum Terlaksana</option>
-                </select>
-              </div>
+              <CustomSelect
+                value={filterPimpinan}
+                onChange={setFilterPimpinan}
+                options={[
+                  { value: 'all', label: 'Semua Pimpinan' },
+                  ...pimpinanOptions.map(ap => ({
+                    value: `${ap.id_jabatan}:${ap.id_periode}`,
+                    label: `${ap.periodeJabatan?.jabatan?.nama_jabatan} - ${ap.periodeJabatan?.pimpinan?.nama_pimpinan}`
+                  }))
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-72"
+                placeholder="Pilih Pimpinan"
+              />
+              <CustomSelect
+                value={filterStatus}
+                onChange={setFilterStatus}
+                options={[
+                  { value: 'all', label: 'Semua Status' },
+                  { value: 'terlaksana', label: 'Terlaksana' },
+                  { value: 'belum', label: 'Belum Terlaksana' }
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-52"
+                placeholder="Pilih Status"
+              />
             </div>
           </div>
         </CardContent>

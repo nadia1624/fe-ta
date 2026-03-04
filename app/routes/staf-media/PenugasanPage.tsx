@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Search, Filter, Calendar, Clock, MapPin, FileText, ArrowRight } from 'lucide-react';
+import { Search, Filter, Calendar, Clock, MapPin, FileText, ArrowRight, ChevronDown } from 'lucide-react';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 export default function PenugasanPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -126,30 +127,30 @@ export default function PenugasanPage() {
               Daftar Penugasan ({filteredData.length})
             </h3>
             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <div className="relative group flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors w-4 h-4 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Cari penugasan..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm w-full"
+                  className="pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm w-full shadow-sm"
                 />
               </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm appearance-none bg-white w-full"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="Belum Upload">Belum Upload</option>
-                  <option value="Pending Review">Pending Review</option>
-                  <option value="Disetujui">Disetujui</option>
-                  <option value="Perlu Revisi">Perlu Revisi</option>
-                </select>
-              </div>
+              <CustomSelect
+                value={filterStatus}
+                onChange={setFilterStatus}
+                options={[
+                  { value: 'all', label: 'Semua Status' },
+                  { value: 'Belum Upload', label: 'Belum Upload' },
+                  { value: 'Pending Review', label: 'Pending Review' },
+                  { value: 'Disetujui', label: 'Disetujui' },
+                  { value: 'Perlu Revisi', label: 'Perlu Revisi' }
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-56"
+                placeholder="Pilih Status"
+              />
             </div>
           </div>
         </CardHeader>

@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Eye, MessageSquare, Search } from 'lucide-react';
+import { Eye, MessageSquare, Search, Filter, ChevronDown } from 'lucide-react';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 export default function DraftBeritaPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,7 +65,7 @@ export default function DraftBeritaPage() {
 
   const filteredDraft = draftBerita.filter(draft => {
     const matchesSearch = draft.judul_berita.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         draft.staf_pengirim.toLowerCase().includes(searchTerm.toLowerCase());
+      draft.staf_pengirim.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || draft.status_draft === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -76,28 +77,31 @@ export default function DraftBeritaPage() {
         <p className="text-sm text-gray-600 mt-1">Kelola draft berita dan dokumentasi kegiatan</p>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <div className="flex flex-col md:flex-row md:items-center gap-3">
+        <div className="relative group flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
           <input
             type="text"
             placeholder="Cari judul berita atau staf pengirim..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm"
           />
         </div>
-        <select
+        <CustomSelect
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-        >
-          <option value="all">Semua Status</option>
-          <option value="Pending Review">Pending Review</option>
-          <option value="Revisi">Revisi</option>
-          <option value="Disetujui">Disetujui</option>
-          <option value="Ditolak">Ditolak</option>
-        </select>
+          onChange={setFilterStatus}
+          options={[
+            { value: 'all', label: 'Semua Status' },
+            { value: 'Pending Review', label: 'Pending Review' },
+            { value: 'Revisi', label: 'Revisi' },
+            { value: 'Disetujui', label: 'Disetujui' },
+            { value: 'Ditolak', label: 'Ditolak' }
+          ]}
+          icon={<Filter className="w-4 h-4" />}
+          className="w-full sm:w-56"
+          placeholder="Pilih Status"
+        />
       </div>
 
       <Card>

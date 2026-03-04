@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Plus, X, UserPlus, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
+import Swal from 'sweetalert2';
 
 export default function AssignStaffPage() {
   const [showModal, setShowModal] = useState(false);
@@ -16,16 +17,6 @@ export default function AssignStaffPage() {
   const [agendaSlots, setAgendaSlots] = useState<any[]>([]);
   const [availableStaff, setAvailableStaff] = useState<any[]>([]);
 
-  // Status Modal State
-  const [statusModal, setStatusModal] = useState<{
-    show: boolean;
-    type: 'success' | 'error';
-    message: string;
-  }>({
-    show: false,
-    type: 'success',
-    message: ''
-  });
 
   useEffect(() => {
     fetchData();
@@ -80,25 +71,28 @@ export default function AssignStaffPage() {
 
       if (res.success) {
         setShowModal(false);
-        setStatusModal({
-          show: true,
-          type: 'success',
-          message: 'Staf protokol berhasil ditugaskan untuk seluruh slot agenda ini'
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Staf protokol berhasil ditugaskan untuk seluruh slot agenda ini',
+          confirmButtonColor: '#2563eb'
         });
         fetchData();
       } else {
-        setStatusModal({
-          show: true,
-          type: 'error',
-          message: 'Gagal menugaskan staf: ' + res.message
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Gagal menugaskan staf: ' + res.message,
+          confirmButtonColor: '#2563eb'
         });
       }
     } catch (error) {
       console.error('Error submitting assignment:', error);
-      setStatusModal({
-        show: true,
-        type: 'error',
-        message: 'Terjadi kesalahan sistem saat mencoba menugaskan staf'
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Terjadi kesalahan sistem saat mencoba menugaskan staf',
+        confirmButtonColor: '#2563eb'
       });
     } finally {
       setSubmitting(false);
@@ -341,39 +335,6 @@ export default function AssignStaffPage() {
         </div>
       )}
 
-      {/* Result Notification Modal */}
-      {statusModal.show && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200">
-          <Card className="max-w-sm w-full shadow-2xl border-0 overflow-hidden transform animate-in zoom-in-95 duration-200">
-            <div className={`h-2 ${statusModal.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
-            <CardContent className="p-8 text-center">
-              <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${statusModal.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                }`}>
-                {statusModal.type === 'success' ? (
-                  <CheckCircle2 className="w-10 h-10" />
-                ) : (
-                  <AlertCircle className="w-10 h-10" />
-                )}
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                {statusModal.type === 'success' ? 'Berhasil!' : 'Gagal!'}
-              </h3>
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                {statusModal.message}
-              </p>
-              <Button
-                onClick={() => setStatusModal({ ...statusModal, show: false })}
-                className={`w-full py-6 text-base font-semibold transition-all ${statusModal.type === 'success'
-                  ? 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200'
-                  : 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200'
-                  }`}
-              >
-                {statusModal.type === 'success' ? 'Mengerti' : 'Coba Lagi'}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

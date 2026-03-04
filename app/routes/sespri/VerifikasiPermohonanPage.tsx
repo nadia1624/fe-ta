@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Eye, CheckCircle, XCircle, FileText, Search, Filter, X, RefreshCw, Clock, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Eye, CheckCircle, XCircle, FileText, Search, Filter, X, RefreshCw, Clock, RotateCcw, AlertTriangle, ChevronDown } from 'lucide-react';
 import { agendaApi } from '../../lib/api';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 type StatusType = 'pending' | 'revision' | 'rejected_sespri' | 'approved_sespri' | 'approved_ajudan' | 'delegated' | 'rejected_ajudan' | 'canceled' | 'completed';
 
@@ -222,35 +223,35 @@ export default function VerifikasiPermohonanPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <h3 className="text-lg font-semibold text-gray-900">Daftar Permohonan</h3>
             <div className="flex flex-col md:flex-row gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <div className="relative group flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Cari permohonan..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                  className="pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm w-full shadow-sm"
                 />
               </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm appearance-none bg-white"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="revision">Revisi</option>
-                  <option value="approved_sespri">Diverifikasi</option>
-                  <option value="approved_ajudan">Disetujui Ajudan</option>
-                  <option value="delegated">Diwakilkan</option>
-                  <option value="rejected_sespri">Ditolak Sespri</option>
-                  <option value="rejected_ajudan">Ditolak Ajudan</option>
-                  <option value="canceled">Dibatalkan</option>
-                  <option value="completed">Selesai</option>
-                </select>
-              </div>
+              <CustomSelect
+                value={filterStatus}
+                onChange={setFilterStatus}
+                options={[
+                  { value: 'all', label: 'Semua Status' },
+                  { value: 'pending', label: 'Pending' },
+                  { value: 'revision', label: 'Revisi' },
+                  { value: 'approved_sespri', label: 'Diverifikasi' },
+                  { value: 'approved_ajudan', label: 'Disetujui Ajudan' },
+                  { value: 'delegated', label: 'Diwakilkan' },
+                  { value: 'rejected_sespri', label: 'Ditolak Sespri' },
+                  { value: 'rejected_ajudan', label: 'Ditolak Ajudan' },
+                  { value: 'canceled', label: 'Dibatalkan' },
+                  { value: 'completed', label: 'Selesai' }
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-56"
+                placeholder="Pilih Status"
+              />
             </div>
           </div>
         </CardHeader>
@@ -556,18 +557,17 @@ export default function VerifikasiPermohonanPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Status Verifikasi <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    name="status"
+                  <CustomSelect
                     value={verifikasiData.status}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    required
-                  >
-                    <option value="approved_sespri">Diverifikasi (Setujui)</option>
-                    <option value="revision">Perlu Revisi</option>
-                    <option value="rejected_sespri">Ditolak</option>
-                    <option value="canceled">Dibatalkan</option>
-                  </select>
+                    onChange={(val) => setVerifikasiData(prev => ({ ...prev, status: val }))}
+                    options={[
+                      { value: 'approved_sespri', label: 'Diverifikasi (Setujui)' },
+                      { value: 'revision', label: 'Perlu Revisi' },
+                      { value: 'rejected_sespri', label: 'Ditolak' },
+                    ]}
+                    placeholder="-- Pilih Status --"
+                    className="w-full"
+                  />
                 </div>
 
                 <div>

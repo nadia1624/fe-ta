@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ArrowRight, Search, Filter, TrendingUp } from 'lucide-react';
+import { ArrowRight, Search, Filter, TrendingUp, ChevronDown } from 'lucide-react';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 export default function LaporanKegiatanPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -70,14 +71,14 @@ export default function LaporanKegiatanPage() {
   ];
 
   const filteredData = laporanList.filter(item => {
-    const matchSearch = 
+    const matchSearch =
       item.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.pimpinan_nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.tempat.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchPimpinan = filterPimpinan === 'all' || item.pimpinan_nama === filterPimpinan;
     const matchStatus = filterStatus === 'all' || item.status_laporan === filterStatus;
-    
+
     return matchSearch && matchPimpinan && matchStatus;
   });
 
@@ -152,41 +153,41 @@ export default function LaporanKegiatanPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <h3 className="text-lg font-semibold text-gray-900">Daftar Laporan Kegiatan ({filteredData.length})</h3>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 md:gap-3">
+              <div className="relative group flex-1 md:flex-none md:w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors w-4 h-4 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Cari laporan..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm"
+                  className="w-full pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm shadow-sm"
                 />
               </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
+              <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+                <CustomSelect
                   value={filterPimpinan}
-                  onChange={(e) => setFilterPimpinan(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm appearance-none bg-white"
-                >
-                  <option value="all">Semua Pimpinan</option>
-                  {pimpinanList.map((p, idx) => (
-                    <option key={idx} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
+                  onChange={setFilterPimpinan}
+                  options={[
+                    { value: 'all', label: 'Semua Pimpinan' },
+                    ...pimpinanList.map(p => ({ value: p, label: p }))
+                  ]}
+                  icon={<Filter className="w-4 h-4" />}
+                  className="w-full sm:w-56"
+                  placeholder="Pilih Pimpinan"
+                />
+                <CustomSelect
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm appearance-none bg-white"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="Sudah Dilaporkan">Sudah Dilaporkan</option>
-                  <option value="Belum Dilaporkan">Belum Dilaporkan</option>
-                </select>
+                  onChange={setFilterStatus}
+                  options={[
+                    { value: 'all', label: 'Semua Status' },
+                    { value: 'Sudah Dilaporkan', label: 'Sudah Dilaporkan' },
+                    { value: 'Belum Dilaporkan', label: 'Belum Dilaporkan' }
+                  ]}
+                  icon={<Filter className="w-4 h-4" />}
+                  className="w-full sm:w-52"
+                  placeholder="Pilih Status"
+                />
               </div>
             </div>
           </div>

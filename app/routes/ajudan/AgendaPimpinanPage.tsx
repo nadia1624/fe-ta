@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar, List, CalendarDays, Eye, X, Search, Filter, UserCheck, RefreshCw, Clock, Edit2, FileText } from 'lucide-react';
+import { Calendar, List, CalendarDays, Eye, X, Search, Filter, UserCheck, RefreshCw, Clock, Edit2, FileText, ChevronDown } from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
+import CustomSelect from '../../components/ui/CustomSelect';
 import Swal from 'sweetalert2';
 
 export default function AgendaPimpinanPage() {
@@ -160,6 +161,19 @@ export default function AgendaPimpinanPage() {
     const matchLeader = leaderFilter === 'all' || item.agendaPimpinans?.some((ap: any) => ap.id_jabatan === leaderFilter);
 
     return matchSearch && matchLeader;
+  });
+
+  // Extract unique pimpinan options from agenda list for filtering
+  const pimpinanFilterOptions: any[] = [];
+  const seenPimpinan = new Set();
+  agendaList.forEach(a => {
+    a.agendaPimpinans?.forEach((ap: any) => {
+      const key = ap.id_jabatan;
+      if (!seenPimpinan.has(key)) {
+        seenPimpinan.add(key);
+        pimpinanFilterOptions.push(ap);
+      }
+    });
   });
 
   const calendarDays = () => {
@@ -327,30 +341,31 @@ export default function AgendaPimpinanPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h3 className="text-lg font-semibold text-gray-900">Daftar Agenda</h3>
               <div className="flex flex-wrap items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <div className="relative group flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4 pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Cari agenda atau lokasi..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                    className="pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm w-full shadow-sm"
                   />
                 </div>
                 {activeAssignments.length > 1 && (
-                  <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <select
-                      value={leaderFilter}
-                      onChange={(e) => setLeaderFilter(e.target.value)}
-                      className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg text-sm appearance-none bg-white"
-                    >
-                      <option value="all">Semua Pimpinan</option>
-                      {activeAssignments.map((as, i) => (
-                        <option key={i} value={as.id_jabatan}>{as.periodeJabatan?.pimpinan?.nama_pimpinan}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <CustomSelect
+                    value={leaderFilter}
+                    onChange={setLeaderFilter}
+                    options={[
+                      { value: 'all', label: 'Semua Pimpinan' },
+                      ...pimpinanFilterOptions.map(ap => ({
+                        value: ap.id_jabatan,
+                        label: ap.periodeJabatan?.pimpinan?.nama_pimpinan
+                      }))
+                    ]}
+                    icon={<Filter className="w-4 h-4" />}
+                    className="w-full sm:w-64"
+                    placeholder="Pilih Pimpinan"
+                  />
                 )}
               </div>
             </div>
@@ -550,18 +565,18 @@ export default function AgendaPimpinanPage() {
 
                           {attendanceForm.representative_type === 'pimpinan' ? (
                             <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Pilih Pimpinan</label>
-                              <select
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Pilih Pimpinan</label>
+                              <CustomSelect
                                 value={attendanceForm.id_jabatan_perwakilan}
-                                onChange={(e) => setAttendanceForm(prev => ({ ...prev, id_jabatan_perwakilan: e.target.value }))}
-                                className="w-full px-4 py-2 bg-white border rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 text-sm"
-                                required
-                              >
-                                <option value="">-- Pilih Pimpinan --</option>
-                                <option value="J001">Walikota</option>
-                                <option value="J002">Wakil Walikota</option>
-                                <option value="J003">Sekretaris Daerah (Sespri)</option>
-                              </select>
+                                onChange={(val) => setAttendanceForm(prev => ({ ...prev, id_jabatan_perwakilan: val }))}
+                                options={[
+                                  { value: 'J001', label: 'Walikota' },
+                                  { value: 'J002', label: 'Wakil Walikota' },
+                                  { value: 'J003', label: 'Sekretaris Daerah (Sespri)' }
+                                ]}
+                                placeholder="-- Pilih Pimpinan --"
+                                className="w-full"
+                              />
                             </div>
                           ) : (
                             <div>

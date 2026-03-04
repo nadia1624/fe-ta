@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Eye, Calendar, X, Search, Filter, List, CalendarDays } from 'lucide-react';
+import { Eye, Calendar, X, Search, Filter, List, CalendarDays, ChevronDown } from 'lucide-react';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 export default function AgendaPimpinanMediaPage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -180,15 +181,15 @@ export default function AgendaPimpinanMediaPage() {
 
   // Filter & Search
   const filteredAgenda = agendaList.filter(agenda => {
-    const matchesSearch = 
+    const matchesSearch =
       agenda.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       agenda.pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       agenda.tempat.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (agenda.nomor_surat && agenda.nomor_surat.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     const matchesPimpinan = filterPimpinan === 'all' || agenda.pimpinan === filterPimpinan;
     const matchesStatus = filterStatus === 'all' || agenda.status === filterStatus;
-    
+
     return matchesSearch && matchesPimpinan && matchesStatus;
   });
 
@@ -276,59 +277,55 @@ export default function AgendaPimpinanMediaPage() {
               Daftar Agenda ({filteredAgenda.length})
             </h3>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <div className="relative group flex-1 md:flex-none md:w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors w-4 h-4 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Cari agenda..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm"
+                  className="w-full pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm shadow-sm"
                 />
               </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
-                  value={filterPimpinan}
-                  onChange={(e) => setFilterPimpinan(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm appearance-none bg-white"
-                >
-                  <option value="all">Semua Pimpinan</option>
-                  {pimpinanList.map((p, idx) => (
-                    <option key={idx} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm appearance-none bg-white"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="Terkonfirmasi">Terkonfirmasi</option>
-                  <option value="Selesai">Selesai</option>
-                </select>
-              </div>
-              <div className="flex gap-2 border border-gray-300 rounded-lg p-1">
+              <CustomSelect
+                value={filterPimpinan}
+                onChange={setFilterPimpinan}
+                options={[
+                  { value: 'all', label: 'Semua Pimpinan' },
+                  ...pimpinanList.map(p => ({ value: p, label: p }))
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-56"
+                placeholder="Pilih Pimpinan"
+              />
+              <CustomSelect
+                value={filterStatus}
+                onChange={setFilterStatus}
+                options={[
+                  { value: 'all', label: 'Semua Status' },
+                  { value: 'Terkonfirmasi', label: 'Terkonfirmasi' },
+                  { value: 'Selesai', label: 'Selesai' }
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-48"
+                placeholder="Pilih Status"
+              />
+              <div className="flex bg-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('calendar')}
-                  className={`px-3 py-1.5 rounded transition-colors ${
-                    viewMode === 'calendar'
+                  className={`px-3 py-1.5 rounded transition-colors ${viewMode === 'calendar'
                       ? 'bg-purple-600 text-white'
                       : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <Calendar className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`px-3 py-1.5 rounded transition-colors ${
-                    viewMode === 'list'
+                  className={`px-3 py-1.5 rounded transition-colors ${viewMode === 'list'
                       ? 'bg-purple-600 text-white'
                       : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -383,19 +380,17 @@ export default function AgendaPimpinanMediaPage() {
                   return (
                     <div
                       key={day}
-                      className={`aspect-square border rounded-lg p-2 ${
-                        isToday ? 'border-purple-500 bg-purple-50' : 'border-gray-200'
-                      } ${hasAgenda ? 'bg-green-50' : 'bg-white'}`}
+                      className={`aspect-square border rounded-lg p-2 ${isToday ? 'border-purple-500 bg-purple-50' : 'border-gray-200'
+                        } ${hasAgenda ? 'bg-green-50' : 'bg-white'}`}
                     >
                       <div className="text-sm font-semibold text-gray-900 mb-1">{day}</div>
                       {agendas.map((agenda, idx) => (
                         <div
                           key={idx}
-                          className={`text-xs px-1 py-0.5 rounded mb-1 truncate cursor-pointer ${
-                            agenda.status === 'Terkonfirmasi'
+                          className={`text-xs px-1 py-0.5 rounded mb-1 truncate cursor-pointer ${agenda.status === 'Terkonfirmasi'
                               ? 'bg-green-100 text-green-800 hover:bg-green-200'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
+                            }`}
                           onClick={() => handleDetail(agenda)}
                           title={`${agenda.waktu_mulai} - ${agenda.judul_kegiatan}`}
                         >

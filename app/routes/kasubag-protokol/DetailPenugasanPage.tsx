@@ -1,202 +1,233 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ArrowLeft, CheckCircle, TrendingUp, Calendar, MapPin, Clock, User } from 'lucide-react';
+import {
+  ArrowLeft, CheckCircle, ClipboardList, Calendar, MapPin, Clock, User,
+  Loader2, AlertCircle, Users, FileText, TrendingUp
+} from 'lucide-react';
+import { penugasanApi } from '../../lib/api';
+import Swal from 'sweetalert2';
+
+interface SlotStaff {
+  tanggal: string;
+  id_slot_waktu: string;
+  id_user_staff: string;
+  kehadiran: string | null;
+  staff: { id_user: string; nama: string; email: string } | null;
+  slotWaktu: { slot_waktu_mulai: string; slot_waktu_selesai: string } | null;
+}
+
+interface LaporanKegiatan {
+  id_laporan: string;
+  deskripsi_laporan: string;
+  catatan_laporan: string;
+  dokumentasi_laporan: string | null;
+  createdAt: string;
+  staff: { id_user: string; nama: string } | null;
+}
+
+interface PenugasanDetail {
+  id_penugasan: string;
+  jenis_penugasan: string;
+  deskripsi_penugasan: string;
+  tanggal_penugasan: string;
+  status: 'pending' | 'progress' | 'selesai' | null;
+  status_pelaksanaan: string;
+  nama_staf: string[];
+  pimpinans: { nama_pimpinan: string; nama_jabatan: string }[];
+  agenda: {
+    id_agenda: string;
+    nama_kegiatan: string;
+    tanggal_kegiatan: string;
+    waktu_mulai: string;
+    waktu_selesai: string;
+    lokasi_kegiatan: string;
+    agendaPimpinans?: any[];
+  } | null;
+  slotAgendaStaffs: SlotStaff[];
+  laporanKegiatans: LaporanKegiatan[];
+}
 
 export default function DetailPenugasanPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+  const [penugasan, setPenugasan] = useState<PenugasanDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isReviewing, setIsReviewing] = useState(false);
 
-  // Mock data - harus match dengan ID dari MonitorPenugasanPage
-  const penugasanData: Record<string, any> = {
-    '1': {
-      id: 1,
-      jenis_penugasan: 'Protokol',
-      deskripsi_penugasan: 'Bertugas mengatur protokoler acara, koordinasi dengan MC dan setting tempat duduk pimpinan',
-      agenda_terkait: 'Rapat Koordinasi Bulanan OPD',
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      tanggal_kegiatan: '2026-02-10',
-      waktu: '09:00 - 12:00',
-      lokasi: 'Ruang Rapat Utama',
-      nama_staf: ['Ahmad Hidayat', 'Budi Santoso'],
-      tanggal_penugasan: '2026-02-05',
-      status_pelaksanaan: 'Selesai',
-      progress: [
-        {
-          tipe: 'Persiapan Awal',
-          keterangan: 'Survey lokasi dan persiapan peralatan protokoler',
-          tanggal: '2026-02-08 10:00',
-          foto: 'https://images.unsplash.com/photo-1722643882339-7a6c9cb080db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwbWVldGluZyUyMGRvY3VtZW50YXRpb24lMjBpbmRvbmVzaWF8ZW58MXx8fHwxNzcwMjkwMTQ1fDA&ixlib=rb-4.1.0&q=80&w=1080'
-        },
-        {
-          tipe: 'Pelaksanaan',
-          keterangan: 'Koordinasi protokoler berjalan lancar, pimpinan hadir tepat waktu',
-          tanggal: '2026-02-10 09:00',
-          foto: 'https://images.unsplash.com/photo-1722643882339-7a6c9cb080db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwbWVldGluZyUyMGRvY3VtZW50YXRpb24lMjBpbmRvbmVzaWF8ZW58MXx8fHwxNzcwMjkwMTQ1fDA&ixlib=rb-4.1.0&q=80&w=1080'
-        },
-        {
-          tipe: 'Selesai',
-          keterangan: 'Acara selesai, dokumentasi telah diserahkan',
-          tanggal: '2026-02-10 12:30',
-          foto: 'https://images.unsplash.com/photo-1722643882339-7a6c9cb080db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwbWVldGluZyUyMGRvY3VtZW50YXRpb24lMjBpbmRvbmVzaWF8ZW58MXx8fHwxNzcwMjkwMTQ1fDA&ixlib=rb-4.1.0&q=80&w=1080'
+  useEffect(() => {
+    if (!id) return;
+    const fetchDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await penugasanApi.getPenugasanDetail(id);
+        if (res.success && res.data) {
+          setPenugasan(res.data);
+        } else {
+          setError(res.message || 'Penugasan tidak ditemukan');
         }
-      ]
-    },
-    '2': {
-      id: 2,
-      jenis_penugasan: 'Protokol',
-      deskripsi_penugasan: 'Koordinasi protokoler kunjungan, persiapan sambutan dan pengawalan pimpinan',
-      agenda_terkait: 'Kunjungan Kerja ke Dinas Kesehatan',
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      tanggal_kegiatan: '2026-02-12',
-      waktu: '10:00 - 11:30',
-      lokasi: 'Kantor Dinas Kesehatan',
-      nama_staf: ['Eko Prasetyo'],
-      tanggal_penugasan: '2026-02-06',
-      status_pelaksanaan: 'Berlangsung',
-      progress: [
-        {
-          tipe: 'Persiapan',
-          keterangan: 'Koordinasi dengan Dinas Kesehatan sudah dilakukan',
-          tanggal: '2026-02-09 14:00',
-          foto: 'https://images.unsplash.com/photo-1722643882339-7a6c9cb080db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwbWVldGluZyUyMGRvY3VtZW50YXRpb24lMjBpbmRvbmVzaWF8ZW58MXx8fHwxNzcwMjkwMTQ1fDA&ixlib=rb-4.1.0&q=80&w=1080'
-        },
-        {
-          tipe: 'Briefing',
-          keterangan: 'Briefing dengan pimpinan selesai dilakukan',
-          tanggal: '2026-02-11 16:00',
-          foto: 'https://images.unsplash.com/photo-1722643882339-7a6c9cb080db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwbWVldGluZyUyMGRvY3VtZW50YXRpb24lMjBpbmRvbmVzaWF8ZW58MXx8fHwxNzcwMjkwMTQ1fDA&ixlib=rb-4.1.0&q=80&w=1080'
-        }
-      ]
-    },
-    '3': {
-      id: 3,
-      jenis_penugasan: 'Protokol',
-      deskripsi_penugasan: 'Persiapan dan pelaksanaan protokoler upacara pelantikan',
-      agenda_terkait: 'Pelantikan Kepala Dinas',
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      tanggal_kegiatan: '2026-02-20',
-      waktu: '10:00 - 12:00',
-      lokasi: 'Aula Kantor Walikota',
-      nama_staf: ['Bambang Wijaya', 'Dewi Lestari', 'Farhan Saputra'],
-      tanggal_penugasan: '2026-02-10',
-      status_pelaksanaan: 'Belum Dimulai',
-      progress: [
-        {
-          tipe: 'Rapat Koordinasi',
-          keterangan: 'Rapat koordinasi awal dengan tim pelaksana',
-          tanggal: '2026-02-11 09:00',
-          foto: 'https://images.unsplash.com/photo-1722643882339-7a6c9cb080db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwbWVldGluZyUyMGRvY3VtZW50YXRpb24lMjBpbmRvbmVzaWF8ZW58MXx8fHwxNzcwMjkwMTQ1fDA&ixlib=rb-4.1.0&q=80&w=1080'
-        }
-      ]
-    },
-    '4': {
-      id: 4,
-      jenis_penugasan: 'Protokol',
-      deskripsi_penugasan: 'Mengatur protokoler acara peresmian dan koordinasi dengan instansi terkait',
-      agenda_terkait: 'Peresmian Jalan Tol Baru',
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      tanggal_kegiatan: '2026-02-16',
-      waktu: '08:00 - 10:00',
-      lokasi: 'Gerbang Tol Sukamaju',
-      nama_staf: ['Ahmad Hidayat', 'Eko Prasetyo'],
-      tanggal_penugasan: '2026-02-07',
-      status_pelaksanaan: 'Berlangsung',
-      progress: [
-        {
-          tipe: 'Survey Lokasi',
-          keterangan: 'Survey lokasi acara dan koordinasi dengan PT Jasa Marga',
-          tanggal: '2026-02-09 10:00',
-          foto: 'https://images.unsplash.com/photo-1722643882339-7a6c9cb080db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwbWVldGluZyUyMGRvY3VtZW50YXRpb24lMjBpbmRvbmVzaWF8ZW58MXx8fHwxNzcwMjkwMTQ1fDA&ixlib=rb-4.1.0&q=80&w=1080'
-        },
-        {
-          tipe: 'Persiapan Teknis',
-          keterangan: 'Persiapan panggung, sound system, dan tata letak',
-          tanggal: '2026-02-13 14:00',
-          foto: 'https://images.unsplash.com/photo-1722643882339-7a6c9cb080db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwbWVldGluZyUyMGRvY3VtZW50YXRpb24lMjBpbmRvbmVzaWF8ZW58MXx8fHwxNzcwMjkwMTQ1fDA&ixlib=rb-4.1.0&q=80&w=1080'
-        }
-      ]
+      } catch (err) {
+        setError('Terjadi kesalahan saat menghubungi server');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [id]);
+
+  const handleUpdateStatus = async (newStatus: 'pending' | 'progress' | 'selesai') => {
+    if (!id || !penugasan) return;
+
+    const result = await Swal.fire({
+      title: 'Konfirmasi',
+      text: `Apakah Anda yakin ingin menandai penugasan ini sebagai ${newStatus === 'selesai' ? 'Selesai' : 'Berlangsung'}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Ya, Lanjutkan',
+      cancelButtonText: 'Batal'
+    });
+
+    if (!result.isConfirmed) return;
+
+    setIsReviewing(true);
+    try {
+      const res = await penugasanApi.updateStatusPenugasan(id, newStatus);
+      if (res.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: `Penugasan berhasil ditandai sebagai ${newStatus === 'selesai' ? 'Selesai' : 'Berlangsung'}.`,
+          confirmButtonColor: '#2563eb'
+        });
+        const statusLabel = newStatus === 'selesai' ? 'Selesai' : newStatus === 'progress' ? 'Berlangsung' : 'Belum Dimulai';
+        setPenugasan(prev => prev ? { ...prev, status: newStatus, status_pelaksanaan: statusLabel } : prev);
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: res.message || 'Gagal memperbarui status',
+          confirmButtonColor: '#2563eb'
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Terjadi kesalahan saat menghubungi server',
+        confirmButtonColor: '#2563eb'
+      });
+    } finally {
+      setIsReviewing(false);
     }
   };
 
-  const penugasan = id ? penugasanData[id] : null;
+  const formatTime = (time: string | null | undefined) => {
+    if (!time) return '-';
+    return time.slice(0, 5);
+  };
 
-  if (!penugasan) {
+  // Logic to determine status badge display
+  const getDisplayStatus = () => {
+    if (!penugasan) return { label: 'Unknown', variant: 'default' as any };
+
+    if (penugasan.status === 'selesai' || penugasan.status_pelaksanaan === 'Selesai') {
+      return { label: 'Selesai', variant: 'success' as any };
+    }
+
+    if (penugasan.laporanKegiatans && penugasan.laporanKegiatans.length > 0) {
+      return { label: 'Berlangsung', variant: 'info' as any };
+    }
+
+    return { label: 'Belum Dimulai', variant: 'warning' as any };
+  };
+
+  const statusInfo = getDisplayStatus();
+
+  // Deduplicate staff from slotAgendaStaffs
+  const uniqueStaff = penugasan
+    ? Object.values(
+      (penugasan.slotAgendaStaffs || []).reduce<Record<string, SlotStaff>>((acc, s) => {
+        if (s.staff && !acc[s.staff.id_user]) acc[s.staff.id_user] = s;
+        return acc;
+      }, {})
+    )
+    : [];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="flex flex-col items-center gap-3 text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <p className="text-sm">Memuat detail penugasan...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !penugasan) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Kembali
-          </Button>
-        </div>
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Kembali
+        </Button>
         <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-500">Penugasan tidak ditemukan</p>
+          <CardContent className="p-8 flex flex-col items-center gap-3 text-center">
+            <AlertCircle className="w-12 h-12 text-red-400" />
+            <p className="text-gray-700 font-medium">Penugasan tidak ditemukan</p>
+            <p className="text-sm text-gray-500">{error}</p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Selesai':
-        return <Badge variant="success">Selesai</Badge>;
-      case 'Berlangsung':
-        return <Badge variant="info">Berlangsung</Badge>;
-      case 'Belum Dimulai':
-        return <Badge variant="warning">Belum Dimulai</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
-
-  const handleMarkComplete = () => {
-    setIsMarkingComplete(true);
-    // Simulate API call
-    setTimeout(() => {
-      alert('Penugasan telah ditandai sebagai SELESAI!');
-      setIsMarkingComplete(false);
-      navigate('/kasubag-protokol/monitor-penugasan');
-    }, 1000);
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate(-1)}>
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Kembali
           </Button>
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Detail Penugasan</h1>
-            <p className="text-sm text-gray-600 mt-1">{penugasan.agenda_terkait}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-sm text-gray-600">
+                {penugasan.agenda?.nama_kegiatan || '-'}
+              </p>
+            </div>
           </div>
         </div>
-        {penugasan.status_pelaksanaan !== 'Selesai' && (
-          <Button 
-            onClick={handleMarkComplete}
-            disabled={isMarkingComplete}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            {isMarkingComplete ? 'Memproses...' : 'Tandai Selesai'}
-          </Button>
+
+        {/* Action Buttons: Only show "Tandai Selesai" if already in progress (has reports) */}
+        {penugasan.status !== 'selesai' && penugasan.laporanKegiatans.length > 0 && (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleUpdateStatus('selesai')}
+              disabled={isReviewing}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {isReviewing ? 'Memproses...' : 'Tandai Selesai'}
+            </Button>
+          </div>
         )}
       </div>
 
       {/* Informasi Penugasan */}
       <Card>
-        <CardHeader>
+        <CardHeader className="border-b border-gray-100">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Informasi Penugasan</h3>
-            {getStatusBadge(penugasan.status_pelaksanaan)}
+            <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
           </div>
         </CardHeader>
         <CardContent>
@@ -207,14 +238,24 @@ export default function DetailPenugasanPage() {
                   <Calendar className="w-4 h-4" />
                   Agenda Terkait
                 </label>
-                <p className="text-sm text-gray-900 mt-1 font-semibold">{penugasan.agenda_terkait}</p>
+                <p className="text-sm text-gray-900 mt-1 font-semibold">
+                  {penugasan.agenda?.nama_kegiatan || '-'}
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Pimpinan
                 </label>
-                <p className="text-sm text-gray-900 mt-1">{penugasan.pimpinan}</p>
+                <div className="mt-1 space-y-2">
+                  {penugasan.pimpinans.map((p, idx) => (
+                    <div key={idx}>
+                      <p className="text-sm text-gray-900 font-semibold">{p.nama_pimpinan}</p>
+                      <p className="text-[11px] text-gray-500 uppercase tracking-tight">{p.nama_jabatan}</p>
+                    </div>
+                  ))}
+                  {penugasan.pimpinans.length === 0 && <p className="text-sm text-gray-900">-</p>}
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -222,12 +263,14 @@ export default function DetailPenugasanPage() {
                   Tanggal Kegiatan
                 </label>
                 <p className="text-sm text-gray-900 mt-1">
-                  {new Date(penugasan.tanggal_kegiatan).toLocaleDateString('id-ID', {
-                    weekday: 'long',
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
+                  {penugasan.agenda?.tanggal_kegiatan
+                    ? new Date(penugasan.agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
+                      weekday: 'long',
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                    : '-'}
                 </p>
               </div>
             </div>
@@ -237,111 +280,149 @@ export default function DetailPenugasanPage() {
                   <Clock className="w-4 h-4" />
                   Waktu
                 </label>
-                <p className="text-sm text-gray-900 mt-1">{penugasan.waktu}</p>
+                <p className="text-sm text-gray-900 mt-1">
+                  {penugasan.agenda?.waktu_mulai
+                    ? `${formatTime(penugasan.agenda.waktu_mulai)} – ${formatTime(penugasan.agenda.waktu_selesai)}`
+                    : '-'}
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   Lokasi
                 </label>
-                <p className="text-sm text-gray-900 mt-1">{penugasan.lokasi}</p>
+                <p className="text-sm text-gray-900 mt-1">
+                  {penugasan.agenda?.lokasi_kegiatan || '-'}
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <User className="w-4 h-4" />
+                  <Users className="w-4 h-4" />
                   Staf Ditugaskan
                 </label>
-                <p className="text-sm text-gray-900 mt-1">{penugasan.nama_staf.join(', ')}</p>
+                <p className="text-sm text-gray-900 mt-1">
+                  {penugasan.nama_staf.length > 0
+                    ? penugasan.nama_staf.join(', ')
+                    : <span className="text-gray-400 italic">Tidak ada staf</span>}
+                </p>
               </div>
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm font-medium text-gray-600">Deskripsi Penugasan</label>
-              <p className="text-sm text-gray-900 mt-1">{penugasan.deskripsi_penugasan}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">Jenis Penugasan</label>
-              <div className="mt-1">
-                <Badge variant="info">{penugasan.jenis_penugasan}</Badge>
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">Tanggal Penugasan</label>
+              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <ClipboardList className="w-4 h-4" />
+                Deskripsi Penugasan
+              </label>
               <p className="text-sm text-gray-900 mt-1">
-                {new Date(penugasan.tanggal_penugasan).toLocaleDateString('id-ID', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric'
-                })}
+                {penugasan.deskripsi_penugasan || <span className="italic text-gray-400">Tidak ada deskripsi</span>}
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Timeline Progress */}
+      {/* Timeline Laporan Kegiatan (Updated style consistent with Staff) */}
       <Card>
-        <CardHeader>
+        <CardHeader className="border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Timeline Progress</h3>
+            <div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                <h3 className="text-base font-semibold text-gray-900">Timeline Progress Protokoler</h3>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">Laporan kegiatan protokoler dari Tim Protokol</p>
             </div>
-            <Badge variant="info">{penugasan.progress.length} Update</Badge>
+            <Badge variant="info">{penugasan.laporanKegiatans?.length ?? 0} Update</Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {penugasan.progress.map((prog: any, idx: number) => (
-              <div key={idx} className="relative pl-8 pb-6 border-l-2 border-blue-200 last:border-l-0 last:pb-0">
-                <div className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full bg-blue-600 border-2 border-white"></div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <Badge variant="info">{prog.tipe}</Badge>
-                    <span className="text-xs text-gray-500">
-                      {new Date(prog.tanggal).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-900 mb-4">{prog.keterangan}</p>
-                  
-                  {/* Foto Dokumentasi */}
-                  {prog.foto && (
-                    <div>
-                      <label className="text-xs font-medium text-gray-600 block mb-2">
-                        Dokumentasi Foto
-                      </label>
-                      <div className="rounded-lg overflow-hidden border border-gray-300">
-                        <img 
-                          src={prog.foto} 
-                          alt={`Dokumentasi ${prog.tipe}`}
-                          className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
-                        />
+        <CardContent className="p-4 md:p-6">
+          {!penugasan.laporanKegiatans || penugasan.laporanKegiatans.length === 0 ? (
+            <div className="text-center py-10">
+              <ClipboardList className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-sm text-gray-500">Belum ada progress yang dilaporkan oleh staf</p>
+            </div>
+          ) : (
+            <div className="relative">
+              {/* vertical line */}
+              <div className="absolute left-3 top-4 bottom-4 w-0.5 bg-blue-200" />
+
+              <div className="space-y-6">
+                {penugasan.laporanKegiatans.map((report, index) => (
+                  <div key={report.id_laporan || index} className="flex gap-4">
+                    {/* dot */}
+                    <div className="relative z-10 flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 border-2 border-white shadow flex items-center justify-center mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    </div>
+
+                    {/* card */}
+                    <div className="flex-1 border border-gray-200 rounded-lg p-4 bg-white">
+                      {/* top row */}
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge variant="info">{report.deskripsi_laporan}</Badge>
+                        <span className="text-xs text-gray-400">
+                          {new Date(report.createdAt).toLocaleDateString('id-ID', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          })}{', '}
+                          {new Date(report.createdAt).toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+
+                      {/* catatan */}
+                      <p className="text-sm text-gray-700 mb-3">{report.catatan_laporan || '-'}</p>
+
+                      {/* dokumentasi */}
+                      {report.dokumentasi_laporan && (
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1.5 flex items-center gap-1">
+                            🖼 Dokumentasi
+                          </p>
+                          <div className="w-full rounded-lg bg-gray-50 border border-gray-200 overflow-hidden">
+                            <img
+                              src={`/api/uploads/laporan/${report.dokumentasi_laporan}`}
+                              alt="Dokumentasi"
+                              className="w-full h-auto max-h-80 object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                              onClick={() => window.open(`/api/uploads/laporan/${report.dokumentasi_laporan}`, '_blank')}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Gambar+Tidak+Tersedia';
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* oleh */}
+                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-700">
+                          {report.staff?.nama?.substring(0, 2).toUpperCase()}
+                        </div>
+                        <p className="text-[10px] text-gray-500">Dilaporkan oleh: <span className="font-semibold">{report.staff?.nama || '-'}</span></p>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Summary */}
+      {/* Ringkasan */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold text-gray-900">Ringkasan</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Ringkasan Penugasan</h3>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600 mb-1">Total Progress</p>
-              <p className="text-2xl font-semibold text-blue-600">{penugasan.progress.length}</p>
-              <p className="text-xs text-gray-500 mt-1">Update</p>
+              <p className="text-sm text-gray-600 mb-1">Total Update</p>
+              <p className="text-2xl font-semibold text-blue-600">
+                {penugasan.laporanKegiatans?.length ?? 0}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Laporan</p>
             </div>
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
               <p className="text-sm text-gray-600 mb-1">Staf Bertugas</p>
@@ -349,29 +430,23 @@ export default function DetailPenugasanPage() {
               <p className="text-xs text-gray-500 mt-1">Orang</p>
             </div>
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-              <p className="text-sm text-gray-600 mb-1">Status</p>
-              <div className="mt-2">{getStatusBadge(penugasan.status_pelaksanaan)}</div>
+              <p className="text-sm text-gray-600 mb-1">Status Terbaru</p>
+              <div className="flex justify-center mt-2">
+                <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={() => navigate(-1)} className="flex-1">
-          Kembali ke Daftar
+      {/* Footer Action */}
+      <div className="flex justify-center pt-4">
+        <Button variant="outline" onClick={() => navigate(-1)} className="px-12">
+          Kembali ke Monitoring
         </Button>
-        {penugasan.status_pelaksanaan !== 'Selesai' && (
-          <Button 
-            onClick={handleMarkComplete}
-            disabled={isMarkingComplete}
-            className="flex-1 bg-green-600 hover:bg-green-700"
-          >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            {isMarkingComplete ? 'Memproses...' : 'Tandai Selesai'}
-          </Button>
-        )}
       </div>
+
     </div>
   );
 }
+

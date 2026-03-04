@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { CheckCircle, XCircle, Eye, X, UserCheck, Download, FileText, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, X, UserCheck, Download, FileText, RefreshCw, ChevronDown } from 'lucide-react';
 import { agendaApi, pimpinanApi, periodeApi } from '../../lib/api';
+import CustomSelect from '../../components/ui/CustomSelect';
 import Swal from 'sweetalert2';
 
 export default function KonfirmasiAgendaPage() {
@@ -93,8 +94,9 @@ export default function KonfirmasiAgendaPage() {
     });
 
     if (name === 'perwakilan_id_jabatan') {
-      if (value) {
-        const [jabatan, periode] = value.split('|');
+      const val = value;
+      if (val) {
+        const [jabatan, periode] = val.split('|');
         const selected = allPimpinan.find(p => p.id_jabatan === jabatan && p.id_periode === periode);
         setKonfirmasiData(prev => ({
           ...prev,
@@ -564,29 +566,24 @@ export default function KonfirmasiAgendaPage() {
 
                     {konfirmasiData.perwakilan_tipe === 'pimpinan' ? (
                       <>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Pilih Perwakilan (Aktif) <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            name="perwakilan_id_jabatan"
-                            value={konfirmasiData.perwakilan_id_jabatan ? `${konfirmasiData.perwakilan_id_jabatan}|${konfirmasiData.perwakilan_id_periode}` : ''}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                            required
-                          >
-                            <option value="">-- Pilih Perwakilan --</option>
-                            {allPimpinan
-                              .filter(p => !selectedAgenda?.agendaPimpinans?.some(
-                                (ap: any) => ap.id_jabatan === p.id_jabatan && ap.id_periode === p.id_periode
-                              ))
-                              .map((p, idx) => (
-                                <option key={idx} value={`${p.id_jabatan}|${p.id_periode}`}>
-                                  {p.pimpinan?.nama_pimpinan} ({p.jabatan?.nama_jabatan})
-                                </option>
-                              ))}
-                          </select>
-                        </div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Pilih Perwakilan (Aktif) <span className="text-red-500">*</span>
+                        </label>
+                        <CustomSelect
+                          value={konfirmasiData.perwakilan_id_jabatan ? `${konfirmasiData.perwakilan_id_jabatan}|${konfirmasiData.perwakilan_id_periode}` : ''}
+                          onChange={(val) => handleChange({ target: { name: 'perwakilan_id_jabatan', value: val } } as any)}
+                          options={allPimpinan
+                            .filter(p => !selectedAgenda?.agendaPimpinans?.some(
+                              (ap: any) => ap.id_jabatan === p.id_jabatan && ap.id_periode === p.id_periode
+                            ))
+                            .map((p) => ({
+                              value: `${p.id_jabatan}|${p.id_periode}`,
+                              label: `${p.pimpinan?.nama_pimpinan} (${p.jabatan?.nama_jabatan})`
+                            }))
+                          }
+                          placeholder="-- Pilih Perwakilan --"
+                          className="w-full"
+                        />
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">

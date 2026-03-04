@@ -10,6 +10,7 @@ import {
   Clock, UserCheck, ExternalLink, FileText
 } from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
+import CustomSelect from '../../components/ui/CustomSelect';
 import Swal from 'sweetalert2';
 
 export default function AgendaPimpinanPage() {
@@ -217,6 +218,19 @@ export default function AgendaPimpinanPage() {
   // Deklarasikan 'now' sebelum digunakan oleh filteredData
   const now = new Date();
 
+  // Extract unique pimpinan options from agenda list for filtering
+  const pimpinanFilterOptions: any[] = [];
+  const seenPimpinan = new Set();
+  agendaList.forEach(a => {
+    a.agendaPimpinans?.forEach((ap: any) => {
+      const key = `${ap.id_jabatan}:${ap.id_periode}`;
+      if (!seenPimpinan.has(key)) {
+        seenPimpinan.add(key);
+        pimpinanFilterOptions.push(ap);
+      }
+    });
+  });
+
   const filteredData = agendaList.filter(item => {
     // 1. Search filter
     const matchSearch =
@@ -362,45 +376,44 @@ export default function AgendaPimpinanPage() {
       {/* Global Search & Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Cari agenda..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none"
+                className="pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all"
               />
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
-                  value={filterPimpinan}
-                  onChange={(e) => setFilterPimpinan(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg text-sm appearance-none bg-white w-full sm:w-auto focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="all">Semua Pimpinan</option>
-                  {pimpinanOptions.map(p => (
-                    <option key={`${p.id_jabatan}:${p.id_periode}`} value={`${p.id_jabatan}:${p.id_periode}`}>
-                      {p.jabatan?.nama_jabatan} - {p.pimpinan?.nama_pimpinan}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg text-sm appearance-none bg-white w-full sm:w-auto focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="terlaksana">Terlaksana</option>
-                  <option value="belum">Belum Terlaksana</option>
-                </select>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+              <CustomSelect
+                value={filterPimpinan}
+                onChange={setFilterPimpinan}
+                options={[
+                  { value: 'all', label: 'Semua Pimpinan' },
+                  ...pimpinanFilterOptions.map(p => ({
+                    value: `${p.id_jabatan}:${p.id_periode}`,
+                    label: `${p.periodeJabatan?.jabatan?.nama_jabatan} - ${p.periodeJabatan?.pimpinan?.nama_pimpinan}`
+                  }))
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-64"
+                placeholder="Pilih Pimpinan"
+              />
+              <CustomSelect
+                value={filterStatus}
+                onChange={setFilterStatus}
+                options={[
+                  { value: 'all', label: 'Semua Status' },
+                  { value: 'terlaksana', label: 'Terlaksana' },
+                  { value: 'belum', label: 'Belum Terlaksana' }
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-48"
+                placeholder="Pilih Status"
+              />
             </div>
           </div>
         </CardContent>

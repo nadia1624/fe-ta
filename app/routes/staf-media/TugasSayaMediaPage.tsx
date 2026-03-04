@@ -2,7 +2,9 @@ import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Search, Filter, Calendar, Clock, MapPin, User, Image, Upload, X, FileText, Eye, Edit } from 'lucide-react';
+import { Search, Filter, Calendar, Clock, MapPin, User, Image, Upload, X, FileText, Eye, Edit, ChevronDown } from 'lucide-react';
+import CustomSelect from '../../components/ui/CustomSelect';
+import MonthPicker from '../../components/ui/month-picker';
 
 export default function TugasSayaMediaPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -259,37 +261,36 @@ export default function TugasSayaMediaPage() {
       <Card>
         <CardHeader className="border-b border-gray-200">
           <div className="flex flex-col md:flex-row md:items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="relative group flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors w-4 h-4 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Cari tugas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm shadow-sm"
               />
             </div>
-            <div className="flex gap-2">
-              <select
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+              <MonthPicker
                 value={filterBulan}
-                onChange={(e) => setFilterBulan(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm"
-              >
-                <option value="2026-02">Februari 2026</option>
-                <option value="2026-01">Januari 2026</option>
-                <option value="2025-12">Desember 2025</option>
-              </select>
-              <select
+                onChange={setFilterBulan}
+                className="w-full sm:w-48"
+              />
+              <CustomSelect
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm"
-              >
-                <option value="all">Semua Status</option>
-                <option value="Belum Upload">Belum Upload</option>
-                <option value="Pending Review">Pending Review</option>
-                <option value="Perlu Revisi">Perlu Revisi</option>
-                <option value="Disetujui">Disetujui</option>
-              </select>
+                onChange={setFilterStatus}
+                options={[
+                  { value: 'all', label: 'Semua Status' },
+                  { value: 'Belum Upload', label: 'Belum Upload' },
+                  { value: 'Pending Review', label: 'Pending Review' },
+                  { value: 'Perlu Revisi', label: 'Perlu Revisi' },
+                  { value: 'Disetujui', label: 'Disetujui' }
+                ]}
+                icon={<Filter className="w-4 h-4" />}
+                className="w-full sm:w-48"
+                placeholder="Pilih Status"
+              />
             </div>
           </div>
         </CardHeader>
