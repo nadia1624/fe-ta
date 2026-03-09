@@ -32,7 +32,7 @@ export default function TugasSayaPage() {
           const mappedTugas = res.data.map((p: any) => ({
             id: p.id_penugasan,
             agenda_id: p.id_agenda,
-            pimpinan: p.pimpinan,
+            pimpinan: (p.pimpinans || []).map((ld: any) => ld.nama_pimpinan).join(', ') || '-',
             jabatan: p.agenda?.agendaPimpinans?.[0]?.periodeJabatan?.jabatan?.nama_jabatan || '-',
             judul_kegiatan: p.agenda?.nama_kegiatan || '-',
             tanggal: p.agenda?.tanggal_kegiatan || p.tanggal_penugasan,

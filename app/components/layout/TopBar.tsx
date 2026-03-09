@@ -133,10 +133,10 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
                       'Kasubag Protokol': 'kasubag-protokol',
                       'Kasubag Media': 'kasubag-media',
                       'Ajudan': 'ajudan',
-                      'Staf Protokol': 'staf-protokol',
-                      'Staff Protokol': 'staf-protokol',
-                      'Staf Media': 'staf-media',
-                      'Staff Media': 'staf-media',
+                      'Staf Protokol': 'staff-protokol',
+                      'Staff Protokol': 'staff-protokol',
+                      'Staf Media': 'staff-media',
+                      'Staff Media': 'staff-media',
                       'Pemohon': 'pemohon',
                     };
                     const pathPrefix = rolePathMap[user.role] || 'admin';

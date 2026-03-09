@@ -322,7 +322,7 @@ export default function StafProtokolDashboard() {
               <h3 className="text-base md:text-lg font-semibold text-gray-900">Tugas Saya</h3>
               <p className="text-xs md:text-sm text-gray-500 mt-1">Tugas yang sedang dikerjakan</p>
             </div>
-            <Link to="/staf-protokol/tugas-saya">
+            <Link to="/staff-protokol/tugas-saya">
               <Button variant="outline" size="sm">Lihat Semua</Button>
             </Link>
           </div>
@@ -382,7 +382,7 @@ export default function StafProtokolDashboard() {
                     </div>
 
                     {/* Action Button */}
-                    <Link to={`/staf-protokol/tugas-detail/${task.tugas_id}`}>
+                    <Link to={`/staff-protokol/tugas-detail/${task.tugas_id}`}>
                       <Button variant="outline" size="sm" className="w-full">
                         <ClipboardList className="w-4 h-4 mr-2" />
                         Update Progress

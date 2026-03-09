@@ -54,6 +54,7 @@ export default function Sidebar({ currentRole, isOpen, onClose }: SidebarProps) 
     'Kasubag Media': [
       { path: '/kasubag-media/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/kasubag-media/assign-staff', label: 'Tugaskan Staf Media', icon: UserCheck },
+      { path: '/kasubag-media/monitor-penugasan', label: 'Monitor Penugasan', icon: ClipboardList },
       { path: '/kasubag-media/draft-berita', label: 'Draft Berita', icon: Newspaper },
       { path: '/kasubag-media/review-draft', label: 'Review Draft Berita', icon: MessageSquare },
       { path: '/kasubag-media/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },

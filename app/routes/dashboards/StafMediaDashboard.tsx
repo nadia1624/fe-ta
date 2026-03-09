@@ -330,7 +330,7 @@ export default function StafMediaDashboard() {
               </div>
               <p className="text-xs md:text-sm text-gray-500 mt-1">Tugas yang harus diselesaikan hari ini</p>
             </div>
-            <Link to="/staf-media/tugas-saya">
+            <Link to="/staff-media/tugas-saya">
               <Button variant="outline" size="sm">
                 Lihat Semua
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -358,7 +358,7 @@ export default function StafMediaDashboard() {
                   </div>
                   <div className="flex flex-col gap-2 md:items-end">
                     {getStatusBadge(task.status_draft)}
-                    <Link to={`/staf-media/tugas-saya`}>
+                    <Link to={`/staff-media/tugas-saya`}>
                       <Button variant="outline" size="sm" className="w-full md:w-auto">
                         <Image className="w-3 h-3 md:w-4 md:h-4 mr-2" />
                         {task.status_draft === 'Belum Upload' ? 'Upload Draft' : 'Lihat Detail'}
@@ -385,7 +385,7 @@ export default function StafMediaDashboard() {
               </div>
               <p className="text-xs md:text-sm text-gray-500 mt-1">Update status review draft berita</p>
             </div>
-            <Link to="/staf-media/draft-berita">
+            <Link to="/staff-media/draft-berita">
               <Button variant="outline" size="sm">
                 Lihat Semua
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -421,8 +421,8 @@ export default function StafMediaDashboard() {
                     </p>
                     {draft.feedback && (
                       <div className={`text-xs p-2 rounded-lg mt-2 ${draft.status === 'Perlu Revisi'
-                          ? 'bg-red-50 text-red-700 border border-red-200'
-                          : 'bg-green-50 text-green-700 border border-green-200'
+                        ? 'bg-red-50 text-red-700 border border-red-200'
+                        : 'bg-green-50 text-green-700 border border-green-200'
                         }`}>
                         <span className="font-medium">
                           {draft.status === 'Perlu Revisi' ? '📝 Catatan Revisi:' : '✅ Feedback:'}

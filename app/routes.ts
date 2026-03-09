@@ -49,8 +49,11 @@ export default [
       // ---------------------------------------------------------
       route("kasubag-media/dashboard", "routes/dashboards/KasubagMediaDashboard.tsx"),
       route("kasubag-media/assign-staff", "routes/kasubag-media/AssignStaffMediaPage.tsx"),
+      route("kasubag-media/monitor-penugasan", "routes/kasubag-media/MonitorPenugasanMediaPage.tsx"),
+      route("kasubag-media/penugasan/:id", "routes/kasubag-media/DetailPenugasanMediaPage.tsx"),
+      route("kasubag-media/review-draft", "routes/kasubag-media/ReviewDraftListPage.tsx"),
+      route("kasubag-media/review-draft/:id", "routes/kasubag-media/ReviewDraftBeritaPage.tsx"),
       route("kasubag-media/draft-berita", "routes/kasubag-media/DraftBeritaPage.tsx"),
-      route("kasubag-media/review-draft", "routes/kasubag-media/ReviewDraftBeritaPage.tsx"),
       route("kasubag-media/agenda-pimpinan", "routes/kasubag-media/AgendaPimpinanMediaPage.tsx"),
       route("kasubag-media/laporan-kegiatan", "routes/kasubag-media/LaporanKegiatanPage.tsx"),
       route("kasubag-media/laporan-kegiatan/:id", "routes/kasubag-media/DetailLaporanPage.tsx"),
@@ -83,10 +86,7 @@ export default [
       route("staff-media/agenda-pimpinan", "routes/staf-media/AgendaPimpinanStafMediaPage.tsx"),
       route("staff-media/laporan-kegiatan", "routes/staf-media/LaporanKegiatanStafMediaPage.tsx"),
       route("staff-media/laporan-kegiatan/:id", "routes/staf-media/DetailLaporanStafMediaPage.tsx"),
-      route("staff-media/draft-berita/:id", "routes/staf-media/DetailDraftBeritaPage.tsx"),
-      route("staff-media/agenda", "routes/AgendaManagementPage.tsx", { id: "staf-media-agenda" }),
       route("staff-media/profile", "routes/ProfilePage.tsx", { id: "staf-media-profile" }),
-      route("staff-media/laporan", "routes/LaporanPage.tsx", { id: "staf-media-laporan" }),
 
       // ---------------------------------------------------------
       // PEMOHON ROUTES

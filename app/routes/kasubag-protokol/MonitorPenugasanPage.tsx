@@ -8,6 +8,11 @@ import { Search, Filter, CheckCircle, Clock, TrendingUp, ArrowRight, ClipboardLi
 import { penugasanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 
+interface Pimpinan {
+  nama_pimpinan: string;
+  nama_jabatan: string;
+}
+
 interface Penugasan {
   id_penugasan: string;
   jenis_penugasan: string;
@@ -15,7 +20,7 @@ interface Penugasan {
   tanggal_penugasan: string;
   status_pelaksanaan: string;
   nama_staf: string[];
-  pimpinan: string;
+  pimpinans: Pimpinan[];
   agenda: {
     id_agenda: string;
     nama_kegiatan: string;
@@ -75,11 +80,13 @@ export default function MonitorPenugasanPage() {
   const filteredPenugasan = penugasanList.filter(penugasan => {
     const namaKegiatan = penugasan.agenda?.nama_kegiatan || '';
     const lokasi = penugasan.agenda?.lokasi_kegiatan || '';
+    const pimpinansStr = (penugasan.pimpinans || []).map(p => p.nama_pimpinan).join(', ');
     const matchesSearch =
       penugasan.nama_staf.join(', ').toLowerCase().includes(searchTerm.toLowerCase()) ||
       namaKegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (penugasan.deskripsi_penugasan || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lokasi.toLowerCase().includes(searchTerm.toLowerCase());
+      lokasi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pimpinansStr.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesFilter = filterStatus === 'all' || penugasan.status_pelaksanaan === filterStatus;
 
@@ -236,7 +243,11 @@ export default function MonitorPenugasanPage() {
                       <p className="font-medium text-sm">
                         {penugasan.agenda?.nama_kegiatan || '-'}
                       </p>
-                      <p className="text-xs text-gray-500">👤 {penugasan.pimpinan}</p>
+                      <p className="text-xs text-gray-500">
+                        👤 {penugasan.pimpinans?.length > 0
+                          ? penugasan.pimpinans.map(p => p.nama_pimpinan).join(', ')
+                          : '-'}
+                      </p>
                       <p className="text-xs text-gray-500">
                         📍 {penugasan.agenda?.lokasi_kegiatan || '-'}
                       </p>

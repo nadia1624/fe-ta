@@ -1,83 +1,147 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Eye, MessageSquare, Search, Filter, ChevronDown } from 'lucide-react';
-import CustomSelect from '../../components/ui/CustomSelect';
+import {
+  Eye,
+  Search,
+  Loader2,
+  AlertCircle,
+  MessageSquare,
+  Filter,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Camera,
+  FileText,
+  History,
+  CheckCircle2,
+  Clock
+} from 'lucide-react';
+import { Link } from 'react-router';
+import { beritaApi } from '../../lib/api';
+
+const getStatusInfo = (status: string) => {
+  switch (status) {
+    case 'approved':
+      return { label: 'Disetujui', badgeClass: 'bg-green-100 text-green-700 border-green-200' };
+    case 'draft':
+      return { label: 'Pending Review', badgeClass: 'bg-amber-100 text-amber-700 border-amber-200' };
+    case 'review':
+      return { label: 'Revisi', badgeClass: 'bg-blue-100 text-blue-700 border-blue-200' };
+    case 'rejected':
+      return { label: 'Ditolak', badgeClass: 'bg-red-100 text-red-700 border-red-200' };
+    default:
+      return { label: status, badgeClass: 'bg-gray-100 text-gray-700 border-gray-200' };
+  }
+};
 
 export default function DraftBeritaPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [drafts, setDrafts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const draftBerita = [
-    {
-      id: 1,
-      judul_berita: 'Walikota Hadiri Rapat Koordinasi Bulanan Februari 2025',
-      status_draft: 'Disetujui',
-      tanggal_kirim: '2025-01-29',
-      staf_pengirim: 'Siti Nurhaliza',
-      agenda_terkait: 'Rapat Koordinasi Bulanan',
-      revisi_count: 1,
-      catatan_terakhir: 'Draft sudah bagus, siap publish'
-    },
-    {
-      id: 2,
-      judul_berita: 'Walikota Hadiri Kunjungan Kerja ke Kecamatan',
-      status_draft: 'Revisi',
-      tanggal_kirim: '2025-01-30',
-      staf_pengirim: 'Dewi Lestari',
-      agenda_terkait: 'Kunjungan Kerja Walikota ke Kecamatan',
-      revisi_count: 2,
-      catatan_terakhir: 'Perlu tambahan kutipan dari Kepala Dinas'
-    },
-    {
-      id: 3,
-      judul_berita: 'Persiapan Upacara Peringatan Hari Kemerdekaan Berjalan Lancar',
-      status_draft: 'Pending Review',
-      tanggal_kirim: '2025-01-30',
-      staf_pengirim: 'Siti Nurhaliza',
-      agenda_terkait: 'Upacara Peringatan Hari Kemerdekaan',
-      revisi_count: 0,
-      catatan_terakhir: null
-    },
-    {
-      id: 4,
-      judul_berita: 'Walikota Bertemu Camat Se-Kota Bahas Program Prioritas',
-      status_draft: 'Ditolak',
-      tanggal_kirim: '2025-01-28',
-      staf_pengirim: 'Dewi Lestari',
-      agenda_terkait: 'Pertemuan dengan Camat',
-      revisi_count: 1,
-      catatan_terakhir: 'Agenda dibatalkan, berita tidak perlu dipublish'
-    },
-  ];
+  // Modal State
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedDraft, setSelectedDraft] = useState<any>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'Disetujui': return 'success';
-      case 'Pending Review': return 'warning';
-      case 'Revisi': return 'info';
-      case 'Ditolak': return 'danger';
-      default: return 'default';
+  useEffect(() => {
+    const fetchDrafts = async () => {
+      try {
+        setLoading(true);
+        const res = await beritaApi.getAllDrafts();
+        if (res.success) {
+          setDrafts(res.data || []);
+        } else {
+          setError(res.message || 'Gagal mengambil data draft berita');
+        }
+      } catch (err) {
+        setError('Terjadi kesalahan saat menghubungi server');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDrafts();
+  }, []);
+
+  // Grouping logic: 1 row per penugasan
+  const groupedData = drafts.reduce((acc: any, draft: any) => {
+    const key = draft.id_penugasan;
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(draft);
+    return acc;
+  }, {});
+
+  const latestDrafts = Object.values(groupedData).map((group: any) => {
+    // Sort group by date descending (latest first)
+    const sortedGroup = [...group].sort((a, b) =>
+      new Date(b.tanggal_kirim).getTime() - new Date(a.tanggal_kirim).getTime()
+    );
+    const latest = sortedGroup[0];
+    return {
+      ...latest,
+      revisions: sortedGroup
+    };
+  });
+
+  const handleOpenDetail = (draft: any) => {
+    setSelectedDraft(draft);
+    setCurrentImageIndex(0);
+    setShowDetailModal(true);
+  };
+
+  const filteredDraft = latestDrafts.filter(draft => {
+    const staffName = draft.staff?.nama || '';
+    const agendaName = draft.penugasan?.agenda?.nama_kegiatan || '';
+    const matchesSearch =
+      (draft.judul_berita || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staffName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agendaName.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === 'all' || draft.status_draft === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const nextImage = () => {
+    if (selectedDraft?.dokumentasis?.length > 0) {
+      setCurrentImageIndex((prev) => (prev === selectedDraft.dokumentasis.length - 1 ? 0 : prev + 1));
     }
   };
 
-  const filteredDraft = draftBerita.filter(draft => {
-    const matchesSearch = draft.judul_berita.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      draft.staf_pengirim.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || draft.status_draft === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
+  const prevImage = () => {
+    if (selectedDraft?.dokumentasis?.length > 0) {
+      setCurrentImageIndex((prev) => (prev === 0 ? selectedDraft.dokumentasis.length - 1 : prev - 1));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
+          <p className="text-gray-500 font-medium">Memuat data draft berita...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Draft Berita</h1>
-        <p className="text-sm text-gray-600 mt-1">Kelola draft berita dan dokumentasi kegiatan</p>
+        <h1 className="text-2xl font-bold text-gray-900">Draft Berita</h1>
+        <p className="text-sm text-gray-500 mt-1">Kelola draft berita dan dokumentasi kegiatan</p>
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center gap-3">
+      {/* Search Bar */}
+      <div className="flex flex-col md:flex-row md:items-center gap-4">
         <div className="relative group flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
           <input
@@ -85,92 +149,290 @@ export default function DraftBeritaPage() {
             placeholder="Cari judul berita atau staf pengirim..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 bg-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm transition-all shadow-sm"
           />
         </div>
-        <CustomSelect
-          value={filterStatus}
-          onChange={setFilterStatus}
-          options={[
-            { value: 'all', label: 'Semua Status' },
-            { value: 'Pending Review', label: 'Pending Review' },
-            { value: 'Revisi', label: 'Revisi' },
-            { value: 'Disetujui', label: 'Disetujui' },
-            { value: 'Ditolak', label: 'Ditolak' }
-          ]}
-          icon={<Filter className="w-4 h-4" />}
-          className="w-full sm:w-56"
-          placeholder="Pilih Status"
-        />
+        <div className="w-full md:w-32">
+          {/* Mock secondary filter as seen in mockup */}
+          <div className="h-10 w-full bg-gray-50 border border-gray-200 rounded-xl"></div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold text-gray-900">Daftar Draft Berita</h3>
+      {/* Table Card */}
+      <Card className="border-none shadow-sm ring-1 ring-gray-100 overflow-hidden">
+        <CardHeader className="bg-white border-b border-gray-50 px-6 py-4">
+          <h3 className="text-base font-bold text-gray-800">Daftar Draft Berita</h3>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Judul Berita</TableHead>
-                <TableHead>Agenda Terkait</TableHead>
-                <TableHead>Staf Pengirim</TableHead>
-                <TableHead>Tanggal Kirim</TableHead>
-                <TableHead>Revisi</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDraft.map((draft) => (
-                <TableRow key={draft.id}>
-                  <TableCell className="font-medium max-w-xs">
-                    <p className="truncate">{draft.judul_berita}</p>
-                    {draft.catatan_terakhir && (
-                      <p className="text-xs text-gray-500 mt-1 truncate">
-                        {draft.catatan_terakhir}
-                      </p>
-                    )}
-                  </TableCell>
-                  <TableCell>{draft.agenda_terkait}</TableCell>
-                  <TableCell>{draft.staf_pengirim}</TableCell>
-                  <TableCell>
-                    {new Date(draft.tanggal_kirim).toLocaleDateString('id-ID', {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    {draft.revisi_count > 0 ? (
-                      <span className="text-sm text-gray-600">{draft.revisi_count}x</span>
-                    ) : (
-                      <span className="text-sm text-gray-400">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(draft.status_draft)}>
-                      {draft.status_draft}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      {(draft.status_draft === 'Pending Review' || draft.status_draft === 'Revisi') && (
-                        <Button variant="ghost" size="sm">
-                          <MessageSquare className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-b border-gray-50">
+                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Judul Berita</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Agenda Terkait</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Staf Pengirim</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tanggal Kirim</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Revisi</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredDraft.map((draft) => {
+                  const statusInfo = getStatusInfo(draft.status_draft);
+                  const revisiCount = draft.revisions?.length || 1;
+
+                  return (
+                    <TableRow key={draft.id_draft_berita} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
+                      <TableCell className="px-6 py-5">
+                        <div className="max-w-md">
+                          <p className="font-bold text-[13px] text-gray-800 line-clamp-2 leading-snug">
+                            {draft.judul_berita}
+                          </p>
+                          {draft.catatan && (
+                            <p className="text-[11px] text-gray-400 mt-1 line-clamp-1 font-normal italic">
+                              {draft.catatan}
+                            </p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-5">
+                        <p
+                          className="text-[11px] font-semibold text-gray-600 leading-relaxed max-w-[180px] line-clamp-2"
+                          title={draft.penugasan?.agenda?.nama_kegiatan || ''}
+                        >
+                          {draft.penugasan?.agenda?.nama_kegiatan || '-'}
+                        </p>
+                      </TableCell>
+                      <TableCell className="px-6 py-5">
+                        <p className="text-[11px] font-semibold text-gray-700">
+                          {draft.staff?.nama || '-'}
+                        </p>
+                      </TableCell>
+                      <TableCell className="px-6 py-5">
+                        <p className="text-[11px] text-gray-600 whitespace-nowrap">
+                          {draft.tanggal_kirim ? new Date(draft.tanggal_kirim).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          }) : '-'}
+                        </p>
+                      </TableCell>
+                      <TableCell className="px-6 py-5">
+                        <p className="text-[11px] text-gray-600 font-medium">
+                          {revisiCount}x
+                        </p>
+                      </TableCell>
+                      <TableCell className="px-6 py-5">
+                        <Badge className={`${statusInfo.badgeClass} rounded-full px-3 py-0.5 text-[9px] font-bold border-none shadow-none uppercase tracking-wide`}>
+                          {statusInfo.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="px-6 py-5">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleOpenDetail(draft)}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors bg-white rounded-full shadow-sm"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          {(draft.status_draft === 'review' || draft.status_draft === 'draft') && (
+                            <Link to={`/kasubag-media/review-draft/${draft.id_draft_berita}`}>
+                              <button className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors bg-white rounded-full shadow-sm">
+                                <MessageSquare className="w-4 h-4" />
+                              </button>
+                            </Link>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
+
+      {/* DETAIL MODAL */}
+      {showDetailModal && selectedDraft && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto pt-10 pb-10">
+          <Card className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 border-none outline-none">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4 text-amber-500" />
+                <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">Detail Draft Berita</h2>
+              </div>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <CardContent className="p-0 max-h-[85vh] overflow-y-auto">
+              <div className="p-6 md:p-10 space-y-8">
+                {/* News Title */}
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                  {selectedDraft.judul_berita}
+                </h1>
+
+                {/* Metadata Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 py-4 border-y border-gray-50">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Penulis</p>
+                    <p className="text-sm font-bold text-gray-800">{selectedDraft.staff?.nama || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Agenda</p>
+                    <p className="text-sm font-bold text-gray-800">{selectedDraft.penugasan?.agenda?.nama_kegiatan || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tanggal Kirim</p>
+                    <p className="text-sm font-bold text-gray-800">
+                      {selectedDraft.tanggal_kirim ? new Date(selectedDraft.tanggal_kirim).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      }) : '-'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Main Media Player / Gallery */}
+                <div className="space-y-4">
+                  <div className="relative aspect-[16/10] md:aspect-[21/9] bg-gray-900 rounded-xl overflow-hidden group">
+                    {selectedDraft.dokumentasis?.length > 0 ? (
+                      <>
+                        <img
+                          src={`/api/uploads/berita/${selectedDraft.dokumentasis[currentImageIndex].file_path}`}
+                          alt="Dokumentasi"
+                          className="w-full h-full object-contain transition-all duration-300"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://placehold.co/800x400?text=Gambar+Tidak+Tersedia';
+                          }}
+                        />
+
+                        {/* Nav Buttons */}
+                        {selectedDraft.dokumentasis.length > 1 && (
+                          <>
+                            <button
+                              onClick={prevImage}
+                              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-all z-10 shadow-lg"
+                            >
+                              <ChevronLeft className="w-6 h-6" />
+                            </button>
+                            <button
+                              onClick={nextImage}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition-all z-10 shadow-lg"
+                            >
+                              <ChevronRight className="w-6 h-6" />
+                            </button>
+                            {/* Counter */}
+                            <div className="absolute bottom-4 right-4 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-md">
+                              {currentImageIndex + 1} / {selectedDraft.dokumentasis.length}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 gap-2">
+                        <Camera className="w-12 h-12 opacity-20" />
+                        <p className="text-xs font-medium italic opacity-40">Tidak ada dokumentasi</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Thumbnails Navigation */}
+                  {selectedDraft.dokumentasis?.length > 1 && (
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide py-1 px-1">
+                      {selectedDraft.dokumentasis.map((img: any, idx: number) => (
+                        <button
+                          key={img.id_dokumentasi}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`relative w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${currentImageIndex === idx
+                            ? 'border-blue-500 scale-105 shadow-md shadow-blue-500/20'
+                            : 'border-transparent opacity-60 hover:opacity-100'
+                            }`}
+                        >
+                          <img
+                            src={`/api/uploads/berita/${img.file_path}`}
+                            className="w-full h-full object-cover"
+                            alt=""
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Caption */}
+                  <p className="text-center text-[11px] text-gray-500 italic mt-2">
+                    {selectedDraft.judul_berita}
+                  </p>
+                </div>
+
+                {/* News Content */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Isi Berita</h3>
+                  <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed text-sm md:text-base whitespace-pre-wrap">
+                    {selectedDraft.isi_draft}
+                  </div>
+                </div>
+
+                {/* Revision History Section */}
+                {selectedDraft.revisies?.length > 0 && (
+                  <div className="pt-8 border-t border-gray-50">
+                    <div className="flex items-center gap-2 mb-6">
+                      <History className="w-5 h-5 text-blue-500" />
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Riwayat Feedback ({selectedDraft.revisies.length})</h3>
+                    </div>
+
+                    <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
+                      {[...selectedDraft.revisies].sort((a: any, b: any) => new Date(b.tanggal_revisi).getTime() - new Date(a.tanggal_revisi).getTime()).map((revLog: any, idx: number) => {
+                        const isLatestExt = idx === 0;
+
+                        return (
+                          <div key={revLog.id_revisi} className="relative">
+                            {/* Dot on Timeline */}
+                            <div className={`absolute -left-[2.05rem] top-1 w-4 h-4 rounded-full border-4 border-white shadow-sm z-10 ${isLatestExt ? 'bg-amber-500 scale-110' : 'bg-gray-300'}`} />
+
+                            <div className={`p-4 rounded-xl border ${isLatestExt ? 'bg-amber-50/30 border-amber-100 shadow-sm' : 'bg-gray-50/50 border-gray-100'} transition-all`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className={`text-[11px] font-bold uppercase tracking-wider ${isLatestExt ? 'text-amber-700' : 'text-gray-500'}`}>
+                                  Feedback Kasubag {isLatestExt && '(Terbaru)'}
+                                </span>
+                                <span className="text-[10px] text-gray-400 font-medium">
+                                  {new Date(revLog.tanggal_revisi).toLocaleDateString('id-ID', {
+                                    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700 italic leading-relaxed">"{revLog.catatan_revisi}"</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer Actions */}
+                <div className="pt-6 flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDetailModal(false)}
+                    className="flex-1 h-11 border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl font-semibold"
+                  >
+                    Tutup
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

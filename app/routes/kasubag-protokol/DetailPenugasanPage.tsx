@@ -19,6 +19,21 @@ interface SlotStaff {
   slotWaktu: { slot_waktu_mulai: string; slot_waktu_selesai: string } | null;
 }
 
+interface DokumentasiBerita {
+  id_dokumentasi: string;
+  file_path: string;
+}
+
+interface DraftBerita {
+  id_draft_berita: string;
+  judul_berita: string;
+  isi_draft: string;
+  catatan: string | null;
+  status_draft: string;
+  tanggal_kirim: string;
+  dokumentasis: DokumentasiBerita[];
+}
+
 interface LaporanKegiatan {
   id_laporan: string;
   deskripsi_laporan: string;
@@ -48,6 +63,7 @@ interface PenugasanDetail {
   } | null;
   slotAgendaStaffs: SlotStaff[];
   laporanKegiatans: LaporanKegiatan[];
+  draftBeritas: DraftBerita[];
 }
 
 export default function DetailPenugasanPage() {
@@ -149,21 +165,18 @@ export default function DetailPenugasanPage() {
 
   const statusInfo = getDisplayStatus();
 
-  // Deduplicate staff from slotAgendaStaffs
-  const uniqueStaff = penugasan
-    ? Object.values(
-      (penugasan.slotAgendaStaffs || []).reduce<Record<string, SlotStaff>>((acc, s) => {
-        if (s.staff && !acc[s.staff.id_user]) acc[s.staff.id_user] = s;
-        return acc;
-      }, {})
-    )
-    : [];
+  const isMedia = penugasan?.jenis_penugasan === 'media';
+  const themeColor = isMedia ? 'purple' : 'blue';
+  const themeBg = isMedia ? 'bg-purple-600' : 'bg-blue-600';
+  const themeText = isMedia ? 'text-purple-600' : 'text-blue-600';
+  const themeBorder = isMedia ? 'border-purple-200' : 'border-blue-200';
+  const themeLightBg = isMedia ? 'bg-purple-50' : 'bg-blue-50';
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
         <div className="flex flex-col items-center gap-3 text-gray-500">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <Loader2 className={`w-8 h-8 animate-spin ${themeText}`} />
           <p className="text-sm">Memuat detail penugasan...</p>
         </div>
       </div>
@@ -213,7 +226,7 @@ export default function DetailPenugasanPage() {
             <Button
               onClick={() => handleUpdateStatus('selesai')}
               disabled={isReviewing}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className={`${themeBg} hover:opacity-90 text-white transition-opacity`}
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               {isReviewing ? 'Memproses...' : 'Tandai Selesai'}
@@ -235,7 +248,7 @@ export default function DetailPenugasanPage() {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+                  <Calendar className={`w-4 h-4 ${themeText}`} />
                   Agenda Terkait
                 </label>
                 <p className="text-sm text-gray-900 mt-1 font-semibold">
@@ -244,7 +257,7 @@ export default function DetailPenugasanPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <User className="w-4 h-4" />
+                  <User className={`w-4 h-4 ${themeText}`} />
                   Pimpinan
                 </label>
                 <div className="mt-1 space-y-2">
@@ -259,7 +272,7 @@ export default function DetailPenugasanPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+                  <Calendar className={`w-4 h-4 ${themeText}`} />
                   Tanggal Kegiatan
                 </label>
                 <p className="text-sm text-gray-900 mt-1">
@@ -277,7 +290,7 @@ export default function DetailPenugasanPage() {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
+                  <Clock className={`w-4 h-4 ${themeText}`} />
                   Waktu
                 </label>
                 <p className="text-sm text-gray-900 mt-1">
@@ -288,7 +301,7 @@ export default function DetailPenugasanPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className={`w-4 h-4 ${themeText}`} />
                   Lokasi
                 </label>
                 <p className="text-sm text-gray-900 mt-1">
@@ -297,7 +310,7 @@ export default function DetailPenugasanPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Users className="w-4 h-4" />
+                  <Users className={`w-4 h-4 ${themeText}`} />
                   Staf Ditugaskan
                 </label>
                 <p className="text-sm text-gray-900 mt-1">
@@ -309,7 +322,7 @@ export default function DetailPenugasanPage() {
             </div>
             <div className="md:col-span-2">
               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <ClipboardList className="w-4 h-4" />
+                <ClipboardList className={`w-4 h-4 ${themeText}`} />
                 Deskripsi Penugasan
               </label>
               <p className="text-sm text-gray-900 mt-1">
@@ -320,16 +333,16 @@ export default function DetailPenugasanPage() {
         </CardContent>
       </Card>
 
-      {/* Timeline Laporan Kegiatan (Updated style consistent with Staff) */}
+      {/* Timeline Laporan Kegiatan */}
       <Card>
         <CardHeader className="border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-                <h3 className="text-base font-semibold text-gray-900">Timeline Progress Protokoler</h3>
+                <TrendingUp className={`w-5 h-5 ${themeText}`} />
+                <h3 className="text-base font-semibold text-gray-900">Timeline Progress {isMedia ? 'Media' : 'Protokoler'}</h3>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">Laporan kegiatan protokoler dari Tim Protokol</p>
+              <p className="text-xs text-gray-500 mt-0.5">Laporan kegiatan {isMedia ? 'media' : 'protokoler'} dari Tim {isMedia ? 'Media' : 'Protokol'}</p>
             </div>
             <Badge variant="info">{penugasan.laporanKegiatans?.length ?? 0} Update</Badge>
           </div>
@@ -343,21 +356,21 @@ export default function DetailPenugasanPage() {
           ) : (
             <div className="relative">
               {/* vertical line */}
-              <div className="absolute left-3 top-4 bottom-4 w-0.5 bg-blue-200" />
+              <div className={`absolute left-3 top-4 bottom-4 w-0.5 ${isMedia ? 'bg-purple-200' : 'bg-blue-200'}`} />
 
               <div className="space-y-6">
                 {penugasan.laporanKegiatans.map((report, index) => (
                   <div key={report.id_laporan || index} className="flex gap-4">
                     {/* dot */}
-                    <div className="relative z-10 flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 border-2 border-white shadow flex items-center justify-center mt-0.5">
+                    <div className={`relative z-10 flex-shrink-0 w-7 h-7 rounded-full ${isMedia ? 'bg-purple-600' : 'bg-blue-600'} border-2 border-white shadow flex items-center justify-center mt-0.5`}>
                       <div className="w-2 h-2 rounded-full bg-white" />
                     </div>
 
                     {/* card */}
-                    <div className="flex-1 border border-gray-200 rounded-lg p-4 bg-white">
+                    <div className="flex-1 border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
                       {/* top row */}
                       <div className="flex items-center justify-between mb-2">
-                        <Badge variant="info">{report.deskripsi_laporan}</Badge>
+                        <Badge className={`${isMedia ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{report.deskripsi_laporan}</Badge>
                         <span className="text-xs text-gray-400">
                           {new Date(report.createdAt).toLocaleDateString('id-ID', {
                             day: '2-digit',
@@ -380,7 +393,7 @@ export default function DetailPenugasanPage() {
                           <p className="text-xs text-gray-500 mb-1.5 flex items-center gap-1">
                             🖼 Dokumentasi
                           </p>
-                          <div className="w-full rounded-lg bg-gray-50 border border-gray-200 overflow-hidden">
+                          <div className="w-full rounded-lg bg-gray-50 border border-gray-200 overflow-hidden shadow-inner">
                             <img
                               src={`/api/uploads/laporan/${report.dokumentasi_laporan}`}
                               alt="Dokumentasi"
@@ -396,10 +409,10 @@ export default function DetailPenugasanPage() {
 
                       {/* oleh */}
                       <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
-                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-700">
+                        <div className={`w-6 h-6 rounded-full ${isMedia ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'} flex items-center justify-center text-[10px] font-bold`}>
                           {report.staff?.nama?.substring(0, 2).toUpperCase()}
                         </div>
-                        <p className="text-[10px] text-gray-500">Dilaporkan oleh: <span className="font-semibold">{report.staff?.nama || '-'}</span></p>
+                        <p className="text-[10px] text-gray-500">Dilaporkan oleh: <span className={`font-semibold ${isMedia ? 'text-purple-900' : 'text-blue-900'}`}>{report.staff?.nama || '-'}</span></p>
                       </div>
                     </div>
                   </div>
@@ -410,6 +423,78 @@ export default function DetailPenugasanPage() {
         </CardContent>
       </Card>
 
+      {/* Draft Berita Section - ONLY for Media */}
+      {isMedia && penugasan.draftBeritas && penugasan.draftBeritas.length > 0 && (
+        <Card className="border-purple-100 shadow-sm overflow-hidden">
+          <CardHeader className="bg-purple-50/50 border-b border-purple-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-purple-600" />
+                <h3 className="text-lg font-semibold text-purple-900">Draft Berita & Dokumentasi</h3>
+              </div>
+              <Badge className={
+                penugasan.draftBeritas[0].status_draft === 'approved' ? 'bg-green-100 text-green-700' :
+                  penugasan.draftBeritas[0].status_draft === 'draft' ? 'bg-red-100 text-red-700' :
+                    'bg-amber-100 text-amber-700'
+              }>
+                {penugasan.draftBeritas[0].status_draft === 'approved' ? 'Disetujui' :
+                  penugasan.draftBeritas[0].status_draft === 'draft' ? 'Perlu Revisi' :
+                    'Pending Review'}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-bold text-gray-900 mb-1">{penugasan.draftBeritas[0].judul_berita}</h4>
+                <div
+                  className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap bg-gray-50 p-4 rounded-lg border border-gray-100"
+                  dangerouslySetInnerHTML={{ __html: penugasan.draftBeritas[0].isi_draft }}
+                />
+              </div>
+
+              {penugasan.draftBeritas[0].status_draft === 'draft' && penugasan.draftBeritas[0].catatan && (
+                <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
+                  <p className="text-xs font-bold text-red-800 mb-1">Catatan Revisi:</p>
+                  <p className="text-xs text-red-700">{penugasan.draftBeritas[0].catatan}</p>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Dokumentasi Media</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {penugasan.draftBeritas[0].dokumentasis?.map((doc, idx) => (
+                    <div key={idx} className="group relative aspect-video rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shadow-sm">
+                      {doc.file_path && (doc.file_path.toLowerCase().endsWith('.jpg') || doc.file_path.toLowerCase().endsWith('.jpeg') || doc.file_path.toLowerCase().endsWith('.png') || doc.file_path.toLowerCase().endsWith('.webp')) ? (
+                        <img
+                          src={`/api/uploads/berita/${doc.file_path}`}
+                          alt="Dokumentasi"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-110 cursor-pointer"
+                          onClick={() => window.open(`/api/uploads/berita/${doc.file_path}`, '_blank')}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-2">
+                          <TrendingUp className="w-8 h-8 text-purple-400" />
+                          <span className="text-[10px] text-gray-500 font-medium text-center truncate w-full">MEDIA FILE</span>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-6 text-[10px] px-2"
+                            onClick={() => window.open(`/api/uploads/berita/${doc.file_path}`, '_blank')}
+                          >
+                            Buka File
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Ringkasan */}
       <Card>
         <CardHeader>
@@ -417,9 +502,9 @@ export default function DetailPenugasanPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+            <div className={`${isMedia ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 text-center`}>
               <p className="text-sm text-gray-600 mb-1">Total Update</p>
-              <p className="text-2xl font-semibold text-blue-600">
+              <p className={`text-2xl font-semibold ${themeText}`}>
                 {penugasan.laporanKegiatans?.length ?? 0}
               </p>
               <p className="text-xs text-gray-500 mt-1">Laporan</p>
@@ -429,7 +514,7 @@ export default function DetailPenugasanPage() {
               <p className="text-2xl font-semibold text-green-600">{penugasan.nama_staf.length}</p>
               <p className="text-xs text-gray-500 mt-1">Orang</p>
             </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+            <div className={`${isMedia ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 text-center`}>
               <p className="text-sm text-gray-600 mb-1">Status Terbaru</p>
               <div className="flex justify-center mt-2">
                 <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
@@ -441,7 +526,7 @@ export default function DetailPenugasanPage() {
 
       {/* Footer Action */}
       <div className="flex justify-center pt-4">
-        <Button variant="outline" onClick={() => navigate(-1)} className="px-12">
+        <Button variant="outline" onClick={() => navigate(-1)} className="px-12 hover:bg-gray-50">
           Kembali ke Monitoring
         </Button>
       </div>

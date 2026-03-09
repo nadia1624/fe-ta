@@ -1,164 +1,114 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Search, Filter, Calendar, Clock, MapPin, User, Image, Upload, X, FileText, Eye, Edit, ChevronDown } from 'lucide-react';
+import { Search, Filter, Calendar, Clock, MapPin, User, Upload, X, FileText, Eye, Edit, Loader2, AlertCircle } from 'lucide-react';
 import CustomSelect from '../../components/ui/CustomSelect';
 import MonthPicker from '../../components/ui/month-picker';
+import { penugasanApi, beritaApi } from '../../lib/api';
+import Swal from 'sweetalert2';
 
 export default function TugasSayaMediaPage() {
+  const [tugasList, setTugasList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterBulan, setFilterBulan] = useState('2026-02');
+  const [filterBulan, setFilterBulan] = useState(new Date().toISOString().slice(0, 7));
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedTugas, setSelectedTugas] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [uploadForm, setUploadForm] = useState({
     judul_draft: '',
     konten_draft: '',
     foto_dokumentasi: [] as File[],
-    foto_previews: [] as string[]
+    foto_previews: [] as string[],
+    existing_dokumentasi: [] as any[],
+    deleted_dokumentasi_ids: [] as string[]
   });
 
-  const tugasList = [
-    {
-      id: 1,
-      agenda_id: 1,
-      judul_kegiatan: 'Rapat Koordinasi Bulanan OPD',
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      tanggal: '2026-02-10',
-      waktu: '09:00 - 12:00',
-      tempat: 'Ruang Rapat Utama',
-      penugasan_dari: 'Kasubag Media - Dra. Siti Aminah, M.Si',
-      tanggal_penugasan: '2026-02-08',
-      instruksi: 'Buat draft berita terkait rapat koordinasi OPD, sertakan foto dokumentasi minimal 3 foto.',
-      status_draft: 'Pending Review',
-      draft_uploaded: {
-        judul: 'Walikota Pimpin Rapat Koordinasi Bulanan OPD Bahas Program Prioritas 2026',
-        konten: 'Kota - Walikota Dr. H. Ahmad Suryadi, M.Si memimpin Rapat Koordinasi Bulanan...',
-        tanggal_upload: '2026-02-10 14:30',
-        foto_count: 5,
-        feedback: null
+  const fetchTugas = async () => {
+    try {
+      setLoading(true);
+      const res = await penugasanApi.getMyPenugasan();
+      if (res.success) {
+        setTugasList(res.data || []);
+      } else {
+        setError(res.message || 'Gagal mengambil data tugas');
       }
-    },
-    {
-      id: 2,
-      agenda_id: 2,
-      judul_kegiatan: 'Kunjungan Kerja ke Dinas Kesehatan',
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      tanggal: '2026-02-12',
-      waktu: '10:00 - 11:30',
-      tempat: 'Kantor Dinas Kesehatan',
-      penugasan_dari: 'Kasubag Media - Dra. Siti Aminah, M.Si',
-      tanggal_penugasan: '2026-02-10',
-      instruksi: 'Dokumentasikan kunjungan kerja Walikota, buat draft berita yang menyoroti program vaksinasi.',
-      status_draft: 'Perlu Revisi',
-      draft_uploaded: {
-        judul: 'Walikota Kunjungi Dinas Kesehatan Tinjau Program Vaksinasi',
-        konten: 'Kota - Dalam rangka monitoring program kesehatan masyarakat...',
-        tanggal_upload: '2026-02-12 13:00',
-        foto_count: 4,
-        feedback: 'Mohon ditambahkan kutipan langsung dari Walikota dan data jumlah vaksinasi yang sudah dilakukan.'
-      }
-    },
-    {
-      id: 3,
-      agenda_id: 3,
-      judul_kegiatan: 'Pembukaan Festival Seni Budaya',
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      tanggal: '2026-02-15',
-      waktu: '08:00 - 10:00',
-      tempat: 'Lapangan Utama Kota',
-      penugasan_dari: 'Kasubag Media - Dra. Siti Aminah, M.Si',
-      tanggal_penugasan: '2026-02-13',
-      instruksi: 'Liputan pembukaan festival, fokus pada keragaman budaya dan partisipasi masyarakat.',
-      status_draft: 'Belum Upload',
-      draft_uploaded: null
-    },
-    {
-      id: 4,
-      agenda_id: 4,
-      judul_kegiatan: 'Launching Program Smart City',
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      tanggal: '2026-02-05',
-      waktu: '19:00 - 21:00',
-      tempat: 'Gedung Serbaguna',
-      penugasan_dari: 'Kasubag Media - Dra. Siti Aminah, M.Si',
-      tanggal_penugasan: '2026-02-04',
-      instruksi: 'Buat draft berita tentang launching program smart city, highlight fitur-fitur utama.',
-      status_draft: 'Disetujui',
-      draft_uploaded: {
-        judul: 'Walikota Launching Program Smart City untuk Tingkatkan Pelayanan Publik',
-        konten: 'Kota - Walikota Dr. H. Ahmad Suryadi, M.Si resmi meluncurkan program Smart City...',
-        tanggal_upload: '2026-02-06 10:00',
-        foto_count: 6,
-        feedback: 'Draft berita sudah bagus dan siap dipublikasikan. Terima kasih!'
-      }
-    },
-    {
-      id: 5,
-      agenda_id: 5,
-      judul_kegiatan: 'Peresmian Gedung Baru RSUD',
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      tanggal: '2026-02-08',
-      waktu: '09:00 - 12:00',
-      tempat: 'RSUD Kota',
-      penugasan_dari: 'Kasubag Media - Dra. Siti Aminah, M.Si',
-      tanggal_penugasan: '2026-02-06',
-      instruksi: 'Dokumentasikan peresmian gedung RSUD, sertakan info kapasitas dan fasilitas baru.',
-      status_draft: 'Disetujui',
-      draft_uploaded: {
-        judul: 'Walikota Resmikan Gedung Baru RSUD Senilai Rp 50 Miliar',
-        konten: 'Kota - Gedung baru RSUD dengan kapasitas 200 tempat tidur resmi diresmikan...',
-        tanggal_upload: '2026-02-08 15:00',
-        foto_count: 8,
-        feedback: 'Konten lengkap dan informatif. Sudah dipublikasikan.'
-      }
+    } catch (err) {
+      setError('Terjadi kesalahan saat menghubungi server');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchTugas();
+  }, []);
 
   const filteredTugas = tugasList.filter(tugas => {
     const matchSearch =
-      tugas.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tugas.pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tugas.tempat.toLowerCase().includes(searchTerm.toLowerCase());
+      tugas.agenda.nama_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tugas.pimpinans.some((p: any) => p.nama_pimpinan.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      tugas.agenda.lokasi_kegiatan.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchStatus = filterStatus === 'all' || tugas.status_draft === filterStatus;
-    const matchBulan = tugas.tanggal.startsWith(filterBulan);
+    // Map DB status to display status
+    const latestDraft = (tugas.draftBeritas && tugas.draftBeritas.length > 0)
+      ? tugas.draftBeritas[tugas.draftBeritas.length - 1]
+      : null;
+
+    let displayStatus = 'Belum Upload';
+    if (latestDraft) {
+      if (latestDraft.status_draft === 'approved') displayStatus = 'Disetujui';
+      else if (latestDraft.status_draft === 'draft') displayStatus = 'Pending Review';
+      else if (latestDraft.status_draft === 'review') displayStatus = 'Perlu Revisi';
+    }
+
+    const matchStatus = filterStatus === 'all' || displayStatus === filterStatus;
+    const matchBulan = tugas.agenda.tanggal_kegiatan.startsWith(filterBulan);
 
     return matchSearch && matchStatus && matchBulan;
   });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Belum Upload':
-        return <Badge variant="warning">Belum Upload</Badge>;
-      case 'Pending Review':
-        return <Badge variant="info">Pending Review</Badge>;
-      case 'Disetujui':
-        return <Badge variant="success">Disetujui</Badge>;
-      case 'Perlu Revisi':
-        return <Badge variant="destructive">Perlu Revisi</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
+  const getStatusInfo = (tugas: any) => {
+    const latestDraft = (tugas.draftBeritas && tugas.draftBeritas.length > 0)
+      ? tugas.draftBeritas[tugas.draftBeritas.length - 1]
+      : null;
+
+    if (!latestDraft) return { label: 'Belum Upload', variant: 'warning' as any };
+    if (latestDraft.status_draft === 'approved') return { label: 'Disetujui', variant: 'success' as any };
+    if (latestDraft.status_draft === 'draft') return { label: 'Pending Review', variant: 'warning' as any };
+    if (latestDraft.status_draft === 'review') return { label: 'Perlu Revisi', variant: 'destructive' as any };
+    return { label: latestDraft.status_draft, variant: 'outline' as any };
   };
 
   const handleUploadClick = (tugas: any) => {
     setSelectedTugas(tugas);
-    if (tugas.draft_uploaded) {
+    const latestDraft = (tugas.draftBeritas && tugas.draftBeritas.length > 0)
+      ? tugas.draftBeritas[tugas.draftBeritas.length - 1]
+      : null;
+
+    if (latestDraft) {
       setUploadForm({
-        judul_draft: tugas.draft_uploaded.judul,
-        konten_draft: tugas.draft_uploaded.konten,
+        judul_draft: latestDraft.judul_berita,
+        konten_draft: latestDraft.isi_draft,
         foto_dokumentasi: [],
-        foto_previews: []
+        foto_previews: [],
+        existing_dokumentasi: latestDraft.dokumentasis || [],
+        deleted_dokumentasi_ids: []
+      });
+    } else {
+      setUploadForm({
+        judul_draft: '',
+        konten_draft: '',
+        foto_dokumentasi: [],
+        foto_previews: [],
+        existing_dokumentasi: [],
+        deleted_dokumentasi_ids: []
       });
     }
     setShowUploadModal(true);
@@ -193,34 +143,84 @@ export default function TugasSayaMediaPage() {
     });
   };
 
-  const handleSubmitDraft = (e: React.FormEvent) => {
+  const removeExistingFoto = (id_dokumentasi: string) => {
+    setUploadForm(prev => ({
+      ...prev,
+      existing_dokumentasi: prev.existing_dokumentasi.filter(doc => doc.id_dokumentasi !== id_dokumentasi),
+      deleted_dokumentasi_ids: [...prev.deleted_dokumentasi_ids, id_dokumentasi]
+    }));
+  };
+
+  const handleSubmitDraft = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!uploadForm.judul_draft || !uploadForm.konten_draft) {
-      alert('Mohon lengkapi judul dan konten draft berita');
+      Swal.fire('Peringatan', 'Mohon lengkapi judul dan konten draft berita', 'warning');
       return;
     }
 
-    if (uploadForm.foto_dokumentasi.length < 3) {
-      alert('Mohon upload minimal 3 foto dokumentasi');
+    if (uploadForm.foto_dokumentasi.length + uploadForm.existing_dokumentasi.length < 3 && (!selectedTugas.draftBeritas || selectedTugas.draftBeritas.length === 0)) {
+      Swal.fire('Peringatan', 'Mohon upload minimal 3 foto dokumentasi', 'warning');
       return;
     }
 
-    console.log('Submit draft:', uploadForm);
-    alert('Draft berita berhasil diupload!');
-    setShowUploadModal(false);
-    setUploadForm({
-      judul_draft: '',
-      konten_draft: '',
-      foto_dokumentasi: [],
-      foto_previews: []
+    const formData = new FormData();
+    formData.append('id_penugasan', selectedTugas.id_penugasan);
+    formData.append('judul_berita', uploadForm.judul_draft);
+    formData.append('isi_draft', uploadForm.konten_draft);
+
+    uploadForm.foto_dokumentasi.forEach(file => {
+      formData.append('dokumentasi', file);
     });
+
+    if (uploadForm.deleted_dokumentasi_ids.length > 0) {
+      formData.append('deleted_dokumentasi_ids', JSON.stringify(uploadForm.deleted_dokumentasi_ids));
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await beritaApi.submitDraft(formData);
+      if (res.success) {
+        Swal.fire('Berhasil', 'Draft berita berhasil diserahkan untuk direview!', 'success');
+        setShowUploadModal(false);
+        fetchTugas();
+      } else {
+        Swal.fire('Gagal', res.message || 'Terjadi kesalahan saat mengunggah draft', 'error');
+      }
+    } catch (err) {
+      Swal.fire('Error', 'Terjadi kesalahan jaringan', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const statsTotal = tugasList.length;
-  const statsBelumUpload = tugasList.filter(t => t.status_draft === 'Belum Upload').length;
-  const statsPending = tugasList.filter(t => t.status_draft === 'Pending Review').length;
-  const statsPerluRevisi = tugasList.filter(t => t.status_draft === 'Perlu Revisi').length;
+  const statsBelumUpload = tugasList.filter(t => !t.draftBeritas || t.draftBeritas.length === 0).length;
+  const statsPending = tugasList.filter(t => t.draftBeritas?.some((d: any) => d.status_draft === 'review')).length;
+  const statsPerluRevisi = tugasList.filter(t => t.draftBeritas?.length > 0 && t.draftBeritas[t.draftBeritas.length - 1].status_draft === 'draft').length;
+
+  if (loading && tugasList.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
+        <p className="text-gray-500 font-medium">Memuat data tugas...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full border-red-100 bg-red-50">
+          <CardContent className="pt-6 text-center text-red-900 font-medium">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <p>{error}</p>
+            <Button onClick={fetchTugas} variant="outline" className="mt-4">Coba Lagi</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6 pb-6">
@@ -231,44 +231,44 @@ export default function TugasSayaMediaPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardContent className="p-4">
-            <p className="text-xs text-gray-600">Total Tugas</p>
-            <p className="text-2xl font-semibold text-purple-600">{statsTotal}</p>
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Total Tugas</p>
+            <p className="text-2xl font-bold text-gray-900">{statsTotal}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardContent className="p-4">
-            <p className="text-xs text-gray-600">Belum Upload</p>
-            <p className="text-2xl font-semibold text-orange-600">{statsBelumUpload}</p>
+            <p className="text-xs text-orange-500 font-medium uppercase tracking-wider">Belum Upload</p>
+            <p className="text-2xl font-bold text-orange-600">{statsBelumUpload}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardContent className="p-4">
-            <p className="text-xs text-gray-600">Pending Review</p>
-            <p className="text-2xl font-semibold text-blue-600">{statsPending}</p>
+            <p className="text-xs text-blue-500 font-medium uppercase tracking-wider">Pending Review</p>
+            <p className="text-2xl font-bold text-blue-600">{statsPending}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-none shadow-sm">
           <CardContent className="p-4">
-            <p className="text-xs text-gray-600">Perlu Revisi</p>
-            <p className="text-2xl font-semibold text-red-600">{statsPerluRevisi}</p>
+            <p className="text-xs text-red-500 font-medium uppercase tracking-wider">Perlu Revisi</p>
+            <p className="text-2xl font-bold text-red-600">{statsPerluRevisi}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader className="border-b border-gray-200">
+      <Card className="border-none shadow-sm">
+        <CardHeader className="border-b border-gray-100">
           <div className="flex flex-col md:flex-row md:items-center gap-3">
             <div className="relative group flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors w-4 h-4 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Cari tugas..."
+                placeholder="Cari agenda atau pimpinan..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm shadow-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-gray-50/50 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white outline-none text-sm transition-all"
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
@@ -297,118 +297,144 @@ export default function TugasSayaMediaPage() {
 
         <CardContent className="p-4 md:p-6">
           <div className="space-y-4">
-            {filteredTugas.map((tugas) => (
-              <Card key={tugas.id} className="border border-gray-200">
-                <CardContent className="p-4">
-                  <div className="flex flex-col md:flex-row md:items-start gap-4">
-                    {/* Left Side - Info */}
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-base text-gray-900 mb-1">
-                              {tugas.judul_kegiatan}
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {tugas.pimpinan} · {tugas.jabatan}
-                            </p>
+            {filteredTugas.map((tugas) => {
+              const statusInfo = getStatusInfo(tugas);
+              const latestDraft = (tugas.draftBeritas && tugas.draftBeritas.length > 0)
+                ? tugas.draftBeritas[tugas.draftBeritas.length - 1]
+                : null;
+
+              return (
+                <Card key={tugas.id_penugasan} className="border border-gray-100 group hover:border-purple-200 transition-all shadow-sm">
+                  <CardContent className="p-4 md:p-5">
+                    <div className="flex flex-col md:flex-row md:items-start gap-4">
+                      {/* Left Side - Info */}
+                      <div className="flex-1 space-y-4">
+                        <div>
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 pr-4">
+                              <h3 className="font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
+                                {tugas.agenda.nama_kegiatan}
+                              </h3>
+                              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                                {tugas.pimpinans.map((p: any, idx: number) => (
+                                  <span key={idx} className="text-xs text-gray-500 flex items-center gap-1">
+                                    <User className="w-3 h-3" />
+                                    {p.nama_pimpinan} ({p.nama_jabatan})
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
                           </div>
-                          {getStatusBadge(tugas.status_draft)}
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
+                                <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                              </div>
+                              {new Date(tugas.agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric'
+                              })}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
+                                <Clock className="w-3.5 h-3.5 text-blue-600" />
+                              </div>
+                              {tugas.agenda.waktu_mulai.slice(0, 5)} - {tugas.agenda.waktu_selesai.slice(0, 5)}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-purple-50 flex items-center justify-center">
+                                <MapPin className="w-3.5 h-3.5 text-purple-600" />
+                              </div>
+                              {tugas.agenda.lokasi_kegiatan}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center">
+                                <FileText className="w-3.5 h-3.5 text-gray-600" />
+                              </div>
+                              Penugasan: {new Date(tugas.tanggal_penugasan).toLocaleDateString('id-ID')}
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            {new Date(tugas.tanggal).toLocaleDateString('id-ID', {
-                              day: '2-digit',
-                              month: 'long',
-                              year: 'numeric'
-                            })}
+                        {/* Instruksi */}
+                        {tugas.deskripsi_penugasan && (
+                          <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-3">
+                            <p className="text-[10px] font-bold text-purple-800 uppercase tracking-wider mb-1">📋 Instruksi Kasubag:</p>
+                            <p className="text-xs text-purple-900/80 leading-relaxed">{tugas.deskripsi_penugasan}</p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            {tugas.waktu}
+                        )}
+
+                        {/* Feedback Revisi */}
+                        {latestDraft?.status_draft === 'draft' && latestDraft.catatan && (
+                          <div className="bg-red-50 border border-red-100 rounded-xl p-3">
+                            <p className="text-[10px] font-bold text-red-800 uppercase tracking-wider mb-1">📝 Catatan Revisi:</p>
+                            <p className="text-xs text-red-900/80 leading-relaxed">{latestDraft.catatan}</p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            {tugas.tempat}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            {tugas.penugasan_dari}
-                          </div>
-                        </div>
+                        )}
                       </div>
 
-                      {/* Instruksi */}
-                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                        <p className="text-xs font-medium text-purple-900 mb-1">📋 Instruksi:</p>
-                        <p className="text-sm text-purple-800">{tugas.instruksi}</p>
-                      </div>
-
-                      {/* Feedback Revisi */}
-                      {tugas.draft_uploaded?.feedback && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                          <p className="text-xs font-medium text-red-900 mb-1">📝 Catatan Revisi:</p>
-                          <p className="text-sm text-red-800">{tugas.draft_uploaded.feedback}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right Side - Actions */}
-                    <div className="flex flex-col gap-2 md:w-48">
-                      {tugas.status_draft === 'Belum Upload' ? (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleUploadClick(tugas)}
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Upload Draft
-                        </Button>
-                      ) : tugas.status_draft === 'Perlu Revisi' ? (
-                        <>
+                      {/* Right Side - Actions */}
+                      <div className="flex flex-col gap-2 md:w-48">
+                        {!latestDraft ? (
                           <Button
                             variant="default"
                             size="sm"
-                            className="w-full"
+                            className="w-full bg-purple-600 hover:bg-purple-700 shadow-sm"
                             onClick={() => handleUploadClick(tugas)}
                           >
-                            <Edit className="w-4 h-4 mr-2" />
-                            Upload Revisi
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload Draft
                           </Button>
+                        ) : latestDraft.status_draft === 'review' ? (
+                          <>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="w-full bg-purple-600 hover:bg-purple-700 shadow-sm"
+                              onClick={() => handleUploadClick(tugas)}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Upload Revisi
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full border-purple-200 text-purple-700 hover:bg-purple-50"
+                              onClick={() => handleDetailClick(tugas)}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Lihat Draft
+                            </Button>
+                          </>
+                        ) : (
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full"
+                            className="w-full border-gray-200 text-gray-700 hover:bg-gray-50"
                             onClick={() => handleDetailClick(tugas)}
                           >
                             <Eye className="w-4 h-4 mr-2" />
-                            Lihat Draft
+                            Lihat {latestDraft.status_draft === 'draft' ? 'Progress' : 'Detail'}
                           </Button>
-                        </>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleDetailClick(tugas)}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Lihat Detail
-                        </Button>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
 
             {filteredTugas.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>Tidak ada tugas yang ditemukan</p>
+              <div className="text-center py-20 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100">
+                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                  <FileText className="w-8 h-8 text-gray-300" />
+                </div>
+                <h3 className="text-sm font-bold text-gray-900">Tidak ada tugas ditemukan</h3>
+                <p className="text-xs text-gray-500 mt-1">Coba sesuaikan filter atau kata kunci pencarian Anda</p>
+                <Button variant="ghost" size="sm" className="mt-4 text-purple-600" onClick={() => { setSearchTerm(''); setFilterStatus('all'); }}>Reset Filter</Button>
               </div>
             )}
           </div>
@@ -417,89 +443,114 @@ export default function TugasSayaMediaPage() {
 
       {/* Upload/Edit Draft Modal */}
       {showUploadModal && selectedTugas && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <CardHeader className="border-b border-gray-200">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border-none">
+            <CardHeader className="border-b border-gray-100 px-6 py-4 bg-white flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {selectedTugas.status_draft === 'Perlu Revisi' ? 'Upload Revisi Draft Berita' : 'Upload Draft Berita'}
-                </h3>
-                <button onClick={() => setShowUploadModal(false)}>
-                  <X className="w-5 h-5" />
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 leading-none">
+                    {selectedTugas.draftBeritas?.length > 0 && selectedTugas.draftBeritas[selectedTugas.draftBeritas.length - 1].status_draft === 'draft' ? 'Upload Revisi Draft' : 'Upload Draft Berita'}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1.5">{selectedTugas.agenda.nama_kegiatan}</p>
+                </div>
+                <button onClick={() => setShowUploadModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <X className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
             </CardHeader>
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmitDraft} className="space-y-4">
-                {/* Info Kegiatan */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-sm mb-2">{selectedTugas.judul_kegiatan}</h4>
-                  <p className="text-xs text-gray-600">
-                    {selectedTugas.pimpinan} · {new Date(selectedTugas.tanggal).toLocaleDateString('id-ID')} · {selectedTugas.waktu}
-                  </p>
-                </div>
-
+            <CardContent className="p-6 overflow-y-auto flex-1 bg-gray-50/30">
+              <form onSubmit={handleSubmitDraft} className="space-y-5">
                 {/* Judul Draft */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Judul Draft Berita <span className="text-red-500">*</span>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 flex items-center justify-between">
+                    Judul Draft Berita
+                    <span className="text-[10px] text-red-500 font-normal">* Wajib diisi</span>
                   </label>
                   <input
                     type="text"
                     value={uploadForm.judul_draft}
                     onChange={(e) => setUploadForm({ ...uploadForm, judul_draft: e.target.value })}
-                    placeholder="Contoh: Walikota Launching Program Smart City untuk Tingkatkan Pelayanan Publik"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                    placeholder="Masukkan judul berita yang menarik dan informatif..."
+                    className="w-full px-4 py-3 border border-gray-200 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all shadow-sm"
                     required
                   />
                 </div>
 
                 {/* Konten Draft */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Konten Draft Berita <span className="text-red-500">*</span>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 flex items-center justify-between">
+                    Konten Draft Berita
+                    <span className="text-[10px] text-red-500 font-normal">* Wajib diisi</span>
                   </label>
                   <textarea
                     value={uploadForm.konten_draft}
                     onChange={(e) => setUploadForm({ ...uploadForm, konten_draft: e.target.value })}
-                    rows={10}
-                    placeholder="Tulis konten berita lengkap di sini..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none"
+                    rows={12}
+                    placeholder="Tuliskan berita lengkap dengan format 5W+1H..."
+                    className="w-full px-4 py-3 border border-gray-200 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none transition-all shadow-sm"
                     required
                   />
                 </div>
 
-                {/* Foto Dokumentasi */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Foto Dokumentasi <span className="text-red-500">*</span> (Min. 3 foto)
+                {/* Dokumentasi */}
+                <div className="space-y-3">
+                  <label className="text-sm font-bold text-gray-700 flex items-center justify-between">
+                    Dokumentasi
+                    {(!selectedTugas.draftBeritas || selectedTugas.draftBeritas.length === 0) && (
+                      <span className="text-[10px] text-red-500 font-normal">Minimal upload 3 file</span>
+                    )}
                   </label>
+
+                  <div className="p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-white hover:border-purple-400 transition-colors flex flex-col items-center cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}>
+                    <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center mb-3">
+                      <Upload className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <p className="text-sm font-bold text-gray-900">Klik untuk upload dokumentasi</p>
+                    <p className="text-xs text-gray-500 mt-1">Mendukung format gambar (JPG, PNG) dan video (MP4)</p>
+                  </div>
+
                   <input
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileSelect}
-                    accept="image/*"
+                    accept="image/*,video/*"
                     multiple
                     className="hidden"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Foto
-                  </Button>
 
-                  {uploadForm.foto_previews.length > 0 && (
-                    <div className="grid grid-cols-3 gap-3 mt-3">
-                      {uploadForm.foto_previews.map((preview, index) => (
-                        <div key={index} className="relative">
-                          <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                  {(uploadForm.foto_previews.length > 0 || uploadForm.existing_dokumentasi.length > 0) && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {/* Existing Dokumentasi */}
+                      {uploadForm.existing_dokumentasi.map((doc: any, index: number) => (
+                        <div key={`existing-${doc.id_dokumentasi}`} className="relative aspect-square group">
+                          <img src={`/api/uploads/berita/${doc.file_path}`} alt={`Existing ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-gray-100 shadow-sm opacity-90" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                            <span className="text-white text-[10px] font-bold">Lama</span>
+                          </div>
                           <button
                             type="button"
-                            onClick={() => removeFoto(index)}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                            onClick={(e) => { e.stopPropagation(); removeExistingFoto(doc.id_dokumentasi); }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                            title="Hapus foto ini"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* New Upload Previews */}
+                      {uploadForm.foto_previews.map((preview, index) => (
+                        <div key={`new-${index}`} className="relative aspect-square group">
+                          <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-purple-200 shadow-sm" />
+                          <div className="absolute inset-0 bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center pointer-events-none">
+                            <span className="text-white bg-purple-600 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Baru</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); removeFoto(index); }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                            title="Batal upload"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -507,17 +558,18 @@ export default function TugasSayaMediaPage() {
                       ))}
                     </div>
                   )}
-                  <p className="text-xs text-gray-500 mt-2">
-                    Foto yang sudah diupload: {uploadForm.foto_previews.length} foto
-                  </p>
                 </div>
 
-                <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowUploadModal(false)}>
+                <div className="flex gap-3 pt-4 sticky bottom-0 bg-white/10 backdrop-blur-sm -mx-6 px-6 pb-2">
+                  <Button type="button" variant="outline" className="flex-1 rounded-xl h-11" onClick={() => setShowUploadModal(false)}>
                     Batal
                   </Button>
-                  <Button type="submit" variant="default" className="flex-1">
-                    {selectedTugas.status_draft === 'Perlu Revisi' ? 'Upload Revisi' : 'Upload Draft'}
+                  <Button type="submit" variant="default" className="flex-1 bg-purple-600 hover:bg-purple-700 rounded-xl h-11 shadow-lg shadow-purple-200" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Menyerahkan...</>
+                    ) : (
+                      <><Upload className="w-4 h-4 mr-2" /> Serahkan Draft</>
+                    )}
                   </Button>
                 </div>
               </form>
@@ -527,51 +579,121 @@ export default function TugasSayaMediaPage() {
       )}
 
       {/* Detail Modal */}
-      {showDetailModal && selectedTugas?.draft_uploaded && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <CardHeader className="border-b border-gray-200">
+      {showDetailModal && selectedTugas && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border-none">
+            <CardHeader className="border-b border-gray-100 px-6 py-4 bg-white flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Detail Draft Berita</h3>
-                <button onClick={() => setShowDetailModal(false)}>
-                  <X className="w-5 h-5" />
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Detail Draft Berita</h3>
+                  <div className="mt-1">
+                    {getStatusInfo(selectedTugas).label && <Badge variant={getStatusInfo(selectedTugas).variant}>{getStatusInfo(selectedTugas).label}</Badge>}
+                  </div>
+                </div>
+                <button onClick={() => setShowDetailModal(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <X className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Kegiatan</label>
-                  <p className="text-base text-gray-900">{selectedTugas.judul_kegiatan}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Judul Draft</label>
-                  <p className="text-base text-gray-900">{selectedTugas.draft_uploaded.judul}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Konten</label>
-                  <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedTugas.draft_uploaded.konten}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Upload</label>
-                  <p className="text-sm text-gray-900">
-                    {new Date(selectedTugas.draft_uploaded.tanggal_upload).toLocaleString('id-ID')}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Status</label>
-                  <div className="mt-1">
-                    {getStatusBadge(selectedTugas.status_draft)}
+            <CardContent className="p-0 overflow-y-auto flex-1 bg-gray-50/20">
+              {selectedTugas.draftBeritas && selectedTugas.draftBeritas.length > 0 ? (
+                (() => {
+                  const draft = selectedTugas.draftBeritas[selectedTugas.draftBeritas.length - 1];
+                  return (
+                    <div className="space-y-6 p-6">
+                      <div className="space-y-1 border-l-4 border-purple-500 pl-4 bg-purple-50/30 py-2 rounded-r-xl">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Judul Berita</label>
+                        <p className="text-lg font-bold text-gray-900 leading-snug">{draft.judul_berita}</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Tanggal Kirim</label>
+                          <p className="text-sm font-medium text-gray-700">{new Date(draft.tanggal_kirim).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Agenda Utama</label>
+                          <p className="text-sm font-medium text-gray-700 truncate">{selectedTugas.agenda.nama_kegiatan}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Isi Berita</label>
+                        <div className="bg-white border border-gray-100 rounded-2xl p-5 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap shadow-sm">
+                          {draft.isi_draft}
+                        </div>
+                      </div>
+
+                      {draft.dokumentasis && draft.dokumentasis.length > 0 && (
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Dokumentasi Terlampir ({draft.dokumentasis.length})</label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {draft.dokumentasis.map((item: any, idx: number) => (
+                              <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
+                                onClick={() => window.open(`/api/uploads/berita/${item.file_path}`, '_blank')}>
+                                <img
+                                  src={`/api/uploads/berita/${item.file_path}`}
+                                  alt={`Documentation ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=Attachment';
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {draft.revisies && draft.revisies.length > 0 && (
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Feedback Kasubag</label>
+                          <div className="space-y-2">
+                            {[...draft.revisies].sort((a: any, b: any) => new Date(b.tanggal_revisi).getTime() - new Date(a.tanggal_revisi).getTime()).map((revLog: any) => (
+                              <div key={revLog.id_revisi} className="bg-amber-50/80 border border-amber-100 rounded-2xl p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                                    <FileText className="w-3.5 h-3.5" />
+                                  </div>
+                                  <label className="text-xs font-bold text-amber-900 uppercase">
+                                    {new Date(revLog.tanggal_revisi).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  </label>
+                                </div>
+                                <p className="text-sm text-amber-900 leading-relaxed font-medium italic">"{revLog.catatan_revisi}"</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {draft.catatan && (!draft.revisies || draft.revisies.length === 0) && (
+                        <div className="bg-blue-50/80 border border-blue-100 rounded-2xl p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                              <FileText className="w-3.5 h-3.5" />
+                            </div>
+                            <label className="text-xs font-bold text-blue-900 uppercase">Feedback Kasubag (Legacy)</label>
+                          </div>
+                          <p className="text-sm text-blue-800 leading-relaxed">{draft.catatan}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 px-10 text-center">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm border border-gray-100">
+                    <FileText className="w-8 h-8 text-gray-300" />
                   </div>
+                  <p className="text-gray-900 font-bold mb-1">Belum ada draft</p>
+                  <p className="text-sm text-gray-500 mb-6">Anda belum menyerahkan draft berita untuk tugas ini.</p>
+                  <Button variant="default" onClick={() => { setShowDetailModal(false); handleUploadClick(selectedTugas); }}>Upload Draft Sekarang</Button>
                 </div>
-                {selectedTugas.draft_uploaded.feedback && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <label className="text-sm font-medium text-blue-900">Feedback</label>
-                    <p className="text-sm text-blue-800 mt-1">{selectedTugas.draft_uploaded.feedback}</p>
-                  </div>
-                )}
-              </div>
+              )}
             </CardContent>
+            <CardHeader className="border-t border-gray-100 px-6 py-4 bg-white flex-shrink-0">
+              <Button variant="outline" className="w-full" onClick={() => setShowDetailModal(false)}>Tutup</Button>
+            </CardHeader>
           </Card>
         </div>
       )}

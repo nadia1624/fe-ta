@@ -38,8 +38,8 @@ export function getActorSlug(roleName: string | null): string {
     if (role === 'kasubag protokol') return 'kasubag-protokol';
     if (role === 'kasubag media') return 'kasubag-media';
     if (role === 'ajudan') return 'ajudan';
-    if (role === 'staf protokol' || role === 'staff protokol') return 'staf-protokol';
-    if (role === 'staf media' || role === 'staff media') return 'staf-media';
+    if (role === 'staf protokol' || role === 'staff protokol') return 'staff-protokol';
+    if (role === 'staf media' || role === 'staff media') return 'staff-media';
     if (role === 'pemohon') return 'pemohon';
     return 'user';
 }
@@ -412,9 +412,31 @@ export const penugasanApi = {
         return res.json();
     },
 
+    async getStaffMedia(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/penugasan/staff-media`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
     async getAgendasForAssignment(): Promise<ApiResponse> {
         const token = getToken();
         const res = await fetch(`${API_BASE_URL}/penugasan/agendas-for-assignment`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getAgendasForMediaAssignment(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/penugasan/agendas-for-media-assignment`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -478,6 +500,97 @@ export const penugasanApi = {
         });
         return res.json();
     },
+
+    async getProtokolAssignments(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/penugasan/protokol-assignments`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+};
+
+// ==================== Berita API ====================
+
+export const beritaApi = {
+    async getPublicBerita(): Promise<ApiResponse> {
+        const res = await fetch(`${API_BASE_URL}/berita/public`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        return res.json();
+    },
+
+    async getDraftsReview(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/berita/drafts-review`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getAllDrafts(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/berita/drafts/all`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getMyDrafts(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/berita/my-drafts`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getDraftDetail(id: string): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/berita/drafts/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async reviewDraft(id: string, data: { status_draft: string, catatan?: string }): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/berita/drafts/${id}/review`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async submitDraft(formData: FormData): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/berita/drafts`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+        return res.json();
+    }
 };
 
 // ==================== Laporan Kegiatan API ====================

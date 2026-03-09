@@ -7,8 +7,8 @@ const roleMap: Record<string, string> = {
     'Kasubag Protokol': '/kasubag-protokol',
     'Kasubag Media': '/kasubag-media',
     'Ajudan': '/ajudan',
-    'Staf Protokol': '/staf-protokol',
-    'Staf Media': '/staf-media',
+    'Staf Protokol': '/staff-protokol',
+    'Staf Media': '/staff-media',
     'Pemohon': '/pemohon',
 };
 
