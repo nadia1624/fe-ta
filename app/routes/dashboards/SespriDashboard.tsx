@@ -1,129 +1,109 @@
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
-import { FileText, Clock, CheckCircle, XCircle, Calendar, UserCheck, ClipboardList, CheckSquare } from 'lucide-react';
+import { FileText, Clock, CheckCircle, XCircle, Calendar, UserCheck, ClipboardList, CheckSquare, Loader2 } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { Link } from 'react-router';
 import { Button } from '../../components/ui/button';
+import { dashboardApi } from '../../lib/api';
+
+interface ProgressReport {
+  id: string | number;
+  tipe: string;
+  waktu: string;
+  deskripsi: string;
+  foto: number;
+}
+
+interface Agenda {
+  id: string | number;
+  kegiatan: string;
+  status: 'Berlangsung' | 'Selesai' | 'Mendatang' | string;
+  pimpinan: string;
+  jabatan: string;
+  waktu: string;
+  tempat: string;
+  progress_reports: ProgressReport[];
+}
+
+interface PendingRequest {
+  nomor_surat: string;
+  status: string;
+  pemohon: string;
+  perihal: string;
+  tanggal_surat: string;
+}
+
+interface UpcomingAgenda {
+  kegiatan: string;
+  tanggal: string;
+  waktu: string;
+}
+
+interface SespriStats {
+  stats: {
+    pendingVerification: number;
+    approvedToday: number;
+    rejected: number;
+    totalProcessed: number;
+  };
+  todayAgendas: Agenda[];
+  pendingRequests: PendingRequest[];
+  upcomingAgenda: UpcomingAgenda[];
+}
 
 export default function SespriDashboard() {
-  const stats = [
-    { label: 'Perlu Verifikasi', value: '8', icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-    { label: 'Disetujui Hari Ini', value: '5', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Ditolak', value: '2', icon: XCircle, color: 'text-red-600', bg: 'bg-red-50' },
-    { label: 'Total Diproses', value: '34', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
-  ];
+  const [data, setData] = useState<SespriStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const pendingRequests = [
-    {
-      nomor_surat: '012/SP/I/2025',
-      pemohon: 'Kepala Dinas Kesehatan',
-      perihal: 'Permohonan penandatanganan MoU',
-      tanggal_surat: '2025-01-30',
-      status: 'Pending'
-    },
-    {
-      nomor_surat: '013/SP/I/2025',
-      pemohon: 'Camat Sukamaju',
-      perihal: 'Permohonan kunjungan kerja',
-      tanggal_surat: '2025-01-30',
-      status: 'Pending'
-    },
-    {
-      nomor_surat: '014/SP/I/2025',
-      pemohon: 'Ketua DPRD',
-      perihal: 'Rapat koordinasi program kerja',
-      tanggal_surat: '2025-01-29',
-      status: 'Pending'
-    },
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const upcomingAgenda = [
-    { kegiatan: 'Rapat Koordinasi Bulanan', tanggal: '2025-02-01', waktu: '09:00' },
-    { kegiatan: 'Kunjungan Dinas Pendidikan', tanggal: '2025-02-03', waktu: '10:30' },
-    { kegiatan: 'Upacara Peringatan', tanggal: '2025-02-05', waktu: '08:00' },
-  ];
-
-  // Today's date untuk contoh (February 4, 2026)
-  const today = '2025-02-04';
-
-  const todayAgenda = [
-    {
-      id: 1,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      kegiatan: 'Rapat Koordinasi Bulanan OPD',
-      tanggal: '2026-02-05',
-      waktu: '09:00 - 12:00',
-      tempat: 'Ruang Rapat Utama',
-      status: 'Selesai',
-      progress_reports: [
-        {
-          id: 1,
-          tipe: 'Persiapan',
-          deskripsi: 'Tim protokol sudah tiba di lokasi pukul 08:00. Setup ruangan, pengaturan tempat duduk pimpinan, dan koordinasi MC sudah selesai.',
-          foto: '4 foto',
-          waktu: '08:30'
-        },
-        {
-          id: 2,
-          tipe: 'Pelaksanaan',
-          deskripsi: 'Penyambutan pimpinan berjalan lancar. Protokoler acara pembukaan sesuai rundown. Koordinasi dengan MC lancar.',
-          foto: '6 foto',
-          waktu: '09:15'
-        },
-        {
-          id: 3,
-          tipe: 'Selesai',
-          deskripsi: 'Acara selesai. Pelepasan pimpinan berjalan tertib. Dokumentasi protokoler lengkap.',
-          foto: '3 foto',
-          waktu: '12:15'
-        }
-      ]
-    },
-    {
-      id: 2,
-      pimpinan: 'Dr. H. Ahmad Suryadi, M.Si',
-      jabatan: 'Walikota',
-      kegiatan: 'Kunjungan Kerja ke Dinas Kesehatan',
-      tanggal: '2026-02-05',
-      waktu: '14:00 - 16:00',
-      tempat: 'Kantor Dinas Kesehatan',
-      status: 'Berlangsung',
-      progress_reports: [
-        {
-          id: 1,
-          tipe: 'Persiapan',
-          deskripsi: 'Koordinasi dengan pihak Dinas Kesehatan sudah dilakukan. Tim protokol akan berangkat pukul 13:30.',
-          foto: '2 foto',
-          waktu: '10:00'
-        },
-        {
-          id: 2,
-          tipe: 'Sedang Berlangsung',
-          deskripsi: 'Tim sudah tiba di lokasi. Penyambutan pimpinan berjalan lancar. Koordinasi protokoler sedang berlangsung.',
-          foto: '5 foto',
-          waktu: '14:10'
-        }
-      ]
-    },
-    {
-      id: 3,
-      pimpinan: 'Ir. Hj. Siti Rahmawati, M.T',
-      jabatan: 'Wakil Walikota',
-      kegiatan: 'Launching Program Smart City',
-      tanggal: '2026-02-05',
-      waktu: '19:00 - 21:00',
-      tempat: 'Gedung Serbaguna',
-      status: 'Belum Dimulai',
-      progress_reports: [
-        {
-          id: 1,
-          tipe: 'Persiapan',
-          deskripsi: 'Survey lokasi sudah dilakukan kemarin. Rundown acara sudah final. Koordinasi dengan pihak venue sudah selesai.',
-          foto: '3 foto',
-          waktu: '09:00'
-        }
-      ]
+  const fetchDashboardData = async () => {
+    try {
+      const response = await dashboardApi.getSespriStats();
+      if (response.success) {
+        setData(response.data);
+      } else {
+        setError(response.message);
+      }
+    } catch (err) {
+      setError('Gagal memuat data dashboard');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  if (loading) {
+    return (
+      <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+        <p className="text-gray-500 font-medium animate-pulse">Memuat data dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="p-8 bg-red-50 border border-red-100 rounded-2xl text-center">
+        <p className="text-red-700 font-bold mb-2">Terjadi Kesalahan</p>
+        <p className="text-red-600 text-sm">{error || 'Data tidak tersedia'}</p>
+        <button
+          onClick={fetchDashboardData}
+          className="mt-4 px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Coba Lagi
+        </button>
+      </div>
+    );
+  }
+
+  const stats = [
+    { label: 'Perlu Verifikasi', value: data.stats.pendingVerification.toString(), icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Disetujui Hari Ini', value: data.stats.approvedToday.toString(), icon: CheckCircle, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Ditolak', value: data.stats.rejected.toString(), icon: XCircle, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Total Diproses', value: data.stats.totalProcessed.toString(), icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
   ];
 
   return (
@@ -165,7 +145,7 @@ export default function SespriDashboard() {
                 <h3 className="text-lg font-semibold text-gray-900">Agenda Pimpinan Hari Ini</h3>
               </div>
               <p className="text-sm text-gray-500 mt-1">
-                {new Date(today).toLocaleDateString('id-ID', {
+                {new Date().toLocaleDateString('id-ID', {
                   weekday: 'long',
                   day: '2-digit',
                   month: 'long',
@@ -173,13 +153,13 @@ export default function SespriDashboard() {
                 })}
               </p>
             </div>
-            <Badge variant="info">{todayAgenda.length} Agenda</Badge>
+            <Badge variant="info">{data.todayAgendas.length} Agenda</Badge>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {todayAgenda.length > 0 ? (
+          {data.todayAgendas.length > 0 ? (
             <div className="divide-y divide-gray-200">
-              {todayAgenda.map((agenda) => (
+              {data.todayAgendas.map((agenda) => (
                 <div key={agenda.id} className="px-6 py-5 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -200,7 +180,7 @@ export default function SespriDashboard() {
                           <span className="font-medium">{agenda.pimpinan}</span> · {agenda.jabatan}
                         </p>
                         <p className="text-sm text-gray-500">
-                          🕒 {agenda.waktu} · 📍 {agenda.tempat}
+                          🕒 {agenda.waktu} WIB · 📍 {agenda.tempat}
                         </p>
                       </div>
                     </div>
@@ -227,12 +207,12 @@ export default function SespriDashboard() {
                                 <p className="text-sm text-gray-900 mb-2">{report.deskripsi}</p>
                                 <div className="flex items-center gap-2 text-xs text-gray-600">
                                   <span className="inline-flex items-center gap-1">
-                                    📷 {report.foto}
+                                    📷 {report.foto} Foto
                                   </span>
                                 </div>
                               </div>
                             ))}
-                            <Link to={`/kasubag-protokol/laporan-kegiatan/${agenda.id}`}>
+                            <Link to={`/sespri/laporan-kegiatan-jadwal`}>
                               <Button variant="outline" size="sm" className="w-full mt-2">
                                 Lihat Semua Progress ({agenda.progress_reports.length})
                               </Button>
@@ -273,28 +253,34 @@ export default function SespriDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-gray-200">
-              {pendingRequests.map((request, index) => (
-                <div key={index} className="px-6 py-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="font-medium text-gray-900">{request.nomor_surat}</p>
-                    <Badge variant="warning">{request.status}</Badge>
+              {data.pendingRequests.length > 0 ? (
+                data.pendingRequests.map((request, index) => (
+                  <div key={index} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="font-medium text-gray-900">{request.nomor_surat}</p>
+                      <Badge variant="warning">{request.status}</Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-1">{request.pemohon}</p>
+                    <p className="text-sm text-gray-500 mb-2">{request.perihal}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">
+                        {new Date(request.tanggal_surat).toLocaleDateString('id-ID', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </p>
+                      <Link to="/sespri/verifikasi-permohonan">
+                        <Button variant="ghost" size="sm">Verifikasi</Button>
+                      </Link>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">{request.pemohon}</p>
-                  <p className="text-sm text-gray-500 mb-2">{request.perihal}</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-400">
-                      {new Date(request.tanggal_surat).toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                    </p>
-                    <Link to="/sespri/verifikasi-permohonan">
-                      <Button variant="ghost" size="sm">Verifikasi</Button>
-                    </Link>
-                  </div>
+                ))
+              ) : (
+                <div className="px-6 py-12 text-center text-gray-500 italic font-medium">
+                  Tidak ada permohonan perlu verifikasi
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -311,76 +297,35 @@ export default function SespriDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-gray-200">
-              {upcomingAgenda.map((agenda, index) => (
-                <div key={index} className="px-6 py-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <Calendar className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">{agenda.kegiatan}</p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {new Date(agenda.tanggal).toLocaleDateString('id-ID', {
-                          weekday: 'long',
-                          day: '2-digit',
-                          month: 'long'
-                        })}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">Waktu: {agenda.waktu} WIB</p>
+              {data.upcomingAgenda.length > 0 ? (
+                data.upcomingAgenda.map((agenda, index) => (
+                  <div key={index} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-blue-100 p-2 rounded-lg">
+                        <Calendar className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{agenda.kegiatan}</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {new Date(agenda.tanggal).toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            day: '2-digit',
+                            month: 'long'
+                          })}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">Waktu: {agenda.waktu} WIB</p>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="px-6 py-12 text-center text-gray-500 italic font-medium">
+                  Tidak ada agenda mendatang
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Link
-          to="/sespri/verifikasi-permohonan"
-          className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-        >
-          <CardContent className="p-6 text-center">
-            <CheckSquare className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-            <h4 className="font-semibold text-gray-900 mb-1">Verifikasi Permohonan</h4>
-            <p className="text-sm text-gray-600">Verifikasi & kelola permohonan</p>
-          </CardContent>
-        </Link>
-
-        <Link
-          to="/sespri/agenda-pimpinan"
-          className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-        >
-          <CardContent className="p-6 text-center">
-            <Calendar className="w-8 h-8 text-green-600 mx-auto mb-3" />
-            <h4 className="font-semibold text-gray-900 mb-1">Mengelola Agenda Pimpinan</h4>
-            <p className="text-sm text-gray-600">Kelola jadwal pimpinan</p>
-          </CardContent>
-        </Link>
-
-        <Link
-          to="/sespri/konfirmasi-pengganti"
-          className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-        >
-          <CardContent className="p-6 text-center">
-            <UserCheck className="w-8 h-8 text-orange-600 mx-auto mb-3" />
-            <h4 className="font-semibold text-gray-900 mb-1">Konfirmasi Pengganti</h4>
-            <p className="text-sm text-gray-600">Kelola perwakilan pimpinan</p>
-          </CardContent>
-        </Link>
-
-        <Link
-          to="/sespri/laporan-kegiatan-jadwal"
-          className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-        >
-          <CardContent className="p-6 text-center">
-            <ClipboardList className="w-8 h-8 text-teal-600 mx-auto mb-3" />
-            <h4 className="font-semibold text-gray-900 mb-1">Laporan Kegiatan</h4>
-            <p className="text-sm text-gray-600">Lihat laporan kegiatan</p>
-          </CardContent>
-        </Link>
       </div>
     </div>
   );

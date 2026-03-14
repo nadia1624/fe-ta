@@ -19,6 +19,7 @@ export default function AgendaPimpinanPage() {
   const [loading, setLoading] = useState(true);
   const [agendaList, setAgendaList] = useState<any[]>([]);
   const [activeAssignments, setActiveAssignments] = useState<any[]>([]);
+  const [allPimpinan, setAllPimpinan] = useState<any[]>([]);
 
   // Attendance Form State
   const [showAttendanceForm, setShowAttendanceForm] = useState(false);
@@ -44,15 +45,27 @@ export default function AgendaPimpinanPage() {
       if (assignRes.success) {
         setActiveAssignments(assignRes.data);
 
-        // 2. Get agendas
+        // 2. Get all active pimpinan for delegation selection
+        const allPimRes = await pimpinanApi.getAll();
+        if (allPimRes.success) {
+          setAllPimpinan(allPimRes.data.filter((p: any) => p.status_aktif === 'aktif' || p.status_aktif === 'Aktif'));
+        }
+
+        // 3. Get agendas
         const agendaRes = await agendaApi.getLeaderAgendas({});
         if (agendaRes.success) {
-          // Strictly filter: only keep agendas where at least one invited leader is supervised by this Ajudan
-          const myAgendas = agendaRes.data.filter((agenda: any) =>
-            agenda.agendaPimpinans?.some((ap: any) =>
+          // Filter: keep agendas where at least one of supervised leaders is EITHER:
+          // 1. Invited (agendaPimpinans)
+          // 2. Present as representative (slotAgendaPimpinans)
+          const myAgendas = agendaRes.data.filter((agenda: any) => {
+            const isInvited = agenda.agendaPimpinans?.some((ap: any) =>
               assignRes.data.some((as: any) => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
-            )
-          );
+            );
+            const isRepresentative = agenda.slotAgendaPimpinans?.some((sap: any) =>
+              assignRes.data.some((as: any) => as.id_jabatan === sap.id_jabatan_hadir && as.id_periode === sap.id_periode_hadir)
+            );
+            return isInvited || isRepresentative;
+          });
           setAgendaList(myAgendas);
         }
       }
@@ -106,11 +119,15 @@ export default function AgendaPimpinanPage() {
         // Refresh
         const agendaRes = await agendaApi.getLeaderAgendas({});
         if (agendaRes.success) {
-          const myAgendas = agendaRes.data.filter((agenda: any) =>
-            agenda.agendaPimpinans?.some((ap: any) =>
+          const myAgendas = agendaRes.data.filter((agenda: any) => {
+            const isInvited = agenda.agendaPimpinans?.some((ap: any) =>
               activeAssignments.some((as: any) => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
-            )
-          );
+            );
+            const isRepresentative = agenda.slotAgendaPimpinans?.some((sap: any) =>
+              activeAssignments.some((as: any) => as.id_jabatan === sap.id_jabatan_hadir && as.id_periode === sap.id_periode_hadir)
+            );
+            return isInvited || isRepresentative;
+          });
           setAgendaList(myAgendas);
           const updated = myAgendas.find((a: any) => a.id_agenda === selectedAgenda.id_agenda);
           if (updated) setSelectedAgenda(updated);
@@ -158,22 +175,71 @@ export default function AgendaPimpinanPage() {
       item.perihal?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.lokasi_kegiatan.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchLeader = leaderFilter === 'all' || item.agendaPimpinans?.some((ap: any) => ap.id_jabatan === leaderFilter);
+    const matchLeader = leaderFilter === 'all' || 
+      item.agendaPimpinans?.some((ap: any) => ap.id_jabatan === leaderFilter) ||
+      item.slotAgendaPimpinans?.some((sap: any) => sap.id_jabatan_hadir === leaderFilter);
 
     return matchSearch && matchLeader;
   });
 
+  const getMyParticipationStatus = (agenda: any) => {
+    const status: any[] = [];
+    
+    // 1. Check if invited
+    agenda.agendaPimpinans?.forEach((ap: any) => {
+      const assignment = activeAssignments.find(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode);
+      if (assignment) {
+        status.push({
+          type: 'invited',
+          id_jabatan: ap.id_jabatan,
+          nama_pimpinan: assignment.pimpinan?.nama_pimpinan,
+          status_kehadiran: ap.status_kehadiran,
+          raw_ap: ap
+        });
+      }
+    });
+
+    // 2. Check if representative
+    agenda.slotAgendaPimpinans?.forEach((sap: any) => {
+      const assignment = activeAssignments.find(as => as.id_jabatan === sap.id_jabatan_hadir && as.id_periode === sap.id_periode_hadir);
+      const isActuallyRepresentative = sap.id_jabatan_diusulkan !== sap.id_jabatan_hadir;
+      
+      if (assignment && isActuallyRepresentative) {
+        // Find the invitation record for the leader being represented to get the disposisi letter
+        const originalInvitation = agenda.agendaPimpinans?.find((ap: any) => 
+          ap.id_jabatan === sap.id_jabatan_diusulkan && ap.id_periode === sap.id_periode_diusulkan
+        );
+
+        // Avoid duplicate if already added as invited (though usually mutually exclusive in slots)
+        if (!status.some(s => s.id_jabatan === sap.id_jabatan_hadir && s.type === 'representative')) {
+          status.push({
+            type: 'representative',
+            id_jabatan: sap.id_jabatan_hadir,
+            nama_pimpinan: assignment.pimpinan?.nama_pimpinan,
+            status_kehadiran: 'hadir',
+            representing: originalInvitation?.periodeJabatan?.pimpinan?.nama_pimpinan || sap.periodeJabatanDiusulkan?.pimpinan?.nama_pimpinan || 'Pimpinan Lain',
+            surat_disposisi: originalInvitation?.surat_disposisi || null
+          });
+        }
+      }
+    });
+
+    return status;
+  };
+
   // Extract unique pimpinan options from agenda list for filtering
   const pimpinanFilterOptions: any[] = [];
   const seenPimpinan = new Set();
-  agendaList.forEach(a => {
-    a.agendaPimpinans?.forEach((ap: any) => {
-      const key = ap.id_jabatan;
-      if (!seenPimpinan.has(key)) {
-        seenPimpinan.add(key);
-        pimpinanFilterOptions.push(ap);
-      }
-    });
+  
+  // Also collect pimpinan from activeAssignments to ensure we have labels
+  activeAssignments.forEach(as => {
+    if (!seenPimpinan.has(as.id_jabatan)) {
+      seenPimpinan.add(as.id_jabatan);
+      pimpinanFilterOptions.push({
+        id_jabatan: as.id_jabatan,
+        nama_pimpinan: as.pimpinan?.nama_pimpinan
+      });
+    }
   });
 
   const calendarDays = () => {
@@ -289,21 +355,24 @@ export default function AgendaPimpinanPage() {
                           </div>
                           <div className="space-y-1">
                             {agendasToday.map((agenda, idx) => {
-                              const myLeaders = agenda.agendaPimpinans?.filter((ap: any) =>
-                                activeAssignments.some(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
-                              ) || [];
+                              const myParticipation = getMyParticipationStatus(agenda);
 
-                              // Determine dominant status (prioritize not attending/represented if multiple leaders, else just whatever the first one is)
+                              // Determine dominant color
                               let dominantColor = 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50';
-                              if (myLeaders.length > 0) {
-                                const hasTidakHadir = myLeaders.some((l: any) => l.status_kehadiran === 'tidak_hadir');
-                                const hasDiwakilkan = myLeaders.some((l: any) => l.status_kehadiran === 'diwakilkan');
-                                const hasHadir = myLeaders.some((l: any) => l.status_kehadiran === 'hadir');
+                              if (myParticipation.length > 0) {
+                                const hasTidakHadir = myParticipation.some((p: any) => p.status_kehadiran === 'tidak_hadir');
+                                const hasDiwakilkan = myParticipation.some((p: any) => p.status_kehadiran === 'diwakilkan');
+                                const hasHadir = myParticipation.some((p: any) => p.status_kehadiran === 'hadir');
+                                const hasRepresentative = myParticipation.some((p: any) => p.type === 'representative');
 
                                 if (hasTidakHadir) dominantColor = 'bg-red-50/50 text-red-600 border-red-100 hover:bg-red-50';
-                                else if (hasHadir) dominantColor = 'bg-green-50/50 text-green-600 border-green-100 hover:bg-green-50';
+                                else if (hasHadir || hasRepresentative) dominantColor = 'bg-green-50/50 text-green-600 border-green-100 hover:bg-green-50';
                                 else if (hasDiwakilkan) dominantColor = 'bg-blue-50/50 text-blue-600 border-blue-100 hover:bg-blue-50';
-                                else dominantColor = 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50';
+                                
+                                // Representative specific highlight in calendar if not overridden by bad status
+                                if (hasRepresentative && !hasTidakHadir) {
+                                   dominantColor = 'bg-indigo-50/50 text-indigo-600 border-indigo-100 hover:bg-indigo-50';
+                                }
                               }
 
                               return (
@@ -313,7 +382,10 @@ export default function AgendaPimpinanPage() {
                                   className={`text-[10px] p-1.5 rounded cursor-pointer truncate border transition-colors ${dominantColor}`}
                                   title={agenda.nama_kegiatan}
                                 >
-                                  <strong>{agenda.waktu_mulai.slice(0, 5)}</strong> {agenda.nama_kegiatan}
+                                  <div className="flex items-center gap-1 truncate">
+                                    {myParticipation.some(p => p.type === 'representative') && <div className="w-1 h-1 rounded-full bg-indigo-500 flex-shrink-0"></div>}
+                                    <strong>{agenda.waktu_mulai.slice(0, 5)}</strong> {agenda.nama_kegiatan}
+                                  </div>
                                 </div>
                               );
                             })}
@@ -357,9 +429,9 @@ export default function AgendaPimpinanPage() {
                     onChange={setLeaderFilter}
                     options={[
                       { value: 'all', label: 'Semua Pimpinan' },
-                      ...pimpinanFilterOptions.map(ap => ({
-                        value: ap.id_jabatan,
-                        label: ap.periodeJabatan?.pimpinan?.nama_pimpinan
+                      ...pimpinanFilterOptions.map(opt => ({
+                        value: opt.id_jabatan,
+                        label: opt.nama_pimpinan || opt.periodeJabatan?.pimpinan?.nama_pimpinan
                       }))
                     ]}
                     icon={<Filter className="w-4 h-4" />}
@@ -397,13 +469,29 @@ export default function AgendaPimpinanPage() {
                         <p className="text-xs text-gray-500">{agenda.waktu_mulai.slice(0, 5)} - {agenda.waktu_selesai.slice(0, 5)} WIB</p>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col gap-1.5">
-                          {agenda.agendaPimpinans?.filter((ap: any) =>
-                            activeAssignments.some(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
-                          ).map((ap: any, i: number) => (
-                            <div key={i} className="flex items-center gap-1.5 border rounded-full px-2 py-0.5 bg-gray-50 w-max">
-                              <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
-                              {getStatusBadge(ap.status_kehadiran)}
+                        <div className="flex flex-col gap-1.5 text-[10px]">
+                          {getMyParticipationStatus(agenda).map((stat: any, i: number) => (
+                            <div key={i} className={`flex items-center gap-1.5 border rounded-full px-2 py-0.5 w-max ${stat.type === 'representative' ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50'}`}>
+                              <span className="font-medium">
+                                {stat.nama_pimpinan}
+                                {stat.type === 'representative' && (
+                                  <span className="text-[8px] text-indigo-500 ml-1">
+                                    (Wakil {stat.representing})
+                                  </span>
+                                )}
+                              </span>
+                              {stat.type === 'representative' && stat.surat_disposisi && (
+                                <a
+                                  href={`http://localhost:3000/api/${stat.surat_disposisi.replace(/\\/g, '/')}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-indigo-600 hover:text-indigo-800"
+                                  title="Lihat Surat Disposisi"
+                                >
+                                  <FileText className="w-3 h-3" />
+                                </a>
+                              )}
+                              {getStatusBadge(stat.status_kehadiran)}
                             </div>
                           ))}
                         </div>
@@ -466,34 +554,51 @@ export default function AgendaPimpinanPage() {
                 <div className="space-y-4">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kehadiran Pimpinan</label>
                   <div className="space-y-3">
-                    {selectedAgenda.agendaPimpinans?.filter((ap: any) =>
-                      activeAssignments.some(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
-                    ).map((ap: any, i: number) => (
-                      <div key={i} className="p-3 border rounded-lg bg-gray-50 space-y-2">
+                    {getMyParticipationStatus(selectedAgenda).map((stat: any, i: number) => (
+                      <div key={i} className={`p-3 border rounded-lg space-y-2 ${stat.type === 'representative' ? 'bg-indigo-50/50 border-indigo-100' : 'bg-gray-50'}`}>
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-bold">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
-                            <p className="text-[10px] text-gray-500">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                            <p className="text-sm font-bold">
+                              {stat.nama_pimpinan}
+                              {stat.type === 'representative' && <span className="text-xs text-indigo-600 block">Mewakili: {stat.representing}</span>}
+                            </p>
                           </div>
-                          <Button variant="ghost" size="sm" className="h-7 text-[10px] text-blue-600 hover:text-blue-700 p-1" onClick={() => handleOpenAttendance(ap)}>
-                            <span className="mr-1">Edit Kehadiran</span> <Edit2 className="w-3 h-3" />
-                          </Button>
+                          {stat.type === 'invited' && (
+                            <Button variant="ghost" size="sm" className="h-7 text-[10px] text-blue-600 hover:text-blue-700 p-1" onClick={() => handleOpenAttendance(stat.raw_ap)}>
+                              <span className="mr-1">Edit Kehadiran</span> <Edit2 className="w-3 h-3" />
+                            </Button>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-gray-400">Status:</span>
-                          {getStatusBadge(ap.status_kehadiran)}
+                          {getStatusBadge(stat.status_kehadiran)}
                         </div>
-                        {ap.status_kehadiran === 'diwakilkan' && (
+                        {stat.type === 'invited' && stat.status_kehadiran === 'diwakilkan' && (
                           <div className="space-y-1">
-                            <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {ap.nama_perwakilan}</p>
-                            {ap.surat_disposisi && (
+                            <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {stat.raw_ap.nama_perwakilan}</p>
+                            {stat.raw_ap.surat_disposisi && (
                               <a
-                                href={`http://localhost:3000/api/${ap.surat_disposisi.replace(/\\/g, '/')}`}
+                                href={`http://localhost:3000/api/${stat.raw_ap.surat_disposisi.replace(/\\/g, '/')}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1"
                               >
                                 <FileText className="w-3 h-3" /> Lihat Disposisi
+                              </a>
+                            )}
+                          </div>
+                        )}
+                        {stat.type === 'representative' && (
+                          <div className="space-y-1">
+                            <p className="text-[10px] text-indigo-500 italic">Disposisi oleh: {stat.representing}</p>
+                            {stat.surat_disposisi && (
+                              <a
+                                href={`http://localhost:3000/api/${stat.surat_disposisi.replace(/\\/g, '/')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[10px] flex items-center gap-1 text-indigo-600 hover:underline mt-1 font-medium"
+                              >
+                                <FileText className="w-3 h-3" /> Lihat Surat Disposisi
                               </a>
                             )}
                           </div>
@@ -567,14 +672,30 @@ export default function AgendaPimpinanPage() {
                             <div>
                               <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Pilih Pimpinan</label>
                               <CustomSelect
-                                value={attendanceForm.id_jabatan_perwakilan}
-                                onChange={(val) => setAttendanceForm(prev => ({ ...prev, id_jabatan_perwakilan: val }))}
-                                options={[
-                                  { value: 'J001', label: 'Walikota' },
-                                  { value: 'J002', label: 'Wakil Walikota' },
-                                  { value: 'J003', label: 'Sekretaris Daerah (Sespri)' }
-                                ]}
-                                placeholder="-- Pilih Pimpinan --"
+                                value={attendanceForm.id_jabatan_perwakilan ? `${attendanceForm.id_jabatan_perwakilan}|${attendanceForm.id_periode_perwakilan}` : ''}
+                                onChange={(val) => {
+                                  if (val) {
+                                    const [id_jabatan, id_periode] = val.split('|');
+                                    setAttendanceForm(prev => ({ ...prev, id_jabatan_perwakilan: id_jabatan, id_periode_perwakilan: id_periode }));
+                                  } else {
+                                    setAttendanceForm(prev => ({ ...prev, id_jabatan_perwakilan: '', id_periode_perwakilan: '' }));
+                                  }
+                                }}
+                                options={allPimpinan
+                                  .filter(p => 
+                                    !selectedAgenda?.agendaPimpinans?.some(
+                                      (ap: any) => ap.id_jabatan === p.id_jabatan && ap.id_periode === p.id_periode
+                                    ) &&
+                                    !activeAssignments.some(
+                                      (as: any) => as.id_jabatan === p.id_jabatan && as.id_periode === p.id_periode
+                                    )
+                                  )
+                                  .map((p) => ({
+                                    value: `${p.id_jabatan}|${p.id_periode}`,
+                                    label: `${p.pimpinan?.nama_pimpinan} (${p.jabatan?.nama_jabatan})`
+                                  }))
+                                }
+                                placeholder="-- Pilih Pimpinan (Aktif) --"
                                 className="w-full"
                               />
                             </div>

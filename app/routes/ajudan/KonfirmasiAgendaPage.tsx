@@ -573,9 +573,14 @@ export default function KonfirmasiAgendaPage() {
                           value={konfirmasiData.perwakilan_id_jabatan ? `${konfirmasiData.perwakilan_id_jabatan}|${konfirmasiData.perwakilan_id_periode}` : ''}
                           onChange={(val) => handleChange({ target: { name: 'perwakilan_id_jabatan', value: val } } as any)}
                           options={allPimpinan
-                            .filter(p => !selectedAgenda?.agendaPimpinans?.some(
-                              (ap: any) => ap.id_jabatan === p.id_jabatan && ap.id_periode === p.id_periode
-                            ))
+                            .filter(p => 
+                              !selectedAgenda?.agendaPimpinans?.some(
+                                (ap: any) => ap.id_jabatan === p.id_jabatan && ap.id_periode === p.id_periode
+                              ) &&
+                              !activeAssignments.some(
+                                (as: any) => as.id_jabatan === p.id_jabatan && as.id_periode === p.id_periode
+                              )
+                            )
                             .map((p) => ({
                               value: `${p.id_jabatan}|${p.id_periode}`,
                               label: `${p.pimpinan?.nama_pimpinan} (${p.jabatan?.nama_jabatan})`

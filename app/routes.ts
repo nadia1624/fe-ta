@@ -10,6 +10,8 @@ export default [
   index("routes/LandingPage.tsx"),
   route("login", "routes/LoginPage.tsx"),
   route("register", "routes/RegisterPage.tsx"),
+  route("berita", "routes/NewsListPage.tsx"),
+  route("berita/:id", "routes/NewsDetailPage.tsx"),
 
   // Protected Routes Group
   layout("layouts/AuthGuard.tsx", [

@@ -12,7 +12,8 @@ export default function DashboardLayout() {
     nama: '',
     role: '',
     jabatan: '',
-    email: ''
+    email: '',
+    foto_profil: ''
   });
 
   useEffect(() => {
@@ -23,7 +24,8 @@ export default function DashboardLayout() {
       nama: localStorage.getItem('userName') || '',
       role: userRole || '',
       jabatan: '',
-      email: localStorage.getItem('userEmail') || ''
+      email: localStorage.getItem('userEmail') || '',
+      foto_profil: ''
     });
 
     // Fetch data terbaru dari backend
@@ -34,7 +36,8 @@ export default function DashboardLayout() {
           nama: user.nama,
           role: user.role?.nama_role || userRole || '',
           jabatan: '',
-          email: user.email
+          email: user.email,
+          foto_profil: user.foto_profil || ''
         });
       }
     }).catch(() => {

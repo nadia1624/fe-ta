@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Calendar, FileText, Users, Shield } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ChevronLeft } from 'lucide-react';
 import { authApi, setToken, setUserData } from '../lib/api';
 
 export default function LoginPage() {
@@ -38,196 +38,165 @@ export default function LoginPage() {
 
         navigate(roleMap[role] || '/admin/dashboard');
       } else {
-        setError(response.message || 'Login gagal');
+        setError(response.message || 'Email atau password salah');
       }
     } catch (err) {
-      setError('Tidak dapat terhubung ke server. Pastikan backend sudah berjalan.');
+      setError('Tidak dapat terhubung ke server. Silakan coba lagi nanti.');
     } finally {
       setLoading(false);
     }
   };
 
-  const features = [
-    { icon: Calendar, text: 'Manajemen agenda terintegrasi' },
-    { icon: FileText, text: 'Pengelolaan surat digital' },
-    { icon: Users, text: 'Koordinasi tim yang efisien' },
-    { icon: Shield, text: 'Aman & transparan' },
-  ];
-
   return (
-    <div className="min-h-screen flex">
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-[480px] xl:w-[540px] relative overflow-hidden flex-col justify-between p-10"
-        style={{
-          background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%)'
-        }}
-      >
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/3" />
-        <div className="absolute top-1/2 right-10 w-48 h-48 bg-white/5 rounded-full" />
+    <div className="min-h-screen flex font-sans bg-white">
+      {/* Left Panel - Simplified Branding */}
+      <div className="hidden lg:flex lg:w-[42%] bg-blue-600 relative overflow-hidden flex-col items-center justify-center p-12 text-center">
+        {/* Subtle decorative circles for depth without gradients */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
 
-        {/* Top - Logo */}
-        <div className="relative z-10">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 group-hover:bg-white/20 transition-colors">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">SIMAP</h1>
-              <p className="text-[11px] text-blue-200 leading-tight">Sistem Informasi Manajemen<br />Agenda Pimpinan</p>
-            </div>
-          </Link>
-        </div>
+        <div className="relative z-10 flex flex-col items-center animate-in fade-in zoom-in duration-700">
+          {/* Logo - Official SVG (Full Size & Original Colors) */}
+          <div className="mb-8 transition-transform hover:scale-110 duration-500 cursor-pointer">
+            <img src="/logo-padang.svg" alt="Logo Kota Padang" className="w-32 h-32 object-contain filter drop-shadow-2xl" />
+          </div>
 
-        {/* Middle - Tagline */}
-        <div className="relative z-10 -mt-4">
-          <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight mb-4">
-            Kelola agenda<br />pimpinan dengan<br />
-            <span className="text-blue-200">mudah & efisien</span>
-          </h2>
-          <p className="text-blue-100/80 text-sm leading-relaxed max-w-sm mb-8">
-            Platform digital terpadu untuk manajemen agenda, surat permohonan, dan koordinasi protokol pimpinan daerah.
-          </p>
-
-          <div className="space-y-3">
-            {features.map((feature, i) => {
-              const Icon = feature.icon;
-              return (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-blue-200" />
-                  </div>
-                  <span className="text-sm text-blue-100">{feature.text}</span>
-                </div>
-              );
-            })}
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold text-white tracking-widest leading-none">SIMAP</h1>
+            <div className="h-0.5 w-10 bg-white/40 mx-auto rounded-full" />
+            <p className="text-base font-semibold text-white/90 uppercase tracking-[0.25em] leading-relaxed max-w-[380px] mx-auto">
+              Sistem Informasi Manajemen Agenda Pimpinan
+            </p>
           </div>
         </div>
 
-        {/* Bottom - Copyright */}
-        <div className="relative z-10">
-          <p className="text-xs text-blue-300/60">
-            &copy; 2025 Bagian Protokol dan Komunikasi Pimpinan
+        {/* Bottom indicator */}
+        <div className="absolute bottom-10 left-0 right-0 text-center">
+          <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
+            © {new Date().getFullYear()} Bagian Protokol dan Komunikasi Pimpinan. All Rights Reserved.
           </p>
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-gray-50/50">
-        <div className="w-full max-w-[420px]">
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-white" />
+      {/* Right Panel - Clean Login Form */}
+      <div className="flex-1 flex flex-col relative bg-gray-50/20">
+        
+        {/* Dynamic Back to Home Navigation - UX Optimized */}
+        <div className="absolute top-6 left-6 sm:top-10 sm:left-10 z-20">
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium text-sm group transition-all"
+          >
+            <div className="w-9 h-9 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm group-hover:border-blue-100 group-hover:shadow-md transition-all">
+              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+            </div>
+            <span className="hidden sm:inline">Home</span>
+          </Link>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-12 lg:p-20">
+          <div className="w-full max-w-[400px]">
+            {/* Mobile minimal header */}
+            <div className="lg:hidden flex items-center gap-5 mb-14 pb-8 border-b border-gray-100">
+              <div className="transition-transform active:scale-95">
+                <img src="/logo-padang.svg" alt="Logo" className="w-12 h-12 object-contain" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">SIMAP</h1>
-                <p className="text-[10px] text-gray-500 leading-tight">Sistem Informasi Manajemen Agenda Pimpinan</p>
-              </div>
-            </Link>
-          </div>
-
-          {/* Form header */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Selamat datang kembali</h2>
-            <p className="text-sm text-gray-500">
-              Masuk ke akun Anda untuk mengelola agenda
-            </p>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="mb-5 p-3.5 bg-red-50 border border-red-200/80 rounded-xl flex items-start gap-2.5">
-              <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-red-600 text-xs font-bold">!</span>
-              </div>
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400" />
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm placeholder:text-gray-400"
-                  placeholder="nama@email.com"
-                  required
-                  disabled={loading}
-                />
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-none uppercase">SIMAP</h1>
+                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1.5">Sistem Informasi Manajemen Agenda Pimpinan</p>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400" />
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-11 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm placeholder:text-gray-400"
-                  placeholder="Masukkan password"
-                  required
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-                </button>
-              </div>
+            {/* Form header */}
+            <div className="mb-10 text-center lg:text-left">
+              <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">Selamat Datang</h2>
+              <p className="text-sm text-gray-500 font-medium tracking-tight">Silakan masuk untuk melanjutkan akses Sistem</p>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-sm font-semibold transition-all duration-200 shadow-sm shadow-blue-600/25 hover:shadow-md hover:shadow-blue-600/30"
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Memproses...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  Masuk
-                  <ArrowRight className="w-4 h-4" />
-                </span>
-              )}
-            </Button>
-          </form>
+            {error && (
+              <div className="mb-6 p-3.5 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-red-700 text-xs font-bold font-sans">!</span>
+                </div>
+                <p className="text-[12px] text-red-800 leading-none">{error}</p>
+              </div>
+            )}
 
-          {/* Footer link */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
-              Belum punya akun?{' '}
-              <Link to="/register" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
-                Daftar sebagai Pemohon
-              </Link>
-            </p>
-          </div>
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">E-mail Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    className="w-full h-12 pl-11 pr-4 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all outline-none text-gray-900 font-medium text-sm"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
 
-          {/* Mobile copyright */}
-          <div className="lg:hidden mt-10 text-center">
-            <p className="text-xs text-gray-400">
-              &copy; 2025 Bagian Protokol dan Komunikasi Pimpinan
-            </p>
+              <div className="space-y-2 group">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">Credential Access</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Masukkan password"
+                    className="w-full h-12 pl-11 pr-11 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all outline-none text-gray-900 font-medium text-sm"
+                    required
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors"
+                  >
+                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/10 transition-all active:scale-[0.98] disabled:opacity-70"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    Mengakses...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2 text-sm tracking-tight">
+                    Masuk Sekarang
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
+                )}
+              </Button>
+            </form>
+
+            {/* Bottom link */}
+            <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col gap-4 text-center">
+              <p className="text-sm text-gray-500 font-medium tracking-wide">
+                Belum punya akun?{' '}
+                <Link to="/register" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+                  Daftar Pemohon
+                </Link>
+              </p>
+            </div>
+
+            {/* Mobile copyright */}
+            <div className="lg:hidden mt-8 text-center">
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                © {new Date().getFullYear()} Bagian Protokol dan Komunikasi Pimpinan. All Rights Reserved.
+              </p>
+            </div>
           </div>
         </div>
       </div>

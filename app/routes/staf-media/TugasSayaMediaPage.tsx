@@ -196,8 +196,8 @@ export default function TugasSayaMediaPage() {
 
   const statsTotal = tugasList.length;
   const statsBelumUpload = tugasList.filter(t => !t.draftBeritas || t.draftBeritas.length === 0).length;
-  const statsPending = tugasList.filter(t => t.draftBeritas?.some((d: any) => d.status_draft === 'review')).length;
-  const statsPerluRevisi = tugasList.filter(t => t.draftBeritas?.length > 0 && t.draftBeritas[t.draftBeritas.length - 1].status_draft === 'draft').length;
+  const statsPending = tugasList.filter(t => t.draftBeritas?.length > 0 && t.draftBeritas[t.draftBeritas.length - 1].status_draft === 'draft').length;
+  const statsPerluRevisi = tugasList.filter(t => t.draftBeritas?.length > 0 && t.draftBeritas[t.draftBeritas.length - 1].status_draft === 'review').length;
 
   if (loading && tugasList.length === 0) {
     return (

@@ -9,6 +9,7 @@ interface TopBarProps {
     role: string;
     jabatan: string;
     email: string;
+    foto_profil?: string;
   };
   onLogout: () => void;
   onToggleSidebar: () => void;
@@ -47,7 +48,6 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
     if (path.includes('/staf-media')) return 'Staf Media';
     if (path.includes('/pemohon')) return 'Pemohon';
     if (path.includes('/agenda-pimpinan')) return 'Agenda Pimpinan';
-    if (path.includes('/agenda')) return 'Agenda Management';
     if (path.includes('/surat-permohonan')) return 'Surat Permohonan';
     if (path.includes('/penugasan')) return 'Penugasan Staf';
     if (path.includes('/draft-berita')) return 'Draft Berita';
@@ -62,7 +62,7 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
     if (path.includes('/konfirmasi-agenda')) return 'Konfirmasi Agenda';
     if (path.includes('/assign-staff')) return 'Assign Staf';
     if (path.includes('/review-draft')) return 'Review Draft Berita';
-    if (path.includes('/my-assignments')) return 'Tugas Saya';
+    if (path.includes('/my-assignments')) return   'Tugas Saya';
     if (path.includes('/submit-report')) return 'Submit Laporan';
     if (path.includes('/riwayat-permohonan')) return 'Riwayat Permohonan';
     if (path.includes('/submit-request')) return 'Ajukan Permohonan';
@@ -113,18 +113,34 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
                 <p className="text-sm font-medium text-gray-900">{user.nama}</p>
                 <p className="text-xs text-gray-600">{user.role}</p>
               </div>
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-700" />
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-blue-100">
+                {user.foto_profil ? (
+                  <img
+                    src={user.foto_profil}
+                    alt="Foto Profil"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-700" />
+                )}
               </div>
             </button>
 
             {showProfileMenu && (
               <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
-                <div className="px-4 py-3 border-b border-gray-200">
-                  <p className="text-sm font-medium text-gray-900">{user.nama}</p>
-                  <p className="text-xs text-gray-600 mt-1">{user.jabatan}</p>
-                  <p className="text-xs text-gray-500 mt-1">{user.email}</p>
+              <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center shrink-0">
+                  {user.foto_profil ? (
+                    <img src={user.foto_profil} alt="Foto" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-5 h-5 text-blue-700" />
+                  )}
                 </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{user.nama}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{user.email}</p>
+                </div>
+              </div>
                 <button
                   onClick={() => {
                     const rolePathMap: Record<string, string> = {

@@ -1,26 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { User, Mail, Phone, Lock, Image } from 'lucide-react';
+import { User, Mail, Phone, Lock, Pencil, Trash2 } from 'lucide-react';
+import { authApi } from '../lib/api';
+import Swal from 'sweetalert2';
+import PhotoCropModal from '../components/ui/PhotoCropModal';
+
+interface UserProfile {
+  id_user: string;
+  nama: string;
+  email: string;
+  no_hp?: string;
+  nip?: string;
+  jabatan?: string;
+  instansi?: string;
+  foto_profil?: string;
+  role?: { id_role: string; nama_role: string };
+}
 
 export default function ProfilePage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock current user data
-  const [profileData, setProfileData] = useState({
-    nama_lengkap: 'Ahmad Hidayat',
-    email: 'admin@protokol.go.id',
-    no_hp: '081234567890',
-    nip: '198705152010011001',
-    jabatan: 'Administrator Sistem',
-    role: 'Admin'
+  const [profileData, setProfileData] = useState<UserProfile>({
+    id_user: '',
+    nama: '',
+    email: '',
+    no_hp: '',
+    nip: '',
+    jabatan: '',
+    role: undefined,
   });
 
   const [profileForm, setProfileForm] = useState({
-    nama_lengkap: profileData.nama_lengkap,
-    email: profileData.email,
-    no_hp: profileData.no_hp,
+    nama: '',
+    email: '',
+    no_hp: '',
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -29,60 +48,162 @@ export default function ProfilePage() {
     confirm_password: ''
   });
 
+  // Fetch real profile data on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await authApi.getMe();
+        if (res.success && res.data) {
+          const data = res.data;
+          setProfileData(data);
+          setProfileForm({
+            nama: data.nama || '',
+            email: data.email || '',
+            no_hp: data.no_hp || '',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfileForm({
-      ...profileForm,
-      [e.target.name]: e.target.value
-    });
+    setProfileForm({ ...profileForm, [e.target.name]: e.target.value });
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswordForm({
-      ...passwordForm,
-      [e.target.name]: e.target.value
-    });
+    setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    setProfileData({
-      ...profileData,
-      ...profileForm
+  // Step 1: file picker opens → read as dataURL → show crop modal
+  const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropImageSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Step 2: crop confirmed → upload cropped file
+  const handleCropConfirm = async (croppedFile: File) => {
+    setCropImageSrc(null);
+    setUploadingPhoto(true);
+    try {
+      const res = await authApi.uploadFoto(croppedFile);
+      if (res.success && res.data?.foto_profil) {
+        setProfileData(prev => ({ ...prev, foto_profil: res.data.foto_profil }));
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Foto profil berhasil diperbarui.', confirmButtonColor: '#2563eb' });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal!', text: res.message || 'Gagal mengupload foto.', confirmButtonColor: '#2563eb' });
+      }
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat upload foto.', confirmButtonColor: '#2563eb' });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleDeleteFoto = async () => {
+    const confirm = await Swal.fire({
+      icon: 'warning',
+      title: 'Hapus Foto Profil?',
+      text: 'Foto profil Anda akan dihapus dan diganti dengan avatar default.',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Hapus',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
     });
-    setIsEditingProfile(false);
-    alert('Profil berhasil diperbarui!');
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const res = await authApi.deleteFoto();
+      if (res.success) {
+        setProfileData(prev => ({ ...prev, foto_profil: undefined }));
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Foto profil berhasil dihapus.', confirmButtonColor: '#2563eb' });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal!', text: res.message || 'Gagal menghapus foto.', confirmButtonColor: '#2563eb' });
+      }
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#2563eb' });
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await authApi.updateProfile({
+        nama: profileForm.nama,
+        email: profileForm.email,
+        no_hp: profileForm.no_hp,
+      });
+      if (res.success) {
+        setProfileData({ ...profileData, ...profileForm });
+        localStorage.setItem('userName', profileForm.nama);
+        setIsEditingProfile(false);
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Profil berhasil diperbarui.', confirmButtonColor: '#2563eb' });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal!', text: res.message || 'Gagal memperbarui profil.', confirmButtonColor: '#2563eb' });
+      }
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#2563eb' });
+    }
   };
 
   const handleCancelEditProfile = () => {
     setProfileForm({
-      nama_lengkap: profileData.nama_lengkap,
+      nama: profileData.nama,
       email: profileData.email,
-      no_hp: profileData.no_hp,
+      no_hp: profileData.no_hp || '',
     });
     setIsEditingProfile(false);
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passwordForm.new_password !== passwordForm.confirm_password) {
-      alert('Password baru dan konfirmasi password tidak cocok!');
+      Swal.fire({ icon: 'warning', title: 'Tidak Cocok!', text: 'Password baru dan konfirmasi password tidak cocok.', confirmButtonColor: '#2563eb' });
       return;
     }
 
     if (passwordForm.new_password.length < 8) {
-      alert('Password baru minimal 8 karakter!');
+      Swal.fire({ icon: 'warning', title: 'Terlalu Pendek!', text: 'Password baru minimal 8 karakter.', confirmButtonColor: '#2563eb' });
       return;
     }
 
-    alert('Password berhasil diubah!');
-    setPasswordForm({
-      current_password: '',
-      new_password: '',
-      confirm_password: ''
-    });
-    setIsChangingPassword(false);
+    try {
+      const res = await authApi.changePassword({
+        current_password: passwordForm.current_password,
+        new_password: passwordForm.new_password,
+      });
+      if (res.success) {
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Password berhasil diubah.', confirmButtonColor: '#2563eb' });
+        setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
+        setIsChangingPassword(false);
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal!', text: res.message || 'Gagal mengubah password.', confirmButtonColor: '#2563eb' });
+      }
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#2563eb' });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Profil Saya</h1>
+          <p className="text-sm text-gray-600 mt-1">Memuat data profil...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -91,22 +212,71 @@ export default function ProfilePage() {
         <p className="text-sm text-gray-600 mt-1">Kelola informasi profil dan keamanan akun Anda</p>
       </div>
 
+      {/* Crop Modal */}
+      {cropImageSrc && (
+        <PhotoCropModal
+          imageSrc={cropImageSrc}
+          onCancel={() => {
+            setCropImageSrc(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+          }}
+          onConfirm={handleCropConfirm}
+        />
+      )}
+
       {/* Profile Photo Section */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                <User className="w-12 h-12 text-white" />
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleFotoChange}
+              />
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                {profileData.foto_profil ? (
+                  <img
+                    src={profileData.foto_profil}
+                    alt="Foto Profil"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-12 h-12 text-white" />
+                )}
               </div>
-              <button className="absolute bottom-0 right-0 bg-white border-2 border-gray-200 rounded-full p-2 hover:bg-gray-50 transition-colors">
-                <Image className="w-4 h-4 text-gray-600" />
+              {/* Camera button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="absolute bottom-0 right-0 bg-white border-2 border-gray-200 rounded-full p-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                title="Ubah foto profil"
+              >
+                <Pencil className="w-4 h-4 text-gray-600" />
               </button>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">{profileData.nama_lengkap}</h3>
-              <p className="text-sm text-gray-600">{profileData.jabatan}</p>
-              <p className="text-sm text-blue-600 mt-1">{profileData.role}</p>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900">{profileData.nama || '-'}</h3>
+              <p className="text-sm text-gray-600">{profileData.jabatan || 'Belum diisi'}</p>
+              <p className="text-sm text-blue-600 mt-1">{profileData.role?.nama_role || '-'}</p>
+              {uploadingPhoto && (
+                <p className="text-xs text-blue-500 mt-1 animate-pulse">Mengupload foto...</p>
+              )}
+              {/* Delete photo button — shown only if photo exists */}
+              {profileData.foto_profil && !uploadingPhoto && (
+                <button
+                  type="button"
+                  onClick={handleDeleteFoto}
+                  className="mt-2 flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Hapus foto profil
+                </button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -132,37 +302,37 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-gray-600 mb-1">Nama Lengkap</label>
                   <div className="flex items-center gap-2 text-gray-900">
                     <User className="w-4 h-4 text-gray-400" />
-                    {profileData.nama_lengkap}
+                    {profileData.nama || '-'}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">NIP</label>
                   <div className="flex items-center gap-2 text-gray-900">
                     <User className="w-4 h-4 text-gray-400" />
-                    {profileData.nip}
+                    {profileData.nip || 'Tidak ada'}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
                   <div className="flex items-center gap-2 text-gray-900">
                     <Mail className="w-4 h-4 text-gray-400" />
-                    {profileData.email}
+                    {profileData.email || '-'}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">No HP</label>
                   <div className="flex items-center gap-2 text-gray-900">
                     <Phone className="w-4 h-4 text-gray-400" />
-                    {profileData.no_hp}
+                    {profileData.no_hp || 'Belum diisi'}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">Jabatan</label>
-                  <div className="text-gray-900">{profileData.jabatan}</div>
+                  <div className="text-gray-900">{profileData.jabatan || 'Belum diisi'}</div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">Role</label>
-                  <div className="text-gray-900">{profileData.role}</div>
+                  <div className="text-gray-900">{profileData.role?.nama_role || '-'}</div>
                 </div>
               </div>
             </div>
@@ -175,8 +345,8 @@ export default function ProfilePage() {
                   </label>
                   <input
                     type="text"
-                    name="nama_lengkap"
-                    value={profileForm.nama_lengkap}
+                    name="nama"
+                    value={profileForm.nama}
                     onChange={handleProfileChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     required
@@ -188,7 +358,7 @@ export default function ProfilePage() {
                   </label>
                   <input
                     type="text"
-                    value={profileData.nip}
+                    value={profileData.nip || ''}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
                     disabled
                   />
@@ -216,7 +386,6 @@ export default function ProfilePage() {
                     value={profileForm.no_hp}
                     onChange={handleProfileChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    required
                   />
                 </div>
               </div>
@@ -306,9 +475,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm text-yellow-900">
-                  <strong>Tips Keamanan:</strong>
-                </p>
+                <p className="text-sm text-yellow-900"><strong>Tips Keamanan:</strong></p>
                 <ul className="text-sm text-yellow-800 mt-2 space-y-1 ml-4 list-disc">
                   <li>Gunakan kombinasi huruf besar, huruf kecil, angka, dan simbol</li>
                   <li>Minimal 8 karakter panjang</li>
@@ -318,17 +485,13 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => {
                     setIsChangingPassword(false);
-                    setPasswordForm({
-                      current_password: '',
-                      new_password: '',
-                      confirm_password: ''
-                    });
-                  }} 
+                    setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
+                  }}
                   className="flex-1"
                 >
                   Batal

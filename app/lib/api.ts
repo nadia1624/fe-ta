@@ -94,6 +94,57 @@ export const authApi = {
         });
         return res.json();
     },
+
+    async updateProfile(data: { nama?: string; email?: string; no_hp?: string }): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/auth/me`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async changePassword(data: { current_password: string; new_password: string }): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async uploadFoto(file: File): Promise<ApiResponse> {
+        const token = getToken();
+        const formData = new FormData();
+        formData.append('foto', file);
+        const res = await fetch(`${API_BASE_URL}/auth/me/foto`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+        return res.json();
+    },
+
+    async deleteFoto(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/auth/me/foto`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return res.json();
+    },
 };
 
 // ==================== Periode API ====================
@@ -628,4 +679,30 @@ export const laporanKegiatanApi = {
         });
         return res.json();
     },
+};
+
+// ==================== Dashboard API ====================
+
+export const dashboardApi = {
+    async getAdminStats(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/dashboards/admin`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async getSespriStats(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/dashboards/sespri`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    }
 };
