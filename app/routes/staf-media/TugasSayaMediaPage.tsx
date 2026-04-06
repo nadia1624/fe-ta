@@ -202,7 +202,7 @@ export default function TugasSayaMediaPage() {
   if (loading && tugasList.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
+        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
         <p className="text-gray-500 font-medium">Memuat data tugas...</p>
       </div>
     );
@@ -262,13 +262,13 @@ export default function TugasSayaMediaPage() {
         <CardHeader className="border-b border-gray-100">
           <div className="flex flex-col md:flex-row md:items-center gap-3">
             <div className="relative group flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors w-4 h-4 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Cari agenda atau pimpinan..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-100 bg-gray-50/50 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white outline-none text-sm transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-blue-100 bg-blue-50/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none text-sm transition-all"
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
@@ -304,7 +304,7 @@ export default function TugasSayaMediaPage() {
                 : null;
 
               return (
-                <Card key={tugas.id_penugasan} className="border border-gray-100 group hover:border-purple-200 transition-all shadow-sm">
+                <Card key={tugas.id_penugasan} className="border border-blue-100 group hover:border-blue-200 transition-all shadow-sm">
                   <CardContent className="p-4 md:p-5">
                     <div className="flex flex-col md:flex-row md:items-start gap-4">
                       {/* Left Side - Info */}
@@ -312,7 +312,7 @@ export default function TugasSayaMediaPage() {
                         <div>
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1 pr-4">
-                              <h3 className="font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
+                              <h3 className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
                                 {tugas.agenda.nama_kegiatan}
                               </h3>
                               <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
@@ -345,8 +345,8 @@ export default function TugasSayaMediaPage() {
                               {tugas.agenda.waktu_mulai.slice(0, 5)} - {tugas.agenda.waktu_selesai.slice(0, 5)}
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-purple-50 flex items-center justify-center">
-                                <MapPin className="w-3.5 h-3.5 text-purple-600" />
+                              <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
+                                <MapPin className="w-3.5 h-3.5 text-blue-600" />
                               </div>
                               {tugas.agenda.lokasi_kegiatan}
                             </div>
@@ -361,9 +361,9 @@ export default function TugasSayaMediaPage() {
 
                         {/* Instruksi */}
                         {tugas.deskripsi_penugasan && (
-                          <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-purple-800 uppercase tracking-wider mb-1">📋 Instruksi Kasubag:</p>
-                            <p className="text-xs text-purple-900/80 leading-relaxed">{tugas.deskripsi_penugasan}</p>
+                          <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3">
+                            <p className="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1">📋 Instruksi Kasubag:</p>
+                            <p className="text-xs text-blue-900/80 leading-relaxed">{tugas.deskripsi_penugasan}</p>
                           </div>
                         )}
 
@@ -382,7 +382,7 @@ export default function TugasSayaMediaPage() {
                           <Button
                             variant="default"
                             size="sm"
-                            className="w-full bg-purple-600 hover:bg-purple-700 shadow-sm"
+                            className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
                             onClick={() => handleUploadClick(tugas)}
                           >
                             <Upload className="w-4 h-4 mr-2" />
@@ -393,7 +393,7 @@ export default function TugasSayaMediaPage() {
                             <Button
                               variant="default"
                               size="sm"
-                              className="w-full bg-purple-600 hover:bg-purple-700 shadow-sm"
+                              className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
                               onClick={() => handleUploadClick(tugas)}
                             >
                               <Edit className="w-4 h-4 mr-2" />
@@ -402,7 +402,7 @@ export default function TugasSayaMediaPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="w-full border-purple-200 text-purple-700 hover:bg-purple-50"
+                              className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
                               onClick={() => handleDetailClick(tugas)}
                             >
                               <Eye className="w-4 h-4 mr-2" />
@@ -434,7 +434,7 @@ export default function TugasSayaMediaPage() {
                 </div>
                 <h3 className="text-sm font-bold text-gray-900">Tidak ada tugas ditemukan</h3>
                 <p className="text-xs text-gray-500 mt-1">Coba sesuaikan filter atau kata kunci pencarian Anda</p>
-                <Button variant="ghost" size="sm" className="mt-4 text-purple-600" onClick={() => { setSearchTerm(''); setFilterStatus('all'); }}>Reset Filter</Button>
+                <Button variant="ghost" size="sm" className="mt-4 text-blue-600" onClick={() => { setSearchTerm(''); setFilterStatus('all'); }}>Reset Filter</Button>
               </div>
             )}
           </div>
@@ -471,7 +471,7 @@ export default function TugasSayaMediaPage() {
                     value={uploadForm.judul_draft}
                     onChange={(e) => setUploadForm({ ...uploadForm, judul_draft: e.target.value })}
                     placeholder="Masukkan judul berita yang menarik dan informatif..."
-                    className="w-full px-4 py-3 border border-gray-200 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all shadow-sm"
+                    className="w-full px-4 py-3 border border-blue-200 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm"
                     required
                   />
                 </div>
@@ -487,7 +487,7 @@ export default function TugasSayaMediaPage() {
                     onChange={(e) => setUploadForm({ ...uploadForm, konten_draft: e.target.value })}
                     rows={12}
                     placeholder="Tuliskan berita lengkap dengan format 5W+1H..."
-                    className="w-full px-4 py-3 border border-gray-200 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none transition-all shadow-sm"
+                    className="w-full px-4 py-3 border border-blue-200 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-all shadow-sm"
                     required
                   />
                 </div>
@@ -501,10 +501,10 @@ export default function TugasSayaMediaPage() {
                     )}
                   </label>
 
-                  <div className="p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-white hover:border-purple-400 transition-colors flex flex-col items-center cursor-pointer"
+                  <div className="p-6 border-2 border-dashed border-blue-200 rounded-2xl bg-white hover:border-blue-400 transition-colors flex flex-col items-center cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}>
-                    <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center mb-3">
-                      <Upload className="w-6 h-6 text-purple-600" />
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center mb-3">
+                      <Upload className="w-6 h-6 text-blue-600" />
                     </div>
                     <p className="text-sm font-bold text-gray-900">Klik untuk upload dokumentasi</p>
                     <p className="text-xs text-gray-500 mt-1">Mendukung format gambar (JPG, PNG) dan video (MP4)</p>
@@ -542,9 +542,9 @@ export default function TugasSayaMediaPage() {
                       {/* New Upload Previews */}
                       {uploadForm.foto_previews.map((preview, index) => (
                         <div key={`new-${index}`} className="relative aspect-square group">
-                          <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-purple-200 shadow-sm" />
-                          <div className="absolute inset-0 bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center pointer-events-none">
-                            <span className="text-white bg-purple-600 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Baru</span>
+                          <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-blue-200 shadow-sm" />
+                          <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center pointer-events-none">
+                            <span className="text-white bg-blue-600 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Baru</span>
                           </div>
                           <button
                             type="button"
@@ -564,7 +564,7 @@ export default function TugasSayaMediaPage() {
                   <Button type="button" variant="outline" className="flex-1 rounded-xl h-11" onClick={() => setShowUploadModal(false)}>
                     Batal
                   </Button>
-                  <Button type="submit" variant="default" className="flex-1 bg-purple-600 hover:bg-purple-700 rounded-xl h-11 shadow-lg shadow-purple-200" disabled={isSubmitting}>
+                  <Button type="submit" variant="default" className="flex-1 bg-blue-600 hover:bg-blue-700 rounded-xl h-11 shadow-lg shadow-blue-200" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Menyerahkan...</>
                     ) : (
@@ -601,7 +601,7 @@ export default function TugasSayaMediaPage() {
                   const draft = selectedTugas.draftBeritas[selectedTugas.draftBeritas.length - 1];
                   return (
                     <div className="space-y-6 p-6">
-                      <div className="space-y-1 border-l-4 border-purple-500 pl-4 bg-purple-50/30 py-2 rounded-r-xl">
+                      <div className="space-y-1 border-l-4 border-blue-500 pl-4 bg-blue-50/30 py-2 rounded-r-xl">
                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Judul Berita</label>
                         <p className="text-lg font-bold text-gray-900 leading-snug">{draft.judul_berita}</p>
                       </div>
@@ -629,7 +629,7 @@ export default function TugasSayaMediaPage() {
                           <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Dokumentasi Terlampir ({draft.dokumentasis.length})</label>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             {draft.dokumentasis.map((item: any, idx: number) => (
-                              <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
+                              <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
                                 onClick={() => window.open(`/api/uploads/berita/${item.file_path}`, '_blank')}>
                                 <img
                                   src={`/api/uploads/berita/${item.file_path}`}

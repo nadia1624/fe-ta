@@ -166,11 +166,11 @@ export default function DetailPenugasanPage() {
   const statusInfo = getDisplayStatus();
 
   const isMedia = penugasan?.jenis_penugasan === 'media';
-  const themeColor = isMedia ? 'purple' : 'blue';
-  const themeBg = isMedia ? 'bg-purple-600' : 'bg-blue-600';
-  const themeText = isMedia ? 'text-purple-600' : 'text-blue-600';
-  const themeBorder = isMedia ? 'border-purple-200' : 'border-blue-200';
-  const themeLightBg = isMedia ? 'bg-purple-50' : 'bg-blue-50';
+  const themeColor = 'blue';
+  const themeBg = 'bg-blue-600';
+  const themeText = 'text-blue-600';
+  const themeBorder = 'border-blue-200';
+  const themeLightBg = 'bg-blue-50';
 
   if (loading) {
     return (
@@ -356,13 +356,13 @@ export default function DetailPenugasanPage() {
           ) : (
             <div className="relative">
               {/* vertical line */}
-              <div className={`absolute left-3 top-4 bottom-4 w-0.5 ${isMedia ? 'bg-purple-200' : 'bg-blue-200'}`} />
+              <div className={`absolute left-3 top-4 bottom-4 w-0.5 bg-blue-200`} />
 
               <div className="space-y-6">
                 {penugasan.laporanKegiatans.map((report, index) => (
                   <div key={report.id_laporan || index} className="flex gap-4">
                     {/* dot */}
-                    <div className={`relative z-10 flex-shrink-0 w-7 h-7 rounded-full ${isMedia ? 'bg-purple-600' : 'bg-blue-600'} border-2 border-white shadow flex items-center justify-center mt-0.5`}>
+                    <div className={`relative z-10 flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 border-2 border-white shadow flex items-center justify-center mt-0.5`}>
                       <div className="w-2 h-2 rounded-full bg-white" />
                     </div>
 
@@ -370,7 +370,7 @@ export default function DetailPenugasanPage() {
                     <div className="flex-1 border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
                       {/* top row */}
                       <div className="flex items-center justify-between mb-2">
-                        <Badge className={`${isMedia ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{report.deskripsi_laporan}</Badge>
+                        <Badge className={`bg-blue-100 text-blue-700`}>{report.deskripsi_laporan}</Badge>
                         <span className="text-xs text-gray-400">
                           {new Date(report.createdAt).toLocaleDateString('id-ID', {
                             day: '2-digit',
@@ -409,10 +409,10 @@ export default function DetailPenugasanPage() {
 
                       {/* oleh */}
                       <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
-                        <div className={`w-6 h-6 rounded-full ${isMedia ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'} flex items-center justify-center text-[10px] font-bold`}>
+                        <div className={`w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold`}>
                           {report.staff?.nama?.substring(0, 2).toUpperCase()}
                         </div>
-                        <p className="text-[10px] text-gray-500">Dilaporkan oleh: <span className={`font-semibold ${isMedia ? 'text-purple-900' : 'text-blue-900'}`}>{report.staff?.nama || '-'}</span></p>
+                        <p className="text-[10px] text-gray-500">Dilaporkan oleh: <span className={`font-semibold text-blue-900`}>{report.staff?.nama || '-'}</span></p>
                       </div>
                     </div>
                   </div>
@@ -425,12 +425,12 @@ export default function DetailPenugasanPage() {
 
       {/* Draft Berita Section - ONLY for Media */}
       {isMedia && penugasan.draftBeritas && penugasan.draftBeritas.length > 0 && (
-        <Card className="border-purple-100 shadow-sm overflow-hidden">
-          <CardHeader className="bg-purple-50/50 border-b border-purple-100">
+        <Card className="border-blue-100 shadow-sm overflow-hidden">
+          <CardHeader className="bg-blue-50/50 border-b border-blue-100">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-600" />
-                <h3 className="text-lg font-semibold text-purple-900">Draft Berita & Dokumentasi</h3>
+                <FileText className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-blue-900">Draft Berita & Dokumentasi</h3>
               </div>
               <Badge className={
                 penugasan.draftBeritas[0].status_draft === 'approved' ? 'bg-green-100 text-green-700' :
@@ -474,7 +474,7 @@ export default function DetailPenugasanPage() {
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-2">
-                          <TrendingUp className="w-8 h-8 text-purple-400" />
+                          <TrendingUp className="w-8 h-8 text-blue-400" />
                           <span className="text-[10px] text-gray-500 font-medium text-center truncate w-full">MEDIA FILE</span>
                           <Button
                             variant="secondary"
@@ -502,7 +502,7 @@ export default function DetailPenugasanPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className={`${isMedia ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 text-center`}>
+            <div className={`bg-blue-50 border-blue-200 border rounded-lg p-4 text-center`}>
               <p className="text-sm text-gray-600 mb-1">Total Update</p>
               <p className={`text-2xl font-semibold ${themeText}`}>
                 {penugasan.laporanKegiatans?.length ?? 0}
@@ -514,7 +514,7 @@ export default function DetailPenugasanPage() {
               <p className="text-2xl font-semibold text-green-600">{penugasan.nama_staf.length}</p>
               <p className="text-xs text-gray-500 mt-1">Orang</p>
             </div>
-            <div className={`${isMedia ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 text-center`}>
+            <div className={`bg-blue-50 border-blue-200 border rounded-lg p-4 text-center`}>
               <p className="text-sm text-gray-600 mb-1">Status Terbaru</p>
               <div className="flex justify-center mt-2">
                 <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>

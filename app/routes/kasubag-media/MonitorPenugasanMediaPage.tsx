@@ -16,6 +16,7 @@ import {
     AlertCircle,
     Newspaper,
     FileText,
+    RotateCcw,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { penugasanApi } from '../../lib/api';
@@ -26,10 +27,17 @@ interface Pimpinan {
     nama_jabatan: string;
 }
 
+interface Revisi {
+    id_revisi: string;
+    catatan_revisi: string;
+    tanggal_revisi: string;
+}
+
 interface DraftBerita {
     id_draft_berita: string;
     judul_berita: string;
     status_draft: string;
+    revisies?: Revisi[];
 }
 
 interface Penugasan {
@@ -92,26 +100,34 @@ export default function MonitorPenugasanMediaPage() {
             pimpinansStr.toLowerCase().includes(searchTerm.toLowerCase()) ||
             staffStr.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesStatus = statusFilter === 'all' || item.status_pelaksanaan === statusFilter;
+        const latestDraft = item.draftBeritas && item.draftBeritas.length > 0 
+            ? item.draftBeritas[item.draftBeritas.length - 1] 
+            : null;
+        
+        const matchesStatus = statusFilter === 'all' || 
+            (statusFilter === 'none' && !latestDraft) ||
+            latestDraft?.status_draft === statusFilter;
 
         return matchesSearch && matchesStatus;
     });
 
-    const statsSelesai = penugasanList.filter(p => p.status_pelaksanaan === 'Selesai').length;
-    const statsBerlangsung = penugasanList.filter(p => p.status_pelaksanaan === 'Berlangsung').length;
-    const statsBelumDimulai = penugasanList.filter(p => p.status_pelaksanaan === 'Belum Dimulai').length;
-    const statsDraftSubmitted = penugasanList.filter(p => p.draftBeritas && p.draftBeritas.length > 0).length;
+    const statsDraft = penugasanList.filter(p => {
+        const latest = p.draftBeritas && p.draftBeritas.length > 0 ? p.draftBeritas[p.draftBeritas.length - 1] : null;
+        return latest?.status_draft === 'draft';
+    }).length;
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'Selesai':
-                return <Badge variant="success">Selesai</Badge>;
-            case 'Berlangsung':
-                return <Badge variant="info">Berlangsung</Badge>;
-            default:
-                return <Badge variant="warning">Belum Dimulai</Badge>;
-        }
-    };
+    const statsReview = penugasanList.filter(p => {
+        const latest = p.draftBeritas && p.draftBeritas.length > 0 ? p.draftBeritas[p.draftBeritas.length - 1] : null;
+        return latest?.status_draft === 'review';
+    }).length;
+
+    const statsApproved = penugasanList.filter(p => {
+        const latest = p.draftBeritas && p.draftBeritas.length > 0 ? p.draftBeritas[p.draftBeritas.length - 1] : null;
+        return latest?.status_draft === 'approved';
+    }).length;
+
+    const statsTotal = penugasanList.length;
+
 
     const getDraftStatusBadge = (drafts?: DraftBerita[]) => {
         if (!drafts || drafts.length === 0) {
@@ -134,7 +150,7 @@ export default function MonitorPenugasanMediaPage() {
         return (
             <div className="flex items-center justify-center min-h-64">
                 <div className="flex flex-col items-center gap-3 text-gray-500">
-                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                     <p className="text-sm">Memuat data penugasan...</p>
                 </div>
             </div>
@@ -171,55 +187,55 @@ export default function MonitorPenugasanMediaPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <Card className="border-none shadow-sm transition-all hover:shadow-md">
+                    <CardContent className="p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600">Total Penugasan</p>
-                                <p className="text-2xl font-semibold text-purple-600">{penugasanList.length}</p>
+                                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Total Penugasan</p>
+                                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsTotal}</p>
                             </div>
-                            <div className="bg-purple-50 p-3 rounded-lg">
-                                <TrendingUp className="w-6 h-6 text-purple-600" />
+                            <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
+                                <TrendingUp className="w-5 h-5 md:w-6 md:h-6" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardContent className="p-4">
+                <Card className="border-none shadow-sm transition-all hover:shadow-md">
+                    <CardContent className="p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600">Selesai</p>
-                                <p className="text-2xl font-semibold text-green-600">{statsSelesai}</p>
+                                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Menunggu Review</p>
+                                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsDraft}</p>
                             </div>
-                            <div className="bg-green-50 p-3 rounded-lg">
-                                <CheckCircle className="w-6 h-6 text-green-600" />
+                            <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
+                                <Clock className="w-5 h-5 md:w-6 md:h-6" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardContent className="p-4">
+                <Card className="border-none shadow-sm transition-all hover:shadow-md">
+                    <CardContent className="p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600">Berlangsung</p>
-                                <p className="text-2xl font-semibold text-blue-600">{statsBerlangsung}</p>
+                                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Perlu Revisi</p>
+                                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsReview}</p>
                             </div>
-                            <div className="bg-blue-50 p-3 rounded-lg">
-                                <TrendingUp className="w-6 h-6 text-blue-600" />
+                            <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
+                                <AlertCircle className="w-5 h-5 md:w-6 md:h-6" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardContent className="p-4">
+                <Card className="border-none shadow-sm transition-all hover:shadow-md">
+                    <CardContent className="p-4 md:p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600">Belum Dimulai</p>
-                                <p className="text-2xl font-semibold text-orange-600">{statsBelumDimulai}</p>
+                                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Selesai/Disetujui</p>
+                                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsApproved}</p>
                             </div>
-                            <div className="bg-orange-50 p-3 rounded-lg">
-                                <Clock className="w-6 h-6 text-orange-600" />
+                            <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
+                                <CheckCircle className="w-5 h-5 md:w-6 md:h-6" />
                             </div>
                         </div>
                     </CardContent>
@@ -233,26 +249,27 @@ export default function MonitorPenugasanMediaPage() {
                         <h3 className="text-lg font-semibold text-gray-900">Daftar Penugasan ({filteredData.length})</h3>
                         <div className="flex flex-wrap items-center gap-3">
                             <div className="relative group flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors w-4 h-4 pointer-events-none" />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4 pointer-events-none" />
                                 <input
                                     type="text"
                                     placeholder="Cari penugasan..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 border border-purple-100 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm w-full shadow-sm"
+                                    className="pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm w-full shadow-sm"
                                 />
                             </div>
-                            <CustomSelect
+                             <CustomSelect
                                 value={statusFilter}
                                 onChange={setStatusFilter}
                                 options={[
                                     { value: 'all', label: 'Semua Status' },
-                                    { value: 'Selesai', label: 'Selesai' },
-                                    { value: 'Berlangsung', label: 'Berlangsung' },
-                                    { value: 'Belum Dimulai', label: 'Belum Dimulai' },
+                                    { value: 'draft', label: 'Menunggu Review' },
+                                    { value: 'approved', label: 'Disetujui' },
+                                    { value: 'review', label: 'Perlu Revisi' },
+                                    { value: 'none', label: 'Belum Ada Draft' },
                                 ]}
-                                icon={<Filter className="w-4 h-4" />}
-                                className="w-full sm:w-48"
+                                icon={<Filter className="w-3.5 h-3.5" />}
+                                className="w-full sm:w-48 bg-white border-blue-100 shadow-sm"
                                 placeholder="Pilih Status"
                             />
                         </div>
@@ -267,21 +284,21 @@ export default function MonitorPenugasanMediaPage() {
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Pimpinan</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Waktu</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Staf Media</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Draft Berita</th>
-                                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Revisi</th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status Draft</th>
                                     <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredData.map((item) => (
-                                    <tr key={item.id_penugasan} className="hover:bg-purple-50/30 transition-colors">
+                                    <tr key={item.id_penugasan} className="hover:bg-blue-50/30 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
                                                     {item.agenda?.nama_kegiatan || '-'}
                                                 </span>
                                                 <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
-                                                    <MapPin className="w-3 h-3 text-purple-500" />
+                                                    <MapPin className="w-3 h-3 text-blue-500" />
                                                     <span className="truncate max-w-[180px]">{item.agenda?.lokasi_kegiatan || '-'}</span>
                                                 </div>
                                             </div>
@@ -291,7 +308,7 @@ export default function MonitorPenugasanMediaPage() {
                                                 {(item.pimpinans || []).length > 0
                                                     ? item.pimpinans.map((p, idx) => (
                                                         <div key={idx} className="flex flex-col">
-                                                            <span className="text-xs font-medium text-gray-900">{p.nama_pimpinan}</span>
+                                                            <span className="text-xs font-semibold text-gray-900">{p.nama_pimpinan}</span>
                                                             <span className="text-[10px] text-gray-500">{p.nama_jabatan}</span>
                                                         </div>
                                                     ))
@@ -301,8 +318,8 @@ export default function MonitorPenugasanMediaPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1.5 whitespace-nowrap">
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-700 font-medium">
-                                                    <Calendar className="w-3 h-3 text-purple-500" />
+                                                <div className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                                                    <Calendar className="w-3.5 h-3.5 text-blue-500" />
                                                     {item.agenda?.tanggal_kegiatan
                                                         ? new Date(item.agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
                                                             day: 'numeric',
@@ -312,8 +329,8 @@ export default function MonitorPenugasanMediaPage() {
                                                         : '-'}
                                                 </div>
                                                 {item.agenda?.waktu_mulai && (
-                                                    <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                                                        <Clock className="w-3 h-3 text-purple-500" />
+                                                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                        <Clock className="w-3 h-3 text-blue-500" />
                                                         {item.agenda.waktu_mulai.slice(0, 5)} – {item.agenda.waktu_selesai?.slice(0, 5) || ''}
                                                     </div>
                                                 )}
@@ -323,7 +340,7 @@ export default function MonitorPenugasanMediaPage() {
                                             <div className="flex flex-wrap gap-1.5 max-w-[180px]">
                                                 {(item.nama_staf || []).length > 0
                                                     ? item.nama_staf.map((staf, idx) => (
-                                                        <Badge key={idx} variant="outline" className="text-[10px] py-0 px-1.5 bg-white font-medium border-purple-100 text-purple-700">
+                                                        <Badge key={idx} variant="outline" className="text-[10px] py-0 px-1.5 bg-white font-medium border-blue-100 text-blue-700">
                                                             {staf}
                                                         </Badge>
                                                     ))
@@ -332,19 +349,15 @@ export default function MonitorPenugasanMediaPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Newspaper className="w-3.5 h-3.5 text-purple-500" />
-                                                    <span className="text-xs text-gray-700 font-medium">
-                                                        {item.draftBeritas?.length ?? 0} draft
-                                                    </span>
-                                                </div>
-                                                {getDraftStatusBadge(item.draftBeritas)}
+                                            <div className="flex items-center gap-1.5 min-w-[80px]">
+                                                <span className="text-xs font-semibold text-gray-900">
+                                                    {(item.draftBeritas || []).reduce((acc, draft) => acc + (draft.revisies?.length || 0), 0)} revisi
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex justify-center">
-                                                {getStatusBadge(item.status_pelaksanaan)}
+                                                {getDraftStatusBadge(item.draftBeritas)}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -352,7 +365,7 @@ export default function MonitorPenugasanMediaPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-8 w-8 p-0 hover:bg-purple-100 hover:text-purple-700 rounded-lg group"
+                                                    className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700 rounded-lg group"
                                                     title="Lihat Detail"
                                                 >
                                                     <Eye className="w-4 h-4 transition-transform group-hover:scale-110" />
@@ -368,8 +381,8 @@ export default function MonitorPenugasanMediaPage() {
 
                     {filteredData.length === 0 && (
                         <div className="py-16 text-center">
-                            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-purple-50 mb-4">
-                                <ClipboardList className="w-7 h-7 text-purple-300" />
+                            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-50 mb-4">
+                                <ClipboardList className="w-7 h-7 text-blue-300" />
                             </div>
                             <h3 className="text-sm font-semibold text-gray-900">Tidak ada penugasan media ditemukan</h3>
                             <p className="text-xs text-gray-500 mt-1">Coba sesuaikan kata kunci atau filter status Anda.</p>
@@ -377,7 +390,7 @@ export default function MonitorPenugasanMediaPage() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="mt-4 rounded-full border-purple-200 text-purple-700"
+                                    className="mt-4 rounded-full border-blue-200 text-blue-700"
                                     onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}
                                 >
                                     Reset Filter
@@ -391,7 +404,7 @@ export default function MonitorPenugasanMediaPage() {
                         Total {filteredData.length} dari {penugasanList.length} penugasan media
                     </span>
                     <span className="text-xs text-gray-400">
-                        {statsDraftSubmitted} penugasan dengan draft berita
+                        {penugasanList.filter(p => p.draftBeritas && p.draftBeritas.length > 0).length} penugasan telah memiliki draft
                     </span>
                 </div>
             </Card>

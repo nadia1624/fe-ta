@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
-import { FileText, Clock, CheckCircle, XCircle, Calendar, UserCheck, ClipboardList, CheckSquare, Loader2 } from 'lucide-react';
+import { FileText, Clock, CheckCircle, XCircle, Calendar, Loader2 } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { Link } from 'react-router';
 import { Button } from '../../components/ui/button';
 import { dashboardApi } from '../../lib/api';
+import { AgendaHariIniList } from '../../components/dashboard/AgendaHariIniList';
 
 interface ProgressReport {
   id: string | number;
@@ -46,7 +47,7 @@ interface SespriStats {
     rejected: number;
     totalProcessed: number;
   };
-  todayAgendas: Agenda[];
+  todayAgendas: any[]; // Changed to any[] since AgendaHariIniList processes raw data
   pendingRequests: PendingRequest[];
   upcomingAgenda: UpcomingAgenda[];
 }
@@ -118,15 +119,15 @@ export default function SespriDashboard() {
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index}>
-              <CardContent className="p-6">
+            <Card key={index} className="border-none shadow-sm transition-all hover:shadow-md">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                    <p className="text-3xl font-semibold text-gray-900">{stat.value}</p>
+                    <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                    <p className="text-2xl md:text-3xl font-bold text-gray-900">{stat.value}</p>
                   </div>
-                  <div className={`${stat.bg} p-3 rounded-lg`}>
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
+                  <div className={`${stat.bg} p-2 md:p-3 rounded-xl`}>
+                    <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
                   </div>
                 </div>
               </CardContent>
@@ -157,86 +158,7 @@ export default function SespriDashboard() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {data.todayAgendas.length > 0 ? (
-            <div className="divide-y divide-gray-200">
-              {data.todayAgendas.map((agenda) => (
-                <div key={agenda.id} className="px-6 py-5 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-gray-900">{agenda.kegiatan}</h4>
-                        <Badge
-                          variant={
-                            agenda.status === 'Berlangsung' ? 'info' :
-                              agenda.status === 'Selesai' ? 'success' :
-                                'warning'
-                          }
-                        >
-                          {agenda.status}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-600">
-                          <span className="font-medium">{agenda.pimpinan}</span> · {agenda.jabatan}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          🕒 {agenda.waktu} WIB · 📍 {agenda.tempat}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress Reports Section */}
-                  <div className={`mt-3 pt-3 border-t ${agenda.progress_reports.length > 0 ? 'border-blue-200' : 'border-gray-200'}`}>
-                    <div className="flex items-start gap-2">
-                      <ClipboardList className={`w-4 h-4 mt-0.5 ${agenda.progress_reports.length > 0 ? 'text-blue-600' : 'text-gray-400'}`} />
-                      <div className="flex-1">
-                        <p className="text-xs font-medium text-gray-700 mb-2">
-                          {agenda.progress_reports.length > 0 ? `✓ ${agenda.progress_reports.length} Laporan Progress` : '○ Belum Ada Laporan'}
-                        </p>
-                        {agenda.progress_reports.length > 0 ? (
-                          <div className="space-y-3">
-                            {agenda.progress_reports.map((report) => (
-                              <div key={report.id} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <div className="flex items-start gap-2 mb-2">
-                                  <Badge variant="info" className="text-xs">
-                                    {report.tipe}
-                                  </Badge>
-                                  <span className="text-xs text-gray-500">{report.waktu}</span>
-                                </div>
-                                <p className="text-sm text-gray-900 mb-2">{report.deskripsi}</p>
-                                <div className="flex items-center gap-2 text-xs text-gray-600">
-                                  <span className="inline-flex items-center gap-1">
-                                    📷 {report.foto} Foto
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                            <Link to={`/sespri/laporan-kegiatan-jadwal`}>
-                              <Button variant="outline" size="sm" className="w-full mt-2">
-                                Lihat Semua Progress ({agenda.progress_reports.length})
-                              </Button>
-                            </Link>
-                          </div>
-                        ) : (
-                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                            <p className="text-sm text-gray-500 italic">
-                              Belum ada update laporan untuk kegiatan ini
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="px-6 py-12 text-center">
-              <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">Tidak ada agenda hari ini</p>
-            </div>
-          )}
+          <AgendaHariIniList agendas={data.todayAgendas} role="sespri" />
         </CardContent>
       </Card>
 

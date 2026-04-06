@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
     ArrowLeft, CheckCircle, ClipboardList, Calendar, MapPin, Clock, User,
-    Loader2, AlertCircle, Users, FileText, TrendingUp, Newspaper, ExternalLink
+    Loader2, AlertCircle, Users, FileText, TrendingUp, Newspaper, ExternalLink, RotateCcw
 } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
 import Swal from 'sweetalert2';
@@ -99,7 +99,7 @@ export default function DetailPenugasanMediaPage() {
             text: 'Apakah Anda yakin ingin menandai penugasan ini sebagai Selesai?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#7c3aed',
+            confirmButtonColor: '#2563eb',
             cancelButtonColor: '#64748b',
             confirmButtonText: 'Ya, Tandai Selesai',
             cancelButtonText: 'Batal'
@@ -115,14 +115,14 @@ export default function DetailPenugasanMediaPage() {
                     icon: 'success',
                     title: 'Berhasil!',
                     text: 'Penugasan berhasil ditandai sebagai Selesai.',
-                    confirmButtonColor: '#7c3aed'
+                    confirmButtonColor: '#2563eb'
                 });
                 setPenugasan(prev => prev ? { ...prev, status: 'selesai', status_pelaksanaan: 'Selesai' } : prev);
             } else {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Gagal memperbarui status', confirmButtonColor: '#7c3aed' });
+                Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Gagal memperbarui status', confirmButtonColor: '#2563eb' });
             }
         } catch {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat menghubungi server', confirmButtonColor: '#7c3aed' });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat menghubungi server', confirmButtonColor: '#2563eb' });
         } finally {
             setIsUpdating(false);
         }
@@ -153,7 +153,7 @@ export default function DetailPenugasanMediaPage() {
         return (
             <div className="flex items-center justify-center min-h-64">
                 <div className="flex flex-col items-center gap-3 text-gray-500">
-                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                     <p className="text-sm">Memuat detail penugasan...</p>
                 </div>
             </div>
@@ -199,7 +199,7 @@ export default function DetailPenugasanMediaPage() {
                     <Button
                         onClick={handleTandaiSelesai}
                         disabled={isUpdating}
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                         <CheckCircle className="w-4 h-4 mr-2" />
                         {isUpdating ? 'Memproses...' : 'Tandai Selesai'}
@@ -218,26 +218,27 @@ export default function DetailPenugasanMediaPage() {
                 <CardContent className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-4">
+
                             <div>
-                                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                    <Calendar className="w-4 h-4 text-purple-600" />
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                    <Calendar className="w-4 h-4 text-blue-600" />
                                     Agenda Terkait
                                 </label>
-                                <p className="text-sm text-gray-900 mt-1 font-semibold">
+                                <p className="text-sm text-gray-900 font-semibold leading-relaxed">
                                     {penugasan.agenda?.nama_kegiatan || '-'}
                                 </p>
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                    <User className="w-4 h-4 text-purple-600" />
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                    <User className="w-4 h-4 text-blue-600" />
                                     Pimpinan
                                 </label>
-                                <div className="mt-1 space-y-2">
+                                <div className="space-y-2.5">
                                     {penugasan.pimpinans.length > 0
                                         ? penugasan.pimpinans.map((p, idx) => (
-                                            <div key={idx}>
-                                                <p className="text-sm text-gray-900 font-semibold">{p.nama_pimpinan}</p>
-                                                <p className="text-[11px] text-gray-500 uppercase tracking-tight">{p.nama_jabatan}</p>
+                                            <div key={idx} className="flex flex-col">
+                                                <p className="text-sm text-gray-900 font-semibold leading-none">{p.nama_pimpinan}</p>
+                                                <p className="text-[10px] text-gray-500 font-medium mt-1 leading-none">{p.nama_jabatan}</p>
                                             </div>
                                         ))
                                         : <p className="text-sm text-gray-400 italic">-</p>
@@ -245,11 +246,11 @@ export default function DetailPenugasanMediaPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                    <Calendar className="w-4 h-4 text-purple-600" />
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                    <Calendar className="w-4 h-4 text-blue-600" />
                                     Tanggal Kegiatan
                                 </label>
-                                <p className="text-sm text-gray-900 mt-1">
+                                <p className="text-sm text-gray-900 font-medium">
                                     {penugasan.agenda?.tanggal_kegiatan
                                         ? new Date(penugasan.agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
                                             weekday: 'long',
@@ -263,46 +264,46 @@ export default function DetailPenugasanMediaPage() {
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-purple-600" />
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                    <Clock className="w-4 h-4 text-blue-600" />
                                     Waktu
                                 </label>
-                                <p className="text-sm text-gray-900 mt-1">
+                                <p className="text-sm text-gray-900 font-medium">
                                     {penugasan.agenda?.waktu_mulai
                                         ? `${formatTime(penugasan.agenda.waktu_mulai)} – ${formatTime(penugasan.agenda.waktu_selesai)}`
                                         : '-'}
                                 </p>
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                    <MapPin className="w-4 h-4 text-purple-600" />
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                    <MapPin className="w-4 h-4 text-blue-600" />
                                     Lokasi
                                 </label>
-                                <p className="text-sm text-gray-900 mt-1">{penugasan.agenda?.lokasi_kegiatan || '-'}</p>
+                                <p className="text-sm text-gray-900 font-medium leading-relaxed">{penugasan.agenda?.lokasi_kegiatan || '-'}</p>
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                    <Users className="w-4 h-4 text-purple-600" />
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                    <Users className="w-4 h-4 text-blue-600" />
                                     Staf Media Ditugaskan
                                 </label>
-                                <div className="flex flex-wrap gap-1.5 mt-1">
+                                <div className="flex flex-wrap gap-1.5">
                                     {penugasan.nama_staf.length > 0
                                         ? penugasan.nama_staf.map((staf, idx) => (
-                                            <Badge key={idx} variant="outline" className="border-purple-200 text-purple-700 bg-purple-50">
+                                            <Badge key={idx} variant="outline" className="text-[10px] border-blue-100 text-blue-700 bg-blue-50/50 font-medium px-2 py-0.5">
                                                 {staf}
                                             </Badge>
                                         ))
-                                        : <span className="text-sm text-gray-400 italic">Tidak ada staf</span>
+                                        : <span className="text-xs text-gray-400 italic">Tidak ada staf</span>
                                     }
                                 </div>
                             </div>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                                <ClipboardList className="w-4 h-4 text-purple-600" />
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5 pt-2 border-t border-gray-50">
+                                <ClipboardList className="w-4 h-4 text-blue-600" />
                                 Deskripsi Penugasan
                             </label>
-                            <p className="text-sm text-gray-900 mt-1">
+                            <p className="text-sm text-gray-700 leading-relaxed">
                                 {penugasan.deskripsi_penugasan || <span className="italic text-gray-400">Tidak ada deskripsi</span>}
                             </p>
                         </div>
@@ -311,34 +312,43 @@ export default function DetailPenugasanMediaPage() {
             </Card>
 
             {/* Ringkasan Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-600 mb-1">Total Laporan</p>
-                    <p className="text-2xl font-semibold text-purple-600">{penugasan.laporanKegiatans?.length ?? 0}</p>
-                    <p className="text-xs text-gray-500 mt-1">Update Progress</p>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-600 mb-1">Draft Berita</p>
-                    <p className="text-2xl font-semibold text-blue-600">{penugasan.draftBeritas?.length ?? 0}</p>
-                    <p className="text-xs text-gray-500 mt-1">Dikirimkan</p>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-600 mb-1">Staf Bertugas</p>
-                    <p className="text-2xl font-semibold text-green-600">{penugasan.nama_staf.length}</p>
-                    <p className="text-xs text-gray-500 mt-1">Orang</p>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="border-none shadow-sm transition-all hover:shadow-md">
+                    <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-medium text-gray-500 mb-1">Total Revisi</p>
+                            <p className="text-2xl font-bold text-gray-900">
+                                {(penugasan.draftBeritas || []).reduce((acc, draft) => acc + (draft.revisies?.length || 0), 0)}
+                            </p>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded-xl">
+                            <RotateCcw className="w-6 h-6 text-blue-600" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="border-none shadow-sm transition-all hover:shadow-md">
+                    <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-medium text-gray-500 mb-1">Staf Bertugas</p>
+                            <p className="text-2xl font-bold text-gray-900">{penugasan.nama_staf.length}</p>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded-xl">
+                            <Users className="w-6 h-6 text-blue-600" />
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Draft Berita Section */}
             {penugasan.draftBeritas && penugasan.draftBeritas.length > 0 && (
-                <Card className="border-purple-100">
-                    <CardHeader className="bg-purple-50/50 border-b border-purple-100">
+                <Card className="border-none shadow-sm transition-all hover:shadow-md">
+                    <CardHeader className="bg-blue-50/50 border-b border-blue-100">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Newspaper className="w-5 h-5 text-purple-600" />
-                                <h3 className="text-base font-semibold text-purple-900">Draft Berita</h3>
+                                <Newspaper className="w-5 h-5 text-blue-600" />
+                                <h3 className="text-base font-semibold text-blue-900">Draft Berita</h3>
                             </div>
-                            <Badge variant="outline" className="border-purple-200 text-purple-700">
+                            <Badge variant="outline" className="border-blue-200 text-blue-700 bg-white">
                                 {penugasan.draftBeritas.length} draft
                             </Badge>
                         </div>
@@ -350,13 +360,13 @@ export default function DetailPenugasanMediaPage() {
                                 <div key={draft.id_draft_berita} className={`border rounded-lg overflow-hidden ${draftIdx > 0 ? 'mt-4' : ''}`}>
                                     <div className="flex items-center justify-between p-4 bg-gray-50 border-b">
                                         <div className="flex items-center gap-2">
-                                            <FileText className="w-4 h-4 text-purple-600" />
+                                            <FileText className="w-4 h-4 text-blue-600" />
                                             <span className="text-sm font-semibold text-gray-900">{draft.judul_berita}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Badge className={draftStatus.color}>{draftStatus.label}</Badge>
                                             <Link to={`/kasubag-media/review-draft/${draft.id_draft_berita}`}>
-                                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-purple-200 text-purple-700">
+                                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-blue-200 text-blue-700 hover:bg-blue-50">
                                                     <ExternalLink className="w-3 h-3" />
                                                     Review
                                                 </Button>
@@ -402,9 +412,9 @@ export default function DetailPenugasanMediaPage() {
                                             </div>
                                         )}
                                         {draft.dokumentasis && draft.dokumentasis.length > 0 && (
-                                            <div className="mt-4">
-                                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Dokumentasi Media</h4>
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            <div className="mt-4 pt-4 border-t border-gray-50">
+                                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Dokumentasi Media</h4>
+                                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                                                     {draft.dokumentasis.map((doc, idx) => {
                                                         const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(doc.file_path || '');
                                                         return (
@@ -418,11 +428,11 @@ export default function DetailPenugasanMediaPage() {
                                                                     />
                                                                 ) : (
                                                                     <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-2">
-                                                                        <FileText className="w-8 h-8 text-purple-400" />
+                                                                        <FileText className="w-8 h-8 text-blue-400" />
                                                                         <Button
                                                                             variant="secondary"
                                                                             size="sm"
-                                                                            className="h-6 text-[10px] px-2"
+                                                                            className="h-6 text-[10px] px-2 hover:bg-blue-50"
                                                                             onClick={() => window.open(`/api/uploads/berita/${doc.file_path}`, '_blank')}
                                                                         >
                                                                             Buka File

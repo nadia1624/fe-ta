@@ -138,7 +138,7 @@ export default function ReviewDraftBeritaPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
           <p className="text-gray-500 font-medium">Memuat detail draft...</p>
         </div>
       </div>
@@ -173,7 +173,7 @@ export default function ReviewDraftBeritaPage() {
             variant="ghost"
             size="sm"
             onClick={() => navigate(-1)}
-            className="rounded-full h-9 w-9 p-0 hover:bg-purple-100 hover:text-purple-700"
+            className="rounded-full h-9 w-9 p-0 hover:bg-blue-100 hover:text-blue-700"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -193,7 +193,7 @@ export default function ReviewDraftBeritaPage() {
               <h3 className="font-bold text-gray-900">Isi Berita</h3>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="prose prose-purple max-w-none">
+              <div className="prose prose-blue max-w-none">
                 <p className="text-gray-800 leading-relaxed whitespace-pre-wrap text-sm md:text-base"
                   dangerouslySetInnerHTML={{ __html: draft.isi_draft }}
                 />
@@ -258,7 +258,7 @@ export default function ReviewDraftBeritaPage() {
                     } else {
                       return (
                         <div className="flex flex-col items-center gap-4 text-white">
-                          <TrendingUp className="w-16 h-16 text-purple-400" />
+                          <TrendingUp className="w-16 h-16 text-blue-400" />
                           <div className="text-center">
                             <p className="text-sm font-bold">File Media</p>
                             <p className="text-[10px] opacity-60 mt-1">{currentFile}</p>
@@ -307,7 +307,7 @@ export default function ReviewDraftBeritaPage() {
                       <button
                         key={doc.id_dokumentasi}
                         onClick={() => setCurrentImageIndex(idx)}
-                        className={`relative w-20 h-14 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all flex items-center justify-center bg-gray-200 ${currentImageIndex === idx ? 'border-purple-600 ring-2 ring-purple-100 scale-105' : 'border-transparent hover:border-purple-300'
+                        className={`relative w-20 h-14 flex-shrink-0 rounded-md overflow-hidden border-2 transition-all flex items-center justify-center bg-gray-200 ${currentImageIndex === idx ? 'border-blue-600 ring-2 ring-blue-100 scale-105' : 'border-transparent hover:border-blue-300'
                           }`}
                       >
                         {isImage ? (
@@ -320,7 +320,7 @@ export default function ReviewDraftBeritaPage() {
                             }}
                           />
                         ) : (
-                          <TrendingUp className="w-6 h-6 text-purple-600" />
+                          <TrendingUp className="w-6 h-6 text-blue-600" />
                         )}
                       </button>
                     );
@@ -361,7 +361,7 @@ export default function ReviewDraftBeritaPage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div>
@@ -382,9 +382,9 @@ export default function ReviewDraftBeritaPage() {
 
           {/* Review Panel — conditional based on status */}
           {isReviewable ? (
-            <Card className="border-none shadow-sm ring-1 ring-purple-100 bg-purple-50/30">
+            <Card className="border-none shadow-sm ring-1 ring-blue-100 bg-blue-50/30">
               <CardHeader>
-                <h3 className="font-bold text-purple-900 flex items-center gap-2">
+                <h3 className="font-bold text-blue-900 flex items-center gap-2">
                   <MessageSquare className="w-4 h-4" />
                   Review &amp; Catatan
                 </h3>
@@ -392,7 +392,7 @@ export default function ReviewDraftBeritaPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <textarea
-                    className="w-full min-h-[120px] p-3 text-sm border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white outline-none transition-all placeholder:text-gray-400 shadow-inner"
+                    className="w-full min-h-[120px] p-3 text-sm border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white outline-none transition-all placeholder:text-gray-400 shadow-inner"
                     placeholder="Berikan masukan atau catatan revisi di sini..."
                     value={catatan}
                     onChange={(e) => setCatatan(e.target.value)}

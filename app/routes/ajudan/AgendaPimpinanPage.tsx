@@ -54,10 +54,16 @@ export default function AgendaPimpinanPage() {
         // 3. Get agendas
         const agendaRes = await agendaApi.getLeaderAgendas({});
         if (agendaRes.success) {
+          // Filter: only show agendas approved by Sespri or more advanced
+          const verifiedAgendas = agendaRes.data.filter((agenda: any) => {
+            const latestStatus = agenda.statusAgendas?.[0]?.status_agenda;
+            return ['approved_sespri', 'approved_ajudan', 'delegated', 'rejected_ajudan', 'completed'].includes(latestStatus);
+          });
+
           // Filter: keep agendas where at least one of supervised leaders is EITHER:
           // 1. Invited (agendaPimpinans)
           // 2. Present as representative (slotAgendaPimpinans)
-          const myAgendas = agendaRes.data.filter((agenda: any) => {
+          const myAgendas = verifiedAgendas.filter((agenda: any) => {
             const isInvited = agenda.agendaPimpinans?.some((ap: any) =>
               assignRes.data.some((as: any) => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
             );
@@ -117,14 +123,23 @@ export default function AgendaPimpinanPage() {
         Swal.fire('Berhasil', 'Status kehadiran diperbarui', 'success');
         setShowAttendanceForm(false);
         // Refresh
-        const agendaRes = await agendaApi.getLeaderAgendas({});
-        if (agendaRes.success) {
-          const myAgendas = agendaRes.data.filter((agenda: any) => {
+        const [assignRes, agendaRes] = await Promise.all([
+           pimpinanApi.getActiveAssignments(),
+           agendaApi.getLeaderAgendas({})
+        ]);
+
+        if (assignRes.success && agendaRes.success) {
+          const verifiedAgendas = agendaRes.data.filter((agenda: any) => {
+            const latestStatus = agenda.statusAgendas?.[0]?.status_agenda;
+            return ['approved_sespri', 'approved_ajudan', 'delegated', 'rejected_ajudan', 'completed'].includes(latestStatus);
+          });
+
+          const myAgendas = verifiedAgendas.filter((agenda: any) => {
             const isInvited = agenda.agendaPimpinans?.some((ap: any) =>
-              activeAssignments.some((as: any) => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
+              assignRes.data.some((as: any) => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
             );
             const isRepresentative = agenda.slotAgendaPimpinans?.some((sap: any) =>
-              activeAssignments.some((as: any) => as.id_jabatan === sap.id_jabatan_hadir && as.id_periode === sap.id_periode_hadir)
+              assignRes.data.some((as: any) => as.id_jabatan === sap.id_jabatan_hadir && as.id_periode === sap.id_periode_hadir)
             );
             return isInvited || isRepresentative;
           });

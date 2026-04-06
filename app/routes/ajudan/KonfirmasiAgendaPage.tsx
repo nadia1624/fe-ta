@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { CheckCircle, XCircle, Eye, X, UserCheck, Download, FileText, RefreshCw, ChevronDown } from 'lucide-react';
-import { agendaApi, pimpinanApi, periodeApi } from '../../lib/api';
+import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 import Swal from 'sweetalert2';
 
@@ -196,6 +196,11 @@ export default function KonfirmasiAgendaPage() {
   const ditolaks = [];
 
   agendaList.forEach(agenda => {
+    const latestStatus = agenda.statusAgendas?.[0]?.status_agenda;
+    const isApprovedBySespri = ['approved_sespri', 'approved_ajudan', 'delegated', 'rejected_ajudan', 'completed'].includes(latestStatus);
+
+    if (!isApprovedBySespri) return;
+
     agenda.agendaPimpinans?.forEach((ap: any) => {
       const isMine = activeAssignments.some(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode);
       if (isMine) {
@@ -235,9 +240,9 @@ export default function KonfirmasiAgendaPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Perlu Konfirmasi</p>
-                <p className="text-2xl font-semibold text-yellow-600">{myPendingTasks.length}</p>
+                <p className="text-2xl font-semibold text-gray-900">{myPendingTasks.length}</p>
               </div>
-              <UserCheck className="w-8 h-8 text-yellow-600" />
+              <UserCheck className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -246,9 +251,9 @@ export default function KonfirmasiAgendaPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Hadir Sendiri</p>
-                <p className="text-2xl font-semibold text-green-600">{hadirs.length}</p>
+                <p className="text-2xl font-semibold text-gray-900">{hadirs.length}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -257,7 +262,7 @@ export default function KonfirmasiAgendaPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Diwakilkan</p>
-                <p className="text-2xl font-semibold text-blue-600">{diwakilkans.length}</p>
+                <p className="text-2xl font-semibold text-gray-900">{diwakilkans.length}</p>
               </div>
               <UserCheck className="w-8 h-8 text-blue-600" />
             </div>
@@ -268,9 +273,9 @@ export default function KonfirmasiAgendaPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Tidak Hadir</p>
-                <p className="text-2xl font-semibold text-red-600">{ditolaks.length}</p>
+                <p className="text-2xl font-semibold text-gray-900">{ditolaks.length}</p>
               </div>
-              <XCircle className="w-8 h-8 text-red-600" />
+              <XCircle className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>

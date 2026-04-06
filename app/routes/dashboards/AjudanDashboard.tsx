@@ -28,6 +28,11 @@ export default function AjudanDashboard() {
           // 1. Invited (agendaPimpinans)
           // 2. Present as representative (slotAgendaPimpinans)
           const myAgendas = agendaRes.data.filter((agenda: any) => {
+            // Include status filter here too for consistency and to reduce state size
+            const latestStatus = agenda.statusAgendas?.[0]?.status_agenda;
+            const isApproved = ['approved_sespri', 'approved_ajudan', 'delegated', 'rejected_ajudan', 'completed'].includes(latestStatus);
+            if (!isApproved) return false;
+
             const isInvited = agenda.agendaPimpinans?.some((ap: any) =>
               assignRes.data.some((as: any) => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode)
             );
@@ -49,7 +54,7 @@ export default function AjudanDashboard() {
 
   const getParticipationInfo = (agenda: any) => {
     const info: any[] = [];
-    
+
     // 1. Check if invited
     agenda.agendaPimpinans?.forEach((ap: any) => {
       const assignment = activeAssignments.find(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode);
@@ -66,7 +71,7 @@ export default function AjudanDashboard() {
     agenda.slotAgendaPimpinans?.forEach((sap: any) => {
       const assignment = activeAssignments.find(as => as.id_jabatan === sap.id_jabatan_hadir && as.id_periode === sap.id_periode_hadir);
       const isActuallyRepresentative = sap.id_jabatan_diusulkan !== sap.id_jabatan_hadir;
-      
+
       if (assignment && isActuallyRepresentative) {
         if (!info.some(s => s.status_kehadiran === 'hadir' && s.nama_pimpinan === assignment.pimpinan?.nama_pimpinan)) {
           info.push({
@@ -94,22 +99,27 @@ export default function AjudanDashboard() {
   // derived data calculations
   const todayStr = new Date().toLocaleDateString('en-CA');
   const monthStart = new Date();
-  monthStart.setDate(1); 
+  monthStart.setDate(1);
   const monthStartStr = monthStart.toLocaleDateString('en-CA');
-  
+
   const lastDay = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
   const monthEndStr = lastDay.toLocaleDateString('en-CA');
 
   const pendingConfirmation: any[] = [];
   const todayAgenda: any[] = [];
   const upcomingAgenda: any[] = [];
-  
+
   let countPending = 0;
   let countConfirmed = 0;
   let countThisMonth = 0;
   let countCanceledOrAbsent = 0;
 
   agendas.forEach(agenda => {
+    const latestStatus = agenda.statusAgendas?.[0]?.status_agenda;
+    const isApprovedBySespri = ['approved_sespri', 'approved_ajudan', 'delegated', 'rejected_ajudan', 'completed'].includes(latestStatus);
+
+    if (!isApprovedBySespri) return;
+
     const isThisMonth = agenda.tanggal_kegiatan >= monthStartStr && agenda.tanggal_kegiatan <= monthEndStr;
     const isToday = agenda.tanggal_kegiatan === todayStr;
     const isFuture = agenda.tanggal_kegiatan > todayStr;
@@ -117,26 +127,26 @@ export default function AjudanDashboard() {
     if (isThisMonth) countThisMonth++;
 
     const participations = getParticipationInfo(agenda);
-    
+
     // Logic for Pending
     const hasPending = participations.some(p => p.type === 'invited' && (p.status_kehadiran === 'pending' || !p.status_kehadiran));
     if (hasPending) {
-        countPending++;
-        pendingConfirmation.push(agenda);
+      countPending++;
+      pendingConfirmation.push(agenda);
     }
 
     // Logic for Confirmed
     const isParticipating = participations.some(p => p.status_kehadiran === 'hadir' || p.status_kehadiran === 'diwakilkan');
     if (isParticipating) {
-        countConfirmed++;
-        if (isToday) todayAgenda.push(agenda);
-        else if (isFuture && upcomingAgenda.length < 5) upcomingAgenda.push(agenda);
+      countConfirmed++;
+      if (isToday) todayAgenda.push(agenda);
+      else if (isFuture && upcomingAgenda.length < 5) upcomingAgenda.push(agenda);
     }
 
     // Logic for Absent
     const isAbsent = participations.some(p => p.status_kehadiran === 'tidak_hadir');
     if (isAbsent) {
-        countCanceledOrAbsent++;
+      countCanceledOrAbsent++;
     }
   });
 
@@ -167,15 +177,15 @@ export default function AjudanDashboard() {
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index}>
-              <CardContent className="p-6">
+            <Card key={index} className="border-none shadow-sm transition-all hover:shadow-md">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                    <p className="text-3xl font-semibold text-gray-900">{stat.value}</p>
+                    <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                    <p className="text-2xl md:text-3xl font-bold text-gray-900">{stat.value}</p>
                   </div>
-                  <div className={`${stat.bg} p-3 rounded-lg`}>
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
+                  <div className={`${stat.bg} p-2 md:p-3 rounded-xl`}>
+                    <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
                   </div>
                 </div>
               </CardContent>
@@ -259,8 +269,8 @@ export default function AjudanDashboard() {
                         <div className="flex flex-wrap gap-2 mt-2">
                           {parts.map((p: any, i: number) => (
                             <div key={i} className={`flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] font-medium ${p.type === 'representative' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
-                                <span>{p.nama_pimpinan}</span>
-                                {p.type === 'representative' && <span className="opacity-70 font-normal"> (Wakil {p.representing})</span>}
+                              <span>{p.nama_pimpinan}</span>
+                              {p.type === 'representative' && <span className="opacity-70 font-normal"> (Wakil {p.representing})</span>}
                             </div>
                           ))}
                         </div>
@@ -294,7 +304,7 @@ export default function AjudanDashboard() {
               const parts = getParticipationInfo(agenda);
               const date = new Date(agenda.tanggal_kegiatan);
               let hari = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-              
+
               const tomorrow = new Date();
               tomorrow.setDate(tomorrow.getDate() + 1);
               if (agenda.tanggal_kegiatan === tomorrow.toLocaleDateString('en-CA')) hari = 'Besok';

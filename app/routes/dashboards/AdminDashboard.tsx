@@ -102,15 +102,15 @@ export default function AdminDashboard() {
         {kpiStats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index}>
-              <CardContent className="p-6">
+            <Card key={index} className="border-none shadow-sm transition-all hover:shadow-md">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 font-medium mb-1">{stat.label}</p>
-                    <p className="text-3xl font-semibold text-gray-900">{stat.value}</p>
+                    <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
+                    <p className="text-2xl md:text-3xl font-bold text-gray-900">{stat.value}</p>
                   </div>
-                  <div className={`${stat.bg} p-3 rounded-lg`}>
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
+                  <div className={`${stat.bg} p-2 md:p-3 rounded-xl`}>
+                    <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
                   </div>
                 </div>
               </CardContent>

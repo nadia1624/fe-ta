@@ -97,7 +97,7 @@ export default function PenugasanPage() {
         <Card>
           <CardContent className="p-4 md:p-6">
             <p className="text-xs text-gray-600 mb-1">Total Tugas</p>
-            <p className="text-2xl md:text-3xl font-semibold text-purple-600">{totalTugas}</p>
+            <p className="text-2xl md:text-3xl font-semibold text-blue-600">{totalTugas}</p>
           </CardContent>
         </Card>
         <Card>
@@ -128,13 +128,13 @@ export default function PenugasanPage() {
             </h3>
             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3">
               <div className="relative group flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors w-4 h-4 pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Cari penugasan..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm w-full shadow-sm"
+                  className="pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm w-full shadow-sm"
                 />
               </div>
               <CustomSelect

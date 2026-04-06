@@ -17,21 +17,23 @@ import {
   FileText,
   History,
   CheckCircle2,
-  Clock
+  Clock,
+  RotateCcw,
+  Calendar,
+  MapPin
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { beritaApi } from '../../lib/api';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 const getStatusInfo = (status: string) => {
   switch (status) {
     case 'approved':
       return { label: 'Disetujui', badgeClass: 'bg-green-100 text-green-700 border-green-200' };
     case 'draft':
-      return { label: 'Pending Review', badgeClass: 'bg-amber-100 text-amber-700 border-amber-200' };
+      return { label: 'Menunggu Review', badgeClass: 'bg-amber-100 text-amber-700 border-amber-200' };
     case 'review':
-      return { label: 'Revisi', badgeClass: 'bg-blue-100 text-blue-700 border-blue-200' };
-    case 'rejected':
-      return { label: 'Ditolak', badgeClass: 'bg-red-100 text-red-700 border-red-200' };
+      return { label: 'Perlu Revisi', badgeClass: 'bg-red-100 text-red-700 border-red-200' };
     default:
       return { label: status, badgeClass: 'bg-gray-100 text-gray-700 border-gray-200' };
   }
@@ -125,7 +127,7 @@ export default function DraftBeritaPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
           <p className="text-gray-500 font-medium">Memuat data draft berita...</p>
         </div>
       </div>
@@ -136,8 +138,8 @@ export default function DraftBeritaPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Draft Berita</h1>
-        <p className="text-sm text-gray-500 mt-1">Kelola draft berita dan dokumentasi kegiatan</p>
+        <h1 className="text-2xl font-semibold text-gray-900">Monitor Draft Berita</h1>
+        <p className="text-sm text-gray-600 mt-1">Kelola dan tinjau seluruh draft berita dari staf media</p>
       </div>
 
       {/* Search Bar */}
@@ -149,13 +151,22 @@ export default function DraftBeritaPage() {
             placeholder="Cari judul berita atau staf pengirim..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 bg-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm transition-all shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 border border-blue-100 bg-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm transition-all shadow-sm"
           />
         </div>
-        <div className="w-full md:w-32">
-          {/* Mock secondary filter as seen in mockup */}
-          <div className="h-10 w-full bg-gray-50 border border-gray-200 rounded-xl"></div>
-        </div>
+        <CustomSelect
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { value: 'all', label: 'Semua Status' },
+            { value: 'draft', label: 'Menunggu Review' },
+            { value: 'approved', label: 'Disetujui' },
+            { value: 'review', label: 'Perlu Revisi' },
+          ]}
+          icon={<Filter className="w-3.5 h-3.5" />}
+          className="w-full md:w-48 bg-white border-blue-100 shadow-sm"
+          placeholder="Pilih Status"
+        />
       </div>
 
       {/* Table Card */}
@@ -167,14 +178,14 @@ export default function DraftBeritaPage() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-b border-gray-50">
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Judul Berita</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Agenda Terkait</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Staf Pengirim</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tanggal Kirim</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Revisi</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</TableHead>
+                <TableRow className="bg-gray-50/50 hover:bg-transparent border-b border-gray-100">
+                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Judul Berita</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Agenda Terkait</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Staf Pengirim</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal Kirim</TableHead>
+                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Revisi</TableHead>
+                  <TableHead className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -183,64 +194,82 @@ export default function DraftBeritaPage() {
                   const revisiCount = draft.revisions?.length || 1;
 
                   return (
-                    <TableRow key={draft.id_draft_berita} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
-                      <TableCell className="px-6 py-5">
+                    <TableRow key={draft.id_draft_berita} className="hover:bg-blue-50/30 transition-colors border-b border-gray-100 group">
+                      <TableCell className="px-6 py-4">
                         <div className="max-w-md">
-                          <p className="font-bold text-[13px] text-gray-800 line-clamp-2 leading-snug">
+                          <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
                             {draft.judul_berita}
                           </p>
                           {draft.catatan && (
-                            <p className="text-[11px] text-gray-400 mt-1 line-clamp-1 font-normal italic">
+                            <p className="text-[10px] text-gray-500 mt-1 line-clamp-1 font-medium italic">
                               {draft.catatan}
                             </p>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <p
-                          className="text-[11px] font-semibold text-gray-600 leading-relaxed max-w-[180px] line-clamp-2"
-                          title={draft.penugasan?.agenda?.nama_kegiatan || ''}
-                        >
-                          {draft.penugasan?.agenda?.nama_kegiatan || '-'}
-                        </p>
+                      <TableCell className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          <p className="text-xs font-semibold text-gray-900 line-clamp-2 leading-tight max-w-[180px]">
+                            {draft.penugasan?.agenda?.nama_kegiatan || '-'}
+                          </p>
+                          <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mt-1">
+                            <MapPin className="w-3 h-3 text-blue-500" />
+                            <span className="truncate max-w-[150px]">{draft.penugasan?.agenda?.lokasi_kegiatan || '-'}</span>
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <p className="text-[11px] font-semibold text-gray-700">
-                          {draft.staff?.nama || '-'}
-                        </p>
+                      <TableCell className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-gray-900">{draft.staff?.nama || '-'}</span>
+                          <span className="text-[10px] text-gray-500">Staf Media</span>
+                        </div>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <p className="text-[11px] text-gray-600 whitespace-nowrap">
+                      <TableCell className="px-6 py-4">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-900 font-medium whitespace-nowrap">
+                          <Calendar className="w-3.5 h-3.5 text-blue-500" />
                           {draft.tanggal_kirim ? new Date(draft.tanggal_kirim).toLocaleDateString('id-ID', {
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric'
                           }) : '-'}
-                        </p>
+                        </div>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <p className="text-[11px] text-gray-600 font-medium">
-                          {revisiCount}x
-                        </p>
+                      <TableCell className="px-6 py-4">
+                        <div className="flex items-center gap-1.5">
+                          <RotateCcw className="w-3.5 h-3.5 text-blue-500" />
+                          <span className="text-xs font-semibold text-gray-900">
+                             {draft.revisions?.reduce((acc: number, d: any) => acc + (d.revisies?.length || 0), 0) || 0} revisi
+                          </span>
+                        </div>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <Badge className={`${statusInfo.badgeClass} rounded-full px-3 py-0.5 text-[9px] font-bold border-none shadow-none uppercase tracking-wide`}>
-                          {statusInfo.label}
-                        </Badge>
+                      <TableCell className="px-6 py-4 text-center">
+                        <div className="flex justify-center">
+                          <Badge className={`${statusInfo.badgeClass} text-[10px] px-2 py-0.5 font-semibold text-center border`}>
+                            {statusInfo.label}
+                          </Badge>
+                        </div>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
+                      <TableCell className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleOpenDetail(draft)}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors bg-white rounded-full shadow-sm"
+                            className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700 rounded-lg group/btn"
+                            title="Detail"
                           >
-                            <Eye className="w-4 h-4" />
-                          </button>
+                            <Eye className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
+                          </Button>
                           {(draft.status_draft === 'review' || draft.status_draft === 'draft') && (
                             <Link to={`/kasubag-media/review-draft/${draft.id_draft_berita}`}>
-                              <button className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors bg-white rounded-full shadow-sm">
-                                <MessageSquare className="w-4 h-4" />
-                              </button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700 rounded-lg group/btn"
+                                title="Review"
+                              >
+                                <MessageSquare className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
+                              </Button>
                             </Link>
                           )}
                         </div>

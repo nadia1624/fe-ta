@@ -704,5 +704,45 @@ export const dashboardApi = {
             },
         });
         return res.json();
+    },
+    async getKasubagMediaStats(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/dashboards/kasubag-media`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+    async getKasubagProtokolStats(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/dashboards/kasubag-protokol`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+    async getStafMediaStats(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/dashboards/staf-media`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+    async getStafProtokolStats(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/dashboards/staf-protokol`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
     }
 };

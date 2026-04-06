@@ -157,10 +157,10 @@ export default function AssignStaffPage() {
                           {agenda.waktu_mulai?.slice(0, 5)} - {agenda.waktu_selesai?.slice(0, 5)}
                         </Badge>
                       </div>
-                      <div className="space-y-1 text-sm text-gray-600 mb-3">
-                        <p>👤 <strong>{pimpinanNames || 'N/A'}</strong></p>
-                        <p>📍 {agenda.lokasi_kegiatan}</p>
-                        <p>📅 {new Date(agenda.tanggal_kegiatan || '').toLocaleDateString('id-ID', {
+                      <div className="space-y-1 text-[13px] text-gray-600 mb-3">
+                        <p><strong>Pimpinan:</strong> {pimpinanNames || 'N/A'}</p>
+                        <p><strong>Lokasi:</strong> {agenda.lokasi_kegiatan}</p>
+                        <p><strong>Tanggal:</strong> {new Date(agenda.tanggal_kegiatan || '').toLocaleDateString('id-ID', {
                           day: '2-digit',
                           month: 'long',
                           year: 'numeric'
@@ -244,15 +244,15 @@ export default function AssignStaffPage() {
 
                       return (
                         <>
-                          <p>👤 <strong>Pimpinan:</strong> {pimpinanNames || 'N/A'}</p>
-                          <p>📅 <strong>Tanggal:</strong> {new Date(selectedSlot.tanggal_kegiatan || '').toLocaleDateString('id-ID', {
+                          <p><strong>Pimpinan:</strong> {pimpinanNames || 'N/A'}</p>
+                          <p><strong>Tanggal:</strong> {new Date(selectedSlot.tanggal_kegiatan || '').toLocaleDateString('id-ID', {
                             weekday: 'long',
                             day: '2-digit',
                             month: 'long',
                             year: 'numeric'
                           })}</p>
-                          <p>⏰ <strong>Waktu Agenda:</strong> {selectedSlot.waktu_mulai?.slice(0, 5)} - {selectedSlot.waktu_selesai?.slice(0, 5)}</p>
-                          <p>📍 <strong>Lokasi:</strong> {selectedSlot.lokasi_kegiatan}</p>
+                          <p><strong>Waktu Agenda:</strong> {selectedSlot.waktu_mulai?.slice(0, 5)} - {selectedSlot.waktu_selesai?.slice(0, 5)}</p>
+                          <p><strong>Lokasi:</strong> {selectedSlot.lokasi_kegiatan}</p>
                         </>
                       );
                     })()}

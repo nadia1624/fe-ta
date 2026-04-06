@@ -193,37 +193,43 @@ export default function AgendaPimpinanPage() {
       </div>
 
       {/* Stats - Custom for Media */}
-      <div className="grid grid-cols-3 gap-3 md:gap-4">
-        <Card>
-          <CardContent className="p-4">
+      <div className="grid grid-cols-3 gap-3 md:gap-6">
+        <Card className="border-none shadow-sm transition-all hover:shadow-md">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-600">Total Agenda</p>
-                <p className="text-2xl font-semibold text-blue-600">{statsTotal}</p>
+                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Total Agenda</p>
+                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsTotal}</p>
               </div>
-              <Calendar className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+              <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
+                <Calendar className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
+        <Card className="border-none shadow-sm transition-all hover:shadow-md">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-600">Terlaksana</p>
-                <p className="text-2xl font-semibold text-green-600">{statsTerlaksana}</p>
+                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Terlaksana</p>
+                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsTerlaksana}</p>
               </div>
-              <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
+              <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
+        <Card className="border-none shadow-sm transition-all hover:shadow-md">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-600">Belum Terlaksana</p>
-                <p className="text-2xl font-semibold text-yellow-600">{statsBelum}</p>
+                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Belum Terlaksana</p>
+                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsBelum}</p>
               </div>
-              <Clock className="w-6 h-6 md:w-8 md:h-8 text-yellow-600" />
+              <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
+                <Clock className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
             </div>
           </CardContent>
         </Card>
