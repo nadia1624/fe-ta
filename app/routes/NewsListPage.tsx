@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Newspaper, ArrowLeft, Clock, Search, ExternalLink, Calendar, ChevronRight } from 'lucide-react';
 import { NewsSlider } from '../components/NewsSlider';
+import Footer from '../components/layout/Footer';
 
 export default function NewsListPage() {
   const [beritaList, setBeritaList] = useState<any[]>([]);
@@ -219,20 +220,7 @@ export default function NewsListPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-20 px-4 sm:px-6 lg:px-8 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 brightness-200 grayscale opacity-80">
-              <img src="/logo-padang.svg" alt="Logo" className="w-full h-full object-contain" />
-            </div>
-            <p className="text-lg font-black text-white tracking-tighter">SIMAP <span className="text-blue-400 opacity-60">NEWS</span></p>
-          </div>
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
-            &copy; {new Date().getFullYear()} PEMERINTAH KOTA PADANG. ALL RIGHTS RESERVED.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

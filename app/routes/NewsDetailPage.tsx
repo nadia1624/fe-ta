@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
 import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Twitter, Link as LinkIcon, Newspaper, ChevronRight, ChevronLeft, Image as ImageIcon } from 'lucide-react';
+import Footer from '../components/layout/Footer';
 
 export default function NewsDetailPage() {
   const { id } = useParams();
@@ -214,20 +215,7 @@ export default function NewsDetailPage() {
         </article>
       </main>
 
-      {/* Footer Minimalist */}
-      <footer className="footer bg-slate-900 text-slate-400 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 border-t border-white/5 pt-12">
-          <div className="flex items-center gap-3">
-             <div className="w-8 h-8 brightness-200 grayscale opacity-80">
-                <img src="/logo-padang.svg" alt="Logo" className="w-full h-full object-contain" />
-              </div>
-              <p className="text-base font-black tracking-tighter text-white uppercase">SIMAP <span className="text-blue-400 opacity-60">NEWS</span></p>
-          </div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-             &copy; {new Date().getFullYear()} DINAS KOMUNIKASI DAN INFORMATIKA KOTA PADANG
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

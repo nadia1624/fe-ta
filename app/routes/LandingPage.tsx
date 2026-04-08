@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Building2, Calendar, FileText, Users, CheckCircle, ArrowRight, Clock, Shield, Newspaper, ChevronRight, ChevronLeft, Menu, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { NewsSlider } from '../components/NewsSlider';
+import Footer from '../components/layout/Footer';
 
 
 const heroSlides = [
@@ -419,55 +420,7 @@ export default function LandingPage() {
         <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-slate-300/30 rounded-full blur-3xl pointer-events-none" />
       </section>
 
-      {/* Footer */}
-      <footer className="footer bg-slate-50 text-slate-600 pt-20 pb-10 px-4 sm:px-6 lg:px-8 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 pb-16 border-b border-slate-200">
-            {/* Brand */}
-            <div className="col-span-1 lg:col-span-1">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 flex items-center justify-center">
-                  <img src="/logo-padang.svg" alt="Logo Kota Padang" className="w-full h-full object-contain" />
-                </div>
-                <p className="text-2xl font-black text-slate-900 tracking-tighter">SIMAP</p>
-              </div>
-              <p className="text-sm font-medium leading-relaxed max-w-xs text-slate-500">
-                Inovasi tata kelola agenda dan komunikasi pimpinan daerah Kota Padang berbasis teknologi digital unggulan untuk transparansi dan efisiensi.
-              </p>
-            </div>
-
-            {/* Links */}
-            {[
-              { title: 'Navigation', links: navLinks.map(l => ({ label: l.label, href: `#${l.id}` })) },
-              { title: 'Connect', links: [{ label: 'Instagram', href: '#' }, { label: 'Twitter', href: '#' }, { label: 'YouTube', href: '#' }] },
-            ].map((col, i) => (
-              <div key={i}>
-                <h4 className="text-slate-900 font-bold text-sm uppercase tracking-widest mb-8">{col.title}</h4>
-                <ul className="space-y-4">
-                  {col.links.map((link, j) => (
-                    <li key={j}>
-                      {link.href.startsWith('#') ? (
-                        <button onClick={() => scrollTo(link.href.substring(1))} className="text-sm font-semibold hover:text-blue-600 transition-colors">
-                          {link.label}
-                        </button>
-                      ) : (
-                        <a href={link.href} className="text-sm font-semibold hover:text-blue-600 transition-colors">{link.label}</a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          {/* Bottom bar */}
-          <div className="pt-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} Bagian Protokol dan Komunikasi Pimpinan. <span className="hidden sm:inline">All Rights Reserved.</span>
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer navLinks={navLinks} scrollTo={scrollTo} />
     </div>
   );
 }

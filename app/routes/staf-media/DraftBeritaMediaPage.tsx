@@ -172,15 +172,15 @@ export default function DraftBeritaMediaPage() {
 
                   return (
                     <TableRow key={draft.id_draft_berita} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
-                      <TableCell className="px-6 py-5">
+                      <TableCell className="px-6 py-5 min-w-[200px]">
                         <div className="max-w-md">
                           <p className="font-bold text-[13px] text-gray-800 line-clamp-2 leading-snug">
                             {draft.judul_berita}
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <p className="text-[11px] font-semibold text-gray-600 leading-relaxed max-w-[200px]">
+                      <TableCell className="px-6 py-5 min-w-[150px]">
+                        <p className="text-[11px] font-semibold text-gray-600 leading-relaxed max-w-[200px] line-clamp-2">
                           {draft.penugasan?.agenda?.nama_kegiatan || '-'}
                         </p>
                       </TableCell>

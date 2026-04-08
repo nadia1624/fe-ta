@@ -85,7 +85,7 @@ export default function AssignStaffMediaPage() {
           icon: 'success',
           title: 'Berhasil!',
           text: 'Staf media berhasil ditugaskan.',
-          confirmButtonColor: '#9333ea'
+          confirmButtonColor: '#3b82f6'
         });
 
         // Remove assigned agenda from list
