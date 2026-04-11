@@ -3,6 +3,7 @@ import Sidebar from '../components/layout/Sidebar';
 import TopBar from '../components/layout/TopBar';
 import { useEffect, useState } from 'react';
 import { authApi, getToken, clearAuthData } from '../lib/api';
+import { setupPushNotifications, unsubscribeFromPush, isPushSupported } from '../lib/push-notifications';
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
@@ -44,6 +45,11 @@ export default function DashboardLayout() {
       // Loader handles auth, we just fail silently here or assume token is still valid
       // if it was invalid, loader would have redirected already.
     });
+
+    // Initialize Push Notifications once on mount
+    if (isPushSupported() && getToken()) {
+      setupPushNotifications();
+    }
   }, [location.pathname]);
 
   // Close sidebar on route change (mobile)
@@ -51,7 +57,9 @@ export default function DashboardLayout() {
     setSidebarOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Clean up push notification subscription before clearing auth data
+    await unsubscribeFromPush();
     clearAuthData();
     navigate('/login');
   };

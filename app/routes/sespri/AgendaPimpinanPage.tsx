@@ -7,10 +7,11 @@ import {
   Plus, Edit2, Trash2, Eye, Calendar, X,
   AlertTriangle, Search, Filter, List,
   CalendarDays, RefreshCw, CheckCircle,
-  Clock, UserCheck, ExternalLink, FileText
+  Clock, UserCheck, ExternalLink, FileText, Building, Phone
 } from 'lucide-react';
-import { agendaApi, pimpinanApi } from '../../lib/api';
+import { agendaApi, pimpinanApi, kaskpdApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
+import MultiSelect from '../../components/ui/MultiSelect';
 import Swal from 'sweetalert2';
 
 export default function AgendaPimpinanPage() {
@@ -51,19 +52,23 @@ export default function AgendaPimpinanPage() {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [editNotesForm, setEditNotesForm] = useState({
     contact_person: '',
-    keterangan: ''
+    keterangan: '',
+    kaskpd_pendamping: [] as string[]
   });
+  const [kaskpdList, setKaskpdList] = useState<any[]>([]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [agendaRes, pimpinanRes] = await Promise.all([
+      const [agendaRes, pimpinanRes, kaskpdRes] = await Promise.all([
         agendaApi.getLeaderAgendas({}),
-        pimpinanApi.getActiveAssignments()
+        pimpinanApi.getActiveAssignments(),
+        kaskpdApi.getAll()
       ]);
 
       if (agendaRes.success) setAgendaList(agendaRes.data);
       if (pimpinanRes.success) setPimpinanOptions(pimpinanRes.data);
+      if (kaskpdRes.success) setKaskpdList(kaskpdRes.data);
     } catch (error) {
       console.error('Fetch error:', error);
       Swal.fire('Error', 'Gagal mengambil data', 'error');
@@ -108,6 +113,7 @@ export default function AgendaPimpinanPage() {
       const data = new FormData();
       data.append('contact_person', editNotesForm.contact_person);
       data.append('keterangan', editNotesForm.keterangan);
+      data.append('kaskpd_pendamping', JSON.stringify(editNotesForm.kaskpd_pendamping));
 
       const res = await agendaApi.update(selectedAgenda.id_agenda, data);
 
@@ -490,7 +496,8 @@ export default function AgendaPimpinanPage() {
                                     setSelectedAgenda(agenda);
                                     setEditNotesForm({
                                       contact_person: agenda.contact_person || '',
-                                      keterangan: agenda.keterangan || ''
+                                      keterangan: agenda.keterangan || '',
+                                      kaskpd_pendamping: agenda.kaskpdPendampings?.map((kp: any) => kp.id_ka_skpd) || []
                                     });
                                     setIsEditingNotes(false);
                                     setShowDetailModal(true);
@@ -601,7 +608,11 @@ export default function AgendaPimpinanPage() {
                     <TableCell className="text-center">
                       <Button variant="ghost" size="sm" onClick={() => {
                         setSelectedAgenda(agenda);
-                        setEditNotesForm({ contact_person: agenda.contact_person || '', keterangan: agenda.keterangan || '' });
+                        setEditNotesForm({ 
+                          contact_person: agenda.contact_person || '', 
+                          keterangan: agenda.keterangan || '',
+                          kaskpd_pendamping: agenda.kaskpdPendampings?.map((kp: any) => kp.id_ka_skpd) || []
+                        });
                         setIsEditingNotes(false);
                         setShowDetailModal(true);
                       }}>
@@ -753,7 +764,7 @@ export default function AgendaPimpinanPage() {
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kontak & Catatan Khusus</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kontak, Catatan & Pendamping</label>
                         {!isEditingNotes && (
                           <Button variant="ghost" size="sm" className="h-6 text-[10px] text-blue-600 p-1" onClick={() => setIsEditingNotes(true)}>
                             <Edit2 className="w-3 h-3 mr-1" /> Edit
@@ -761,43 +772,125 @@ export default function AgendaPimpinanPage() {
                         )}
                       </div>
                       {isEditingNotes ? (
-                        <div className="space-y-3 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 block mb-1">Contact Person (Opsional)</label>
-                            <input
-                              type="text"
-                              className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5"
-                              value={editNotesForm.contact_person}
-                              onChange={e => setEditNotesForm(prev => ({ ...prev, contact_person: e.target.value }))}
-                              placeholder="Contoh: Bpk. Budi (0812xxxx)"
-                            />
+                        <div className="space-y-4 bg-blue-50/30 p-4 rounded-xl border border-blue-100 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+                          <div className="grid gap-4">
+                            <div className="relative group">
+                              <label className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1.5 block ml-1">Contact Person</label>
+                              <div className="relative">
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-400 group-focus-within:text-blue-600 transition-colors" />
+                                <input
+                                  type="text"
+                                  className="w-full text-sm bg-white border border-blue-100 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none pl-9 pr-3 py-2 transition-all"
+                                  value={editNotesForm.contact_person}
+                                  onChange={e => setEditNotesForm(prev => ({ ...prev, contact_person: e.target.value }))}
+                                  placeholder="Nama CP & No. Telp (Opsional)"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="relative group">
+                              <label className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1.5 block ml-1">Catatan Tambahan</label>
+                              <div className="relative">
+                                <FileText className="absolute left-3 top-3 w-3.5 h-3.5 text-blue-400 group-focus-within:text-blue-600 transition-colors" />
+                                <textarea
+                                  className="w-full text-sm bg-white border border-blue-100 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none pl-9 pr-3 py-2 min-h-[80px] transition-all"
+                                  value={editNotesForm.keterangan}
+                                  onChange={e => setEditNotesForm(prev => ({ ...prev, keterangan: e.target.value }))}
+                                  placeholder="Tambahkan catatan khusus sespri di sini..."
+                                />
+                              </div>
+                            </div>
+
+                            <div className="group">
+                              <label className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1.5 block ml-1">KaSKPD Pendamping</label>
+                              <MultiSelect
+                                value={editNotesForm.kaskpd_pendamping}
+                                onChange={(vals) => setEditNotesForm(prev => ({ ...prev, kaskpd_pendamping: vals }))}
+                                options={kaskpdList.map(k => ({ value: k.id_ka_skpd, label: k.nama_instansi }))}
+                                placeholder="Pilih instansi pendamping..."
+                                className="w-full"
+                              />
+                            </div>
                           </div>
-                          <div>
-                            <label className="text-xs font-medium text-gray-700 block mb-1">Catatan Tambahan (Opsional)</label>
-                            <textarea
-                              className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5"
-                              rows={2}
-                              value={editNotesForm.keterangan}
-                              onChange={e => setEditNotesForm(prev => ({ ...prev, keterangan: e.target.value }))}
-                              placeholder="Catatan dari sespri..."
-                            />
-                          </div>
-                          <div className="flex gap-2 justify-end pt-1">
-                            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
-                              setIsEditingNotes(false);
-                              setEditNotesForm({
-                                contact_person: selectedAgenda.contact_person || '',
-                                keterangan: selectedAgenda.keterangan || ''
-                              });
-                            }}>Batal</Button>
-                            <Button size="sm" className="h-7 text-xs bg-blue-600" onClick={handleSaveNotes}>Simpan</Button>
+
+                          <div className="flex gap-2 justify-end pt-2 border-t border-blue-100/50">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 text-xs font-medium text-gray-500 hover:bg-gray-100" 
+                              onClick={() => {
+                                setIsEditingNotes(false);
+                                setEditNotesForm({
+                                  contact_person: selectedAgenda.contact_person || '',
+                                  keterangan: selectedAgenda.keterangan || '',
+                                  kaskpd_pendamping: selectedAgenda.kaskpdPendampings?.map((kp: any) => kp.id_ka_skpd) || []
+                                });
+                              }}
+                            >
+                              Batal
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              className="h-8 text-xs font-semibold bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 px-4" 
+                              onClick={handleSaveNotes}
+                            >
+                              Simpan Perubahan
+                            </Button>
                           </div>
                         </div>
                       ) : (
-                        <>
-                          <p className="text-sm font-medium">CP: {selectedAgenda.contact_person || '-'}</p>
-                          <p className="text-sm">Catatan: {selectedAgenda.keterangan || '-'}</p>
-                        </>
+                        <div className="bg-gray-50/50 rounded-xl border border-gray-100 p-4 space-y-4 shadow-sm hover:shadow-md transition-shadow duration-300">
+                          <div className="grid grid-cols-1 gap-4">
+                            {/* CP Row */}
+                            <div className="flex items-center gap-3 group">
+                              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                                <Phone className="w-4 h-4 text-blue-600 group-hover:text-white transition-colors" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Contact Person</p>
+                                <p className="text-sm font-semibold text-gray-800">{selectedAgenda.contact_person || 'Tidak ada kontak'}</p>
+                              </div>
+                            </div>
+
+                            {/* Notes Row */}
+                            <div className="flex items-start gap-3 group">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 mt-0.5">
+                                <FileText className="w-4 h-4 text-indigo-600 group-hover:text-white transition-colors" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Catatan Khusus</p>
+                                <p className="text-sm text-gray-700 leading-relaxed font-normal">
+                                  {selectedAgenda.keterangan || <span className="italic text-gray-400">Belum ada catatan tambahan</span>}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* KASKPD Row */}
+                            <div className="flex items-start gap-3 group border-t border-gray-100 pt-3">
+                              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300 mt-0.5">
+                                <Building className="w-4 h-4 text-amber-600 group-hover:text-white transition-colors" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">KaSKPD Pendamping</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {selectedAgenda.kaskpdPendampings && selectedAgenda.kaskpdPendampings.length > 0 ? (
+                                    selectedAgenda.kaskpdPendampings.map((kp: any) => (
+                                      <Badge 
+                                        key={kp.id_ka_skpd} 
+                                        variant="secondary" 
+                                        className="bg-white text-gray-700 border-gray-200 hover:border-amber-300 hover:text-amber-700 transition-all font-medium py-1 px-2.5 rounded-full shadow-sm"
+                                      >
+                                        {kp.kaskpd?.nama_instansi}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span className="text-sm italic text-gray-400">Belum ada instansi pendamping</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>

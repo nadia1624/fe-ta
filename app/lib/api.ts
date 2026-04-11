@@ -63,7 +63,6 @@ export const authApi = {
             body: JSON.stringify({ email, password }),
         });
         const data = await res.json();
-        console.log('[API] Login response:', data);
         return data;
     },
 
@@ -200,6 +199,59 @@ export const periodeApi = {
     },
 };
 
+// ==================== KASKPD API ====================
+
+export const kaskpdApi = {
+    async getAll(): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/kaskpd`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
+    async create(data: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/kaskpd`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async update(id: string, data: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/kaskpd/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async delete(id: string): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/kaskpd/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+};
+
 // ==================== Pimpinan API ====================
 
 export const pimpinanApi = {
@@ -269,6 +321,18 @@ export const pimpinanApi = {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(data),
+        });
+        return res.json();
+    },
+
+    async resendSyncInvitation(id_pimpinan: string): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/pimpinan/resend-sync/${id_pimpinan}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
         });
         return res.json();
     },
@@ -386,7 +450,12 @@ export const agendaApi = {
         return res.json();
     },
 
-    async verify(id_agenda: string, data: { status: string; catatan?: string }): Promise<ApiResponse> {
+    async verify(id_agenda: string, data: { 
+        status: string; 
+        catatan?: string;
+        contact_person?: string;
+        kaskpd_pendamping?: string[];
+    }): Promise<ApiResponse> {
         const token = getToken();
         const res = await fetch(`${API_BASE_URL}/agenda/${id_agenda}/verify`, {
             method: 'POST',
@@ -742,6 +811,36 @@ export const dashboardApi = {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
+        });
+        return res.json();
+    }
+};
+
+// ==================== Notification API ====================
+
+export const notificationApi = {
+    async subscribe(subscription: any): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/notifications/subscribe`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(subscription),
+        });
+        return res.json();
+    },
+
+    async unsubscribe(endpoint: string): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/notifications/unsubscribe`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ endpoint }),
         });
         return res.json();
     }

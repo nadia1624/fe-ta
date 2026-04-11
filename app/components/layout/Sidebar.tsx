@@ -17,6 +17,7 @@ import {
   PlusCircle,
   Send,
   User,
+  Building2,
   X
 } from 'lucide-react';
 
@@ -37,6 +38,7 @@ export default function Sidebar({ currentRole, isOpen, onClose }: SidebarProps) 
       { path: '/admin/users', label: 'User Management', icon: Users },
       { path: '/admin/periode', label: 'Periode Management', icon: Calendar },
       { path: '/admin/pimpinan', label: 'Pimpinan Management', icon: UserCheck },
+      { path: '/admin/kaskpd', label: 'KaSKPD Management', icon: Building2 },
     ],
     'Sespri': [
       { path: '/sespri/dashboard', label: 'Dashboard', icon: LayoutDashboard },

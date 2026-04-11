@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Trash2, X, AlertTriangle, Search, Check, UserPlus, Users } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, AlertTriangle, Search, Check, UserPlus, Users, Mail, Calendar, RefreshCw } from 'lucide-react';
 import { pimpinanApi, periodeApi } from '../../lib/api';
 import Swal from 'sweetalert2';
 
@@ -178,7 +178,7 @@ export default function PimpinanManagementPage() {
       setIsLoading(true);
       try {
         const payload = {
-          id_jabatan: pimpinanToDelete.id_jabatan, // Key change: id_pimpinan -> id_jabatan
+          id_jabatan: pimpinanToDelete.id_jabatan,
           id_periode: pimpinanToDelete.id_periode
         };
 
@@ -201,6 +201,31 @@ export default function PimpinanManagementPage() {
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const handleResendSync = async (item: any) => {
+    const id_pimpinan = item.pimpinan?.id_pimpinan;
+    if (!id_pimpinan) return;
+
+    setIsLoading(true);
+    try {
+      const response = await pimpinanApi.resendSyncInvitation(id_pimpinan);
+      if (response.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Undangan sinkronisasi telah dikirim ulang ke email pimpinan.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        Swal.fire('Gagal', response.message, 'error');
+      }
+    } catch (error: any) {
+      Swal.fire('Error', error.message, 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -229,8 +254,8 @@ export default function PimpinanManagementPage() {
                 <TableHead>Jabatan</TableHead>
                 <TableHead>Periode</TableHead>
                 <TableHead>NIP</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>No HP</TableHead>
+                <TableHead>Email & No HP</TableHead>
+                <TableHead>Google Calendar</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-center">Aksi</TableHead>
               </TableRow>
@@ -251,8 +276,34 @@ export default function PimpinanManagementPage() {
                     </TableCell>
                     <TableCell className="text-sm">{item.periode?.nama_periode}</TableCell>
                     <TableCell className="text-sm font-mono">{item.pimpinan?.nip}</TableCell>
-                    <TableCell className="text-sm">{item.pimpinan?.email}</TableCell>
-                    <TableCell className="text-sm">{item.pimpinan?.no_hp}</TableCell>
+                    <TableCell className="text-sm">
+                      <div className="flex flex-col">
+                        <span>{item.pimpinan?.email}</span>
+                        <span className="text-xs text-gray-500">{item.pimpinan?.no_hp}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {item.pimpinan?.is_calendar_synced ? (
+                          <Badge variant="success" className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+                            <Calendar className="w-3 h-3 mr-1" /> Tersinkron
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                            <RefreshCw className="w-3 h-3 mr-1" /> Belum Sinkron
+                          </Badge>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-gray-400 hover:text-blue-600"
+                          onClick={() => handleResendSync(item)}
+                          title="Kirim ulang undangan sinkronisasi"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={item.status_aktif === 'aktif' ? 'success' : 'secondary'}>
                         {item.status_aktif === 'aktif' ? 'Aktif' : 'Nonaktif'}
