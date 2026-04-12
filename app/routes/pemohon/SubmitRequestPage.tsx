@@ -79,6 +79,18 @@ export default function SubmitRequestPage() {
       return Swal.fire('Error', 'Pilih waktu mulai dan selesai kegiatan', 'error');
     }
 
+    // Date validation: must be after today
+    const today = moment().startOf('day');
+    const selectedDate = moment(formData.tanggal_kegiatan);
+    if (!selectedDate.isAfter(today)) {
+      return Swal.fire('Error', 'Tanggal kegiatan harus setelah hari ini (minimal besok)', 'error');
+    }
+
+    // Time validation: end time > start time
+    if (formData.waktu_selesai <= formData.waktu_mulai) {
+      return Swal.fire('Error', 'Waktu selesai tidak boleh lebih awal dari waktu mulai.', 'error');
+    }
+
     setIsLoading(true);
 
     try {
@@ -239,6 +251,11 @@ export default function SubmitRequestPage() {
                       selected={formData.tanggal_kegiatan ? new Date(formData.tanggal_kegiatan) : undefined}
                       onSelect={(date: Date | undefined) => handleDateSelect('tanggal_kegiatan', date)}
                       initialFocus
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date <= today;
+                      }}
                     />
                   </PopoverContent>
                 </Popover>

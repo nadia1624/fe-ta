@@ -157,7 +157,18 @@ export default function KonfirmasiAgendaPage() {
         }
         fetchData();
       } else {
-        Swal.fire('Gagal', res.message, 'error');
+        // Check if it's a schedule conflict (409)
+        if (res.message?.toLowerCase().includes('bentrok')) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Jadwal Bentrok!',
+            html: `<p class="text-sm text-gray-600">${res.message}</p>`,
+            confirmButtonColor: '#f59e0b',
+            confirmButtonText: 'Mengerti'
+          });
+        } else {
+          Swal.fire('Gagal', res.message, 'error');
+        }
       }
     } catch (error) {
       Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');

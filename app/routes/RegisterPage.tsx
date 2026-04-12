@@ -3,15 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone, MapPin, Briefcase, Building, Info, ChevronLeft } from 'lucide-react';
 import { authApi } from '../lib/api';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../components/ui/alert-dialog";
+import Swal from 'sweetalert2';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -27,7 +19,6 @@ export default function RegisterPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -66,7 +57,22 @@ export default function RegisterPage() {
       });
 
       if (response.success) {
-        setShowSuccessDialog(true);
+        Swal.fire({
+          icon: 'success',
+          title: 'Registrasi Berhasil!',
+          text: 'Akun Anda telah berhasil dibuat. Silakan login untuk mulai mengajukan permohonan agenda.',
+          confirmButtonText: 'Login Sekarang',
+          confirmButtonColor: '#2563eb',
+          allowOutsideClick: false,
+          customClass: {
+            popup: 'rounded-2xl',
+            confirmButton: 'rounded-xl font-bold px-8 py-3'
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate('/login');
+          }
+        });
       } else {
         setError(response.message || 'Registrasi gagal');
       }
@@ -385,31 +391,6 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
-
-      {/* Success Dialog */}
-      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-100 shadow-sm">
-              <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <AlertDialogTitle className="text-center text-xl font-bold">Registrasi Berhasil!</AlertDialogTitle>
-            <AlertDialogDescription className="text-center font-medium">
-              Akun Anda telah berhasil dibuat. Silakan login untuk mulai mengajukan permohonan agenda.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="sm:justify-center mt-4">
-            <AlertDialogAction
-              onClick={() => navigate('/login')}
-              className="bg-blue-600 hover:bg-blue-700 rounded-xl px-10 font-bold h-11"
-            >
-              Login Sekarang
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

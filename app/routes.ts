@@ -12,6 +12,8 @@ export default [
   route("register", "routes/RegisterPage.tsx"),
   route("berita", "routes/NewsListPage.tsx"),
   route("berita/:id", "routes/NewsDetailPage.tsx"),
+  route("forgot-password", "routes/ForgotPasswordPage.tsx"),
+  route("reset-password/:token", "routes/ResetPasswordPage.tsx"),
 
   // Protected Routes Group
   layout("layouts/AuthGuard.tsx", [

@@ -92,12 +92,23 @@ export default function AssignStaffMediaPage() {
         setAgendaList(prev => prev.filter(a => a.id_agenda !== selectedAgenda.id_agenda));
         setShowModal(false);
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal',
-          text: res.message || 'Gagal menugaskan staf',
-          confirmButtonColor: '#9333ea'
-        });
+        // Check if it's a schedule conflict (409)
+        if (res.message?.toLowerCase().includes('bentrok')) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Jadwal Staf Bentrok!',
+            html: `<p style="font-size: 14px; color: #4b5563;">${res.message}</p>`,
+            confirmButtonColor: '#f59e0b',
+            confirmButtonText: 'Mengerti'
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: res.message || 'Gagal menugaskan staf',
+            confirmButtonColor: '#9333ea'
+          });
+        }
       }
     } catch (err) {
       Swal.fire({

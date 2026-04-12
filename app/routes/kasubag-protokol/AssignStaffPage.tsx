@@ -79,12 +79,23 @@ export default function AssignStaffPage() {
         });
         fetchData();
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal',
-          text: 'Gagal menugaskan staf: ' + res.message,
-          confirmButtonColor: '#2563eb'
-        });
+        // Check if it's a schedule conflict (409)
+        if (res.message?.toLowerCase().includes('bentrok')) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Jadwal Staf Bentrok!',
+            html: `<p style="font-size: 14px; color: #4b5563;">${res.message}</p>`,
+            confirmButtonColor: '#f59e0b',
+            confirmButtonText: 'Mengerti'
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Gagal menugaskan staf: ' + res.message,
+            confirmButtonColor: '#2563eb'
+          });
+        }
       }
     } catch (error) {
       console.error('Error submitting assignment:', error);

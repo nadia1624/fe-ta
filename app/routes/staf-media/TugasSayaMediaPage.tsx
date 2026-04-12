@@ -378,48 +378,63 @@ export default function TugasSayaMediaPage() {
 
                       {/* Right Side - Actions */}
                       <div className="flex flex-col gap-2 md:w-48">
-                        {!latestDraft ? (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
-                            onClick={() => handleUploadClick(tugas)}
-                          >
-                            <Upload className="w-4 h-4 mr-2" />
-                            Upload Draft
-                          </Button>
-                        ) : latestDraft.status_draft === 'review' ? (
-                          <>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
-                              onClick={() => handleUploadClick(tugas)}
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Upload Revisi
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
-                              onClick={() => handleDetailClick(tugas)}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              Lihat Draft
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-gray-200 text-gray-700 hover:bg-gray-50"
-                            onClick={() => handleDetailClick(tugas)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Lihat {latestDraft.status_draft === 'draft' ? 'Progress' : 'Detail'}
-                          </Button>
-                        )}
+                        {(() => {
+                          const isFuture = new Date(tugas.agenda.tanggal_kegiatan).setHours(0,0,0,0) > new Date().setHours(0,0,0,0);
+                          const disabledTitle = isFuture ? "Draft berita hanya dapat diserahkan pada hari H atau setelahnya" : "";
+
+                          if (!latestDraft) {
+                            return (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
+                                onClick={() => handleUploadClick(tugas)}
+                                disabled={isFuture}
+                                title={disabledTitle}
+                              >
+                                <Upload className="w-4 h-4 mr-2" />
+                                Upload Draft
+                              </Button>
+                            );
+                          } else if (latestDraft.status_draft === 'review') {
+                            return (
+                              <>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
+                                  onClick={() => handleUploadClick(tugas)}
+                                  disabled={isFuture}
+                                  title={disabledTitle}
+                                >
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Upload Revisi
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+                                  onClick={() => handleDetailClick(tugas)}
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Lihat Draft
+                                </Button>
+                              </>
+                            );
+                          } else {
+                            return (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full border-gray-200 text-gray-700 hover:bg-gray-50"
+                                onClick={() => handleDetailClick(tugas)}
+                              >
+                                <Eye className="w-4 h-4 mr-2" />
+                                Lihat {latestDraft.status_draft === 'draft' ? 'Progress' : 'Detail'}
+                              </Button>
+                            );
+                          }
+                        })()}
                       </div>
                     </div>
                   </CardContent>

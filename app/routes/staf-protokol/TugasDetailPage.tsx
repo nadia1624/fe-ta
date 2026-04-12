@@ -98,7 +98,13 @@ export default function TugasDetailPage() {
           </div>
         </div>
         {tugas.status_laporan !== 'Selesai' && (
-          <Button variant="default" size="sm" onClick={() => setModalOpen(true)}>
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={() => setModalOpen(true)}
+            disabled={new Date(tugas.tanggal).setHours(0,0,0,0) > new Date().setHours(0,0,0,0)}
+            title={new Date(tugas.tanggal).setHours(0,0,0,0) > new Date().setHours(0,0,0,0) ? "Laporan hanya dapat ditambahkan pada hari H atau setelahnya" : ""}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Tambah Progress
           </Button>
@@ -275,7 +281,13 @@ export default function TugasDetailPage() {
             <div className="text-center py-10">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 text-gray-300" />
               <p className="text-sm text-gray-500 mb-4">Belum ada progress yang dilaporkan</p>
-              <Button variant="default" size="sm" onClick={() => setModalOpen(true)}>
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={() => setModalOpen(true)}
+                disabled={new Date(tugas.tanggal).setHours(0,0,0,0) > new Date().setHours(0,0,0,0)}
+                title={new Date(tugas.tanggal).setHours(0,0,0,0) > new Date().setHours(0,0,0,0) ? "Laporan hanya dapat ditambahkan pada hari H atau setelahnya" : ""}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Mulai Laporan
               </Button>

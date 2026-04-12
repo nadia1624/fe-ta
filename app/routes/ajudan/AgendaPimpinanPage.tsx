@@ -124,8 +124,8 @@ export default function AgendaPimpinanPage() {
         setShowAttendanceForm(false);
         // Refresh
         const [assignRes, agendaRes] = await Promise.all([
-           pimpinanApi.getActiveAssignments(),
-           agendaApi.getLeaderAgendas({})
+          pimpinanApi.getActiveAssignments(),
+          agendaApi.getLeaderAgendas({})
         ]);
 
         if (assignRes.success && agendaRes.success) {
@@ -148,7 +148,18 @@ export default function AgendaPimpinanPage() {
           if (updated) setSelectedAgenda(updated);
         }
       } else {
-        Swal.fire('Gagal', res.message, 'error');
+        // Check if it's a schedule conflict (409)
+        if (res.message?.toLowerCase().includes('bentrok')) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Jadwal Bentrok!',
+            html: `<p class="text-sm text-gray-600">${res.message}</p>`,
+            confirmButtonColor: '#f59e0b',
+            confirmButtonText: 'Mengerti'
+          });
+        } else {
+          Swal.fire('Gagal', res.message, 'error');
+        }
       }
     } catch (error) {
       Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
@@ -190,7 +201,7 @@ export default function AgendaPimpinanPage() {
       item.perihal?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.lokasi_kegiatan.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchLeader = leaderFilter === 'all' || 
+    const matchLeader = leaderFilter === 'all' ||
       item.agendaPimpinans?.some((ap: any) => ap.id_jabatan === leaderFilter) ||
       item.slotAgendaPimpinans?.some((sap: any) => sap.id_jabatan_hadir === leaderFilter);
 
@@ -199,7 +210,7 @@ export default function AgendaPimpinanPage() {
 
   const getMyParticipationStatus = (agenda: any) => {
     const status: any[] = [];
-    
+
     // 1. Check if invited
     agenda.agendaPimpinans?.forEach((ap: any) => {
       const assignment = activeAssignments.find(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode);
@@ -218,10 +229,10 @@ export default function AgendaPimpinanPage() {
     agenda.slotAgendaPimpinans?.forEach((sap: any) => {
       const assignment = activeAssignments.find(as => as.id_jabatan === sap.id_jabatan_hadir && as.id_periode === sap.id_periode_hadir);
       const isActuallyRepresentative = sap.id_jabatan_diusulkan !== sap.id_jabatan_hadir;
-      
+
       if (assignment && isActuallyRepresentative) {
         // Find the invitation record for the leader being represented to get the disposisi letter
-        const originalInvitation = agenda.agendaPimpinans?.find((ap: any) => 
+        const originalInvitation = agenda.agendaPimpinans?.find((ap: any) =>
           ap.id_jabatan === sap.id_jabatan_diusulkan && ap.id_periode === sap.id_periode_diusulkan
         );
 
@@ -245,7 +256,7 @@ export default function AgendaPimpinanPage() {
   // Extract unique pimpinan options from agenda list for filtering
   const pimpinanFilterOptions: any[] = [];
   const seenPimpinan = new Set();
-  
+
   // Also collect pimpinan from activeAssignments to ensure we have labels
   activeAssignments.forEach(as => {
     if (!seenPimpinan.has(as.id_jabatan)) {
@@ -383,10 +394,10 @@ export default function AgendaPimpinanPage() {
                                 if (hasTidakHadir) dominantColor = 'bg-red-50/50 text-red-600 border-red-100 hover:bg-red-50';
                                 else if (hasHadir || hasRepresentative) dominantColor = 'bg-green-50/50 text-green-600 border-green-100 hover:bg-green-50';
                                 else if (hasDiwakilkan) dominantColor = 'bg-blue-50/50 text-blue-600 border-blue-100 hover:bg-blue-50';
-                                
+
                                 // Representative specific highlight in calendar if not overridden by bad status
                                 if (hasRepresentative && !hasTidakHadir) {
-                                   dominantColor = 'bg-indigo-50/50 text-indigo-600 border-indigo-100 hover:bg-indigo-50';
+                                  dominantColor = 'bg-indigo-50/50 text-indigo-600 border-indigo-100 hover:bg-indigo-50';
                                 }
                               }
 
@@ -697,7 +708,7 @@ export default function AgendaPimpinanPage() {
                                   }
                                 }}
                                 options={allPimpinan
-                                  .filter(p => 
+                                  .filter(p =>
                                     !selectedAgenda?.agendaPimpinans?.some(
                                       (ap: any) => ap.id_jabatan === p.id_jabatan && ap.id_periode === p.id_periode
                                     ) &&

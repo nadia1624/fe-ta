@@ -144,6 +144,24 @@ export const authApi = {
         });
         return res.json();
     },
+
+    async forgotPassword(email: string): Promise<ApiResponse> {
+        const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+        return res.json();
+    },
+
+    async resetPassword(token: string, password: string): Promise<ApiResponse> {
+        const res = await fetch(`${API_BASE_URL}/auth/reset-password/${token}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password }),
+        });
+        return res.json();
+    },
 };
 
 // ==================== Periode API ====================
