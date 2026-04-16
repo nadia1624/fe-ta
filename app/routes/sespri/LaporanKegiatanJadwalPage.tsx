@@ -170,20 +170,22 @@ export default function LaporanKegiatanJadwalPage() {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader className="bg-gray-50/50">
-                  <TableRow className="hover:bg-transparent border-gray-100">
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-6">Pimpinan</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Kegiatan</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tanggal & Waktu</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tempat</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Progress</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</TableHead>
+                <TableHeader>
+                  <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                    <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 px-6">Pimpinan</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4">Tempat</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Progress</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Status</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTugas.map((tugas) => (
-                    <TableRow key={tugas.id_penugasan} className="hover:bg-gray-50/50 border-gray-50 transition-colors">
+                  {filteredTugas.map((tugas, index) => (
+                    <TableRow key={tugas.id_penugasan} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                      <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex flex-col">
                           {tugas.pimpinans?.map((p: any, idx: number) => (
@@ -213,13 +215,17 @@ export default function LaporanKegiatanJadwalPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant={tugas.status === 'selesai' ? 'success' : 'warning'} className="rounded-md font-bold px-2.5 py-0.5 text-[10px] uppercase shadow-sm">
-                          {tugas.status || 'proses'}
+                        <Badge variant={tugas.status === 'selesai' ? 'success' : 'warning'} className="rounded-md font-bold px-2.5 py-0.5 text-[10px] shadow-sm">
+                          {tugas.status === 'selesai' ? 'Selesai' : (tugas.status === 'proses' ? 'Proses' : (tugas.status || 'Proses'))}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
                         <Link to={`/sespri/laporan-kegiatan-jadwal/${tugas.id_penugasan}`}>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-9 w-9 p-0 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-700 border border-gray-100 rounded-xl transition-all shadow-sm"
+                          >
                             <ArrowRight className="w-4 h-4" />
                           </Button>
                         </Link>

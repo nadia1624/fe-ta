@@ -23,6 +23,7 @@ export default [
       // ---------------------------------------------------------
       route("admin/dashboard", "routes/dashboards/AdminDashboard.tsx"),
       route("admin/users", "routes/admin/UserManagementPage.tsx"),
+      route("admin/ajudan-assignments", "routes/admin/AjudanAssignmentPage.tsx"),
       route("admin/periode", "routes/admin/PeriodeManagementPage.tsx"),
       route("admin/pimpinan", "routes/admin/PimpinanManagementPage.tsx"),
       route("admin/kaskpd", "routes/admin/KasSKPDManagementPage.tsx"),

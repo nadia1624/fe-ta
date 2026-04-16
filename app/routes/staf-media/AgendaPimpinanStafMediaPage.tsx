@@ -239,14 +239,14 @@ export default function AgendaPimpinanStafMediaPage() {
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-1 group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors w-4 h-4 pointer-events-none" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Cari agenda..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-blue-100 bg-white rounded-xl text-sm w-full focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
@@ -381,8 +381,8 @@ export default function AgendaPimpinanStafMediaPage() {
         </Card>
       ) : (
         /* ====== LIST VIEW ====== */
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-gray-100 overflow-hidden">
+          <CardHeader className="border-b border-gray-200">
             <h3 className="text-base md:text-lg font-semibold text-gray-900">
               Daftar Agenda ({filteredData.length})
             </h3>
@@ -390,32 +390,36 @@ export default function AgendaPimpinanStafMediaPage() {
           <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Kegiatan</TableHead>
-                  <TableHead>Tanggal & Waktu</TableHead>
-                  <TableHead>Pimpinan & Status</TableHead>
-                  <TableHead className="text-center">Aksi</TableHead>
+                <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                  <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Pimpinan & Status</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredData.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-10 text-gray-500">
+                    <TableCell colSpan={5} className="text-center py-10 text-gray-500">
                       Tidak ada agenda terkonfirmasi yang ditemukan
                     </TableCell>
                   </TableRow>
                 )}
-                {filteredData.map((agenda) => (
-                  <TableRow key={agenda.id_agenda}>
-                    <TableCell>
-                      <p className="font-semibold text-sm">{agenda.nama_kegiatan}</p>
+                {filteredData.map((agenda, index) => (
+                  <TableRow key={agenda.id_agenda} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                    <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                    <TableCell className="px-6 py-4">
+                      <p className="font-medium text-sm text-gray-900">{agenda.nama_kegiatan}</p>
                       <p className="text-xs text-gray-500">{agenda.lokasi_kegiatan}</p>
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm font-medium">
+                      <div className="text-sm font-medium text-gray-900">
                         {new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </p>
-                      <p className="text-xs text-gray-500">{agenda.waktu_mulai?.slice(0, 5)} - {agenda.waktu_selesai?.slice(0, 5)}</p>
+                      </div>
+                      <div className="text-xs text-gray-500 font-medium">
+                        {agenda.waktu_mulai?.slice(0, 5)} - {agenda.waktu_selesai?.slice(0, 5)}
+                      </div>
                       {/* Terlaksana indicator check */}
                       {(() => {
                         const agendaDateTime = new Date(agenda.tanggal_kegiatan);
@@ -427,9 +431,9 @@ export default function AgendaPimpinanStafMediaPage() {
                         }
                         const isPast = agendaDateTime < now;
                         return isPast ? (
-                          <span className="inline-block mt-1 text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-200">
-                            SELESAI
-                          </span>
+                          <Badge variant="success" className="mt-1 text-[9px] px-1.5 py-0">
+                            Selesai
+                          </Badge>
                         ) : null;
                       })()}
                     </TableCell>
@@ -438,7 +442,7 @@ export default function AgendaPimpinanStafMediaPage() {
                         {agenda.agendaPimpinans?.map((ap: any, i: number) => (
                           <div key={i} className="flex flex-col border rounded-lg px-2 py-1 bg-gray-50 w-fit">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
+                              <span className="text-[10px] font-medium text-gray-900">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
                               {getStatusBadge(ap.status_kehadiran)}
                             </div>
                             {ap.status_kehadiran === 'diwakilkan' && ap.surat_disposisi && (
@@ -460,6 +464,7 @@ export default function AgendaPimpinanStafMediaPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => { setSelectedAgenda(agenda); setShowDetailModal(true); }}
+                        className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>

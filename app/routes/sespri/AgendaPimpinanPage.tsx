@@ -547,16 +547,25 @@ export default function AgendaPimpinanPage() {
           <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Kegiatan</TableHead>
-                  <TableHead>Tanggal & Waktu</TableHead>
-                  <TableHead>Pimpinan & Status</TableHead>
-                  <TableHead className="text-center">Aksi</TableHead>
+                <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                  <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Pimpinan & Status</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredData.map((agenda) => (
-                  <TableRow key={agenda.id_agenda}>
+                {filteredData.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-10 text-gray-500">
+                      Tidak ada agenda terkonfirmasi yang ditemukan
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredData.map((agenda, index) => (
+                  <TableRow key={agenda.id_agenda} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                    <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                     <TableCell>
                       <div>
                         <p className="font-semibold text-sm">{agenda.nama_kegiatan}</p>
@@ -606,7 +615,11 @@ export default function AgendaPimpinanPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="sm" onClick={() => {
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
+                        onClick={() => {
                         setSelectedAgenda(agenda);
                         setEditNotesForm({ 
                           contact_person: agenda.contact_person || '', 

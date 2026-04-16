@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Trash2, X, AlertTriangle, Search, Check, UserPlus, Users, Mail, Calendar, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, AlertTriangle, Search, Check, UserPlus, Users, Mail, Calendar, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { pimpinanApi, periodeApi } from '../../lib/api';
 import Swal from 'sweetalert2';
 
@@ -18,6 +18,8 @@ export default function PimpinanManagementPage() {
   const [periodeOptions, setPeriodeOptions] = useState<any[]>([]);
   const [jabatanOptions, setJabatanOptions] = useState<any[]>([]);
   const [existingPimpinanList, setExistingPimpinanList] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,6 +70,9 @@ export default function PimpinanManagementPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const totalPages = Math.ceil(pimpinanList.length / ITEMS_PER_PAGE);
+  const paginatedPimpinan = pimpinanList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleAdd = () => {
     setModalMode('add');
@@ -233,8 +238,8 @@ export default function PimpinanManagementPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Pimpinan Management</h1>
-          <p className="text-sm text-gray-600 mt-1">Kelola data Walikota dan Wakil Walikota</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Pimpinan Management</h1>
+          <p className="text-sm text-gray-500 mt-1">Kelola data Walikota dan Wakil Walikota</p>
         </div>
         <Button onClick={handleAdd}>
           <Plus className="w-4 h-4 mr-2" />
@@ -249,16 +254,17 @@ export default function PimpinanManagementPage() {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Nama Pimpinan</TableHead>
-                <TableHead>Jabatan</TableHead>
-                <TableHead>Periode</TableHead>
-                <TableHead>NIP</TableHead>
-                <TableHead>Email & No HP</TableHead>
-                <TableHead>Google Calendar</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
-              </TableRow>
+                <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                  <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Nama Pimpinan</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Jabatan</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Periode</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">NIP</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Email & No HP</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Google Calendar</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Status</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 text-center py-4">Aksi</TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody>
               {pimpinanList.length === 0 ? (
@@ -266,37 +272,38 @@ export default function PimpinanManagementPage() {
                   <TableCell colSpan={8} className="text-center py-4">Tidak ada data pimpinan</TableCell>
                 </TableRow>
               ) : (
-                pimpinanList.map((item: any, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{item.pimpinan?.nama_pimpinan}</TableCell>
+                paginatedPimpinan.map((item: any, index) => (
+                  <TableRow key={index} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                    <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
+                    <TableCell className="font-semibold text-gray-900 text-sm whitespace-normal min-w-[150px]">{item.pimpinan?.nama_pimpinan}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">
+                      <Badge variant="outline" className="text-[10px] font-bold px-2 py-0">
                         {item.jabatan?.nama_jabatan || item.id_jabatan}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm">{item.periode?.nama_periode}</TableCell>
-                    <TableCell className="text-sm font-mono">{item.pimpinan?.nip}</TableCell>
-                    <TableCell className="text-sm">
+                    <TableCell className="text-sm text-gray-500 font-medium tracking-tight">{item.periode?.nama_periode}</TableCell>
+                    <TableCell className="text-sm font-medium text-gray-600 tracking-tight">{item.pimpinan?.nip}</TableCell>
+                    <TableCell className="text-sm text-gray-500">
                       <div className="flex flex-col">
-                        <span>{item.pimpinan?.email}</span>
-                        <span className="text-xs text-gray-500">{item.pimpinan?.no_hp}</span>
+                        <span className="font-semibold text-gray-700 text-xs">{item.pimpinan?.email}</span>
+                        <span className="text-[10px] text-gray-400 font-bold tracking-tight">{item.pimpinan?.no_hp}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {item.pimpinan?.is_calendar_synced ? (
-                          <Badge variant="success" className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+                          <Badge variant="success" className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 text-[10px] px-2 py-0">
                             <Calendar className="w-3 h-3 mr-1" /> Tersinkron
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] px-2 py-0">
                             <RefreshCw className="w-3 h-3 mr-1" /> Belum Sinkron
                           </Badge>
                         )}
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-gray-400 hover:text-blue-600"
+                          className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
                           onClick={() => handleResendSync(item)}
                           title="Kirim ulang undangan sinkronisasi"
                         >
@@ -305,24 +312,83 @@ export default function PimpinanManagementPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={item.status_aktif === 'aktif' ? 'success' : 'secondary'}>
-                        {item.status_aktif === 'aktif' ? 'Aktif' : 'Nonaktif'}
-                      </Badge>
+                        <Badge variant={item.status_aktif === 'aktif' ? 'success' : 'secondary'} className="text-[10px] font-bold px-2 py-0">
+                          {item.status_aktif === 'aktif' ? 'Aktif' : 'Nonaktif'}
+                        </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleEdit(item)}
+                          className="h-9 w-9 p-0 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-100 rounded-xl transition-all shadow-sm"
+                        >
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(item)}>
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDelete(item)}
+                          className="h-9 w-9 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl transition-all shadow-sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
-                )))}
+                ))
+              )}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 flex items-center justify-between border-t border-gray-100 bg-gray-50/30">
+              <div className="text-xs font-bold text-gray-400 tracking-tight">
+                Menampilkan <span className="text-gray-600">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="text-gray-600">{Math.min(currentPage * ITEMS_PER_PAGE, pimpinanList.length)}</span> dari <span className="text-gray-600">{pimpinanList.length}</span> data
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Prev
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                        currentPage === i + 1
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                          : 'text-gray-400 hover:bg-white hover:text-gray-600 border border-transparent hover:border-gray-200'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -426,7 +492,7 @@ export default function PimpinanManagementPage() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Nama Pimpinan <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -442,7 +508,7 @@ export default function PimpinanManagementPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Jabatan <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -461,7 +527,7 @@ export default function PimpinanManagementPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Periode <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -482,7 +548,7 @@ export default function PimpinanManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     NIP <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -498,7 +564,7 @@ export default function PimpinanManagementPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Email <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -512,7 +578,7 @@ export default function PimpinanManagementPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       No HP <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -528,7 +594,7 @@ export default function PimpinanManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Status <span className="text-red-500">*</span>
                   </label>
                   <select

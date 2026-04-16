@@ -270,22 +270,24 @@ export default function VerifikasiPermohonanPage() {
             <div className="overflow-x-auto">
               <Table className="min-w-[800px]">
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[140px]">Nomor Surat</TableHead>
-                    <TableHead className="w-[160px]">Pemohon</TableHead>
-                    <TableHead className="w-[200px]">Perihal</TableHead>
-                    <TableHead className="w-[120px]">Tanggal Kegiatan</TableHead>
-                    <TableHead className="w-[100px]">Waktu</TableHead>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead className="w-[80px] text-center">Aksi</TableHead>
+                  <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                    <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[140px]">Nomor Surat</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[160px]">Pemohon</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[200px]">Perihal</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[120px]">Tanggal Kegiatan</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[100px]">Waktu</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[100px]">Status</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[80px] text-center">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredData.map((agenda) => {
+                  {filteredData.map((agenda, index) => {
                     const latestStatus = getLatestStatus(agenda);
                     const config = STATUS_CONFIG[latestStatus];
                     return (
-                      <TableRow key={agenda.id_agenda}>
+                      <TableRow key={agenda.id_agenda} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                        <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                         <TableCell className="font-medium truncate max-w-[140px]" title={agenda.nomor_surat}>{agenda.nomor_surat}</TableCell>
                         <TableCell>
                           <div className="max-w-[160px]">
@@ -317,12 +319,22 @@ export default function VerifikasiPermohonanPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => handleDetail(agenda)}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleDetail(agenda)}
+                              className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
                             {(latestStatus === 'pending' || latestStatus === 'revision') && (
-                              <Button variant="ghost" size="sm" onClick={() => handleVerifikasi(agenda)}>
-                                <CheckCircle className="w-4 h-4 text-green-600" />
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleVerifikasi(agenda)}
+                                className="h-9 w-9 p-0 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border border-green-100 rounded-xl transition-all shadow-sm"
+                              >
+                                <CheckCircle className="w-4 h-4" />
                               </Button>
                             )}
                           </div>

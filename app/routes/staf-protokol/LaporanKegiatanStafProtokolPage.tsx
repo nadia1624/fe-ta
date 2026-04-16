@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ArrowRight, Search, Filter, TrendingUp } from 'lucide-react';
+import { ArrowRight, Search, Filter, TrendingUp, User, Clock } from 'lucide-react';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 export default function LaporanKegiatanStafProtokolPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +56,10 @@ export default function LaporanKegiatanStafProtokolPage() {
   });
 
   const pimpinanList = Array.from(new Set(laporanList.flatMap(l => l.pimpinans.map((p: any) => p.nama_pimpinan))));
+  const pimpinanOptions = [
+    { value: 'all', label: 'Semua Pimpinan' },
+    ...pimpinanList.map((p: any) => ({ value: p, label: p }))
+  ];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -140,30 +145,28 @@ export default function LaporanKegiatanStafProtokolPage() {
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                 />
               </div>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <select
-                    value={filterPimpinan}
-                    onChange={(e) => setFilterPimpinan(e.target.value)}
-                    className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm appearance-none bg-white"
-                  >
-                    <option value="all">Semua Pimpinan</option>
-                    {pimpinanList.map((p, idx) => (
-                      <option key={idx} value={p}>{p}</option>
-                    ))}
-                  </select>
-                </div>
-                <select
+              <div className="flex flex-col md:flex-row gap-3">
+                <CustomSelect
+                  value={filterPimpinan}
+                  onChange={setFilterPimpinan}
+                  options={pimpinanOptions}
+                  icon={<User className="w-4 h-4" />}
+                  className="w-full md:w-56 text-sm"
+                  placeholder="Filter Pimpinan"
+                />
+                <CustomSelect
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm appearance-none bg-white"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="Selesai">Selesai</option>
-                  <option value="Berlangsung">Berlangsung</option>
-                  <option value="Belum Dimulai">Belum Dimulai</option>
-                </select>
+                  onChange={setFilterStatus}
+                  options={[
+                    { value: 'all', label: 'Semua Status' },
+                    { value: 'Selesai', label: 'Selesai' },
+                    { value: 'Berlangsung', label: 'Berlangsung' },
+                    { value: 'Belum Dimulai', label: 'Belum Dimulai' }
+                  ]}
+                  icon={<Filter className="w-4 h-4" />}
+                  className="w-full md:w-48 text-sm"
+                  placeholder="Filter Status"
+                />
               </div>
             </div>
           </div>
@@ -179,19 +182,21 @@ export default function LaporanKegiatanStafProtokolPage() {
               <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Pimpinan</TableHead>
-                      <TableHead>Kegiatan</TableHead>
-                      <TableHead>Tanggal & Waktu</TableHead>
-                      <TableHead>Tempat</TableHead>
-                      <TableHead className="text-center">Progress</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                      <TableHead className="text-center">Aksi</TableHead>
+                    <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                      <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Pimpinan</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Tempat</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Progress</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Status</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredData.map(item => (
-                      <TableRow key={item.id}>
+                    {filteredData.map((item, index) => (
+                      <TableRow key={item.id} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                        <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                         <TableCell>
                           <div className="text-sm space-y-1">
                             {item.pimpinans.map((p: any, idx: number) => (
@@ -228,7 +233,7 @@ export default function LaporanKegiatanStafProtokolPage() {
                         </TableCell>
                         <TableCell className="text-center">
                           <Link to={`/staff-protokol/tugas-detail/${item.id}`}>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm">
                               <ArrowRight className="w-4 h-4" />
                             </Button>
                           </Link>

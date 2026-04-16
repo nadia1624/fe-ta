@@ -93,8 +93,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Admin Dashboard</h1>
-        <p className="text-sm text-gray-600 mt-1">Monitoring sistem dan manajemen data master</p>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Admin Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-1">Monitoring sistem dan manajemen data master</p>
       </div>
 
       {/* KPI Cards */}
@@ -106,8 +106,8 @@ export default function AdminDashboard() {
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">{stat.label}</p>
-                    <p className="text-2xl md:text-3xl font-bold text-gray-900">{stat.value}</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
                   </div>
                   <div className={`${stat.bg} p-2 md:p-3 rounded-xl`}>
                     <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
@@ -134,19 +134,27 @@ export default function AdminDashboard() {
                       <p className="font-bold text-gray-900 text-sm leading-tight">{agenda.nama_kegiatan}</p>
                       <Badge variant={getStatusVariant(agenda.status)} className="capitalize shrink-0">{agenda.status}</Badge>
                     </div>
-                    <div className="space-y-1 text-xs text-gray-600 font-medium">
+                    <div className="space-y-1.5 text-xs text-gray-500">
                       <p className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                        {new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
-                          weekday: 'long',
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
+                        <span className="font-medium text-gray-700">
+                          {new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric'
+                          })}
+                        </span>
                       </p>
-                      <p className="ml-5">Waktu: {agenda.waktu_mulai} WIB</p>
-                      <p className="ml-5">Lokasi: {agenda.lokasi_kegiatan}</p>
-                      <p className="ml-5 text-blue-600 font-bold">{agenda.nama_pimpinan}</p>
+                      <p className="ml-5 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                        Waktu: <span className="font-semibold text-gray-700">{agenda.waktu_mulai} WIB</span>
+                      </p>
+                      <p className="ml-5 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                        Lokasi: <span className="font-semibold text-gray-700">{agenda.lokasi_kegiatan}</span>
+                      </p>
+                      <p className="ml-5 text-blue-600 font-bold tracking-tight">{agenda.nama_pimpinan}</p>
                     </div>
                   </div>
                 ))
@@ -174,8 +182,8 @@ export default function AdminDashboard() {
                       <Badge variant={getStatusVariant(request.status)} className="shrink-0">{formatStatus(request.status)}</Badge>
                     </div>
                     <p className="text-xs text-blue-600 font-bold mb-1">{request.pemohon}</p>
-                    <p className="text-xs text-gray-600 font-medium mb-3 line-clamp-1">{request.perihal}</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                    <p className="text-xs text-gray-500 mb-3 line-clamp-1">{request.perihal}</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest bg-gray-50 px-2 py-0.5 rounded border border-gray-100 w-fit">
                       {new Date(request.tanggal_surat).toLocaleDateString('id-ID', {
                         day: '2-digit',
                         month: 'short',

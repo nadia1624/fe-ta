@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { CheckCircle, XCircle, Eye, X, UserCheck, Download, FileText, RefreshCw, ChevronDown } from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
+import SignaturePad from '../../components/ui/SignaturePad';
 import Swal from 'sweetalert2';
 
 export default function KonfirmasiAgendaPage() {
@@ -24,7 +25,8 @@ export default function KonfirmasiAgendaPage() {
     perwakilan_jabatan: '', // For display
     perwakilan_tipe: 'pimpinan' as 'pimpinan' | 'manual', // NEW
     alasan: '',
-    catatan: ''
+    catatan: '',
+    tanda_tangan: '' // NEW
   });
 
   const [activeAssignments, setActiveAssignments] = useState<any[]>([]);
@@ -80,7 +82,8 @@ export default function KonfirmasiAgendaPage() {
       perwakilan_jabatan: '',
       perwakilan_tipe: 'pimpinan',
       alasan: '',
-      catatan: ''
+      catatan: '',
+      tanda_tangan: ''
     });
     setShowDetailModal(false);
     setShowKonfirmasiModal(true);
@@ -132,6 +135,9 @@ export default function KonfirmasiAgendaPage() {
           data.append('id_periode_perwakilan', konfirmasiData.perwakilan_id_periode);
         } else {
           data.append('nama_perwakilan', konfirmasiData.perwakilan_nama);
+        }
+        if (konfirmasiData.tanda_tangan) {
+            data.append('tanda_tangan', konfirmasiData.tanda_tangan);
         }
       }
       data.append('keterangan', `${konfirmasiData.alasan ? konfirmasiData.alasan + '. ' : ''}${konfirmasiData.catatan}`);
@@ -197,7 +203,8 @@ export default function KonfirmasiAgendaPage() {
       perihal: `Disposisi Perwakilan Kehadiran - ${selectedAgenda?.nama_kegiatan}`,
       agenda: selectedAgenda,
       alasan: konfirmasiData.alasan,
-      catatan: konfirmasiData.catatan
+      catatan: konfirmasiData.catatan,
+      tanda_tangan: konfirmasiData.tanda_tangan
     };
   };
 
@@ -300,19 +307,28 @@ export default function KonfirmasiAgendaPage() {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Nomor Surat</TableHead>
-                <TableHead>Kegiatan</TableHead>
-                <TableHead>Pemohon</TableHead>
-                <TableHead>Tanggal & Waktu</TableHead>
-                <TableHead>Pimpinan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
+              <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Nomor Surat</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Pemohon</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Pimpinan</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Status</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
+              {myPendingTasks.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-10 text-gray-500">
+                    Tidak ada agenda perlu konfirmasi yang ditemukan
+                  </TableCell>
+                </TableRow>
+              )}
               {myPendingTasks.map((task, index) => (
-                <TableRow key={`${task.id_agenda}-${index}`}>
+                <TableRow key={`${task.id_agenda}-${index}`} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                  <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                   <TableCell className="font-medium text-sm">{task.nomor_surat}</TableCell>
                   <TableCell>
                     <div>
@@ -351,11 +367,21 @@ export default function KonfirmasiAgendaPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleDetail(task)}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDetail(task)}
+                        className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
+                      >
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleKonfirmasi(task, task.targetedAp)}>
-                        <UserCheck className="w-4 h-4 text-green-600" />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleKonfirmasi(task, task.targetedAp)}
+                        className="h-9 w-9 p-0 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border border-green-100 rounded-xl transition-all shadow-sm"
+                      >
+                        <UserCheck className="w-4 h-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -363,7 +389,7 @@ export default function KonfirmasiAgendaPage() {
               ))}
               {myPendingTasks.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-6 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-6 text-gray-500">
                     Tidak ada agenda yang perlu dikonfirmasi.
                   </TableCell>
                 </TableRow>
@@ -651,6 +677,20 @@ export default function KonfirmasiAgendaPage() {
                         required
                       />
                     </div>
+
+                    <div className="pt-2 border-t border-blue-200">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tanda Tangan Pimpinan <span className="text-red-500">*</span>
+                      </label>
+                      <SignaturePad 
+                        onSave={(sig) => setKonfirmasiData(prev => ({ ...prev, tanda_tangan: sig }))}
+                        onClear={() => setKonfirmasiData(prev => ({ ...prev, tanda_tangan: '' }))}
+                        placeholder="Silakan bubuhkan tanda tangan pimpinan..."
+                      />
+                      {!konfirmasiData.tanda_tangan && (
+                        <p className="text-[10px] text-red-500 mt-1">Tanda tangan wajib diisi untuk penugasan perwakilan</p>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -712,7 +752,7 @@ export default function KonfirmasiAgendaPage() {
                   <Button type="button" variant="outline" onClick={() => setShowKonfirmasiModal(false)} className="flex-1">
                     Batal
                   </Button>
-                  <Button type="submit" className="flex-1">
+                  <Button type="submit" className="flex-1" disabled={konfirmasiData.kehadiran === 'wakilkan' && !konfirmasiData.tanda_tangan}>
                     {konfirmasiData.kehadiran === 'hadir' ? 'Konfirmasi Hadir' : (konfirmasiData.kehadiran === 'tolak' ? 'Konfirmasi Tidak Hadir' : 'Tunjuk Perwakilan')}
                   </Button>
                 </div>
@@ -813,12 +853,28 @@ export default function KonfirmasiAgendaPage() {
                   </div>
                 )}
 
-                <div className="pt-4 border-t-2 border-gray-300 text-right">
-                  <p className="text-sm">{generateDisposisiContent().tanggal}</p>
-                  <p className="text-sm font-semibold mt-1">Ajudan Pimpinan</p>
-                  <div className="h-16"></div>
-                  <p className="text-sm font-semibold underline">Agus Santoso</p>
-                  <p className="text-sm">NIP. 198509122010011002</p>
+                <div className="flex justify-between items-end pt-8">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-600">Tanda Tangan Pimpinan:</p>
+                    {konfirmasiData.tanda_tangan ? (
+                      <div className="border border-gray-100 rounded-xl p-2 bg-gray-50/50">
+                        <img src={konfirmasiData.tanda_tangan} alt="Tanda tangan" className="h-20 object-contain mx-auto" />
+                        <p className="text-xs font-semibold text-center mt-2 border-t pt-1 border-gray-200">{selectedAp?.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
+                      </div>
+                    ) : (
+                      <div className="h-24 w-48 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-[10px] text-center p-4 bg-gray-50/30">
+                        Tanda tangan pimpinan belum tersedia
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="text-right space-y-1">
+                    <p className="text-sm text-gray-600">Bandung, {generateDisposisiContent().tanggal}</p>
+                    <p className="text-sm font-semibold text-gray-900 mt-2">Ajudan Pimpinan,</p>
+                    <div className="h-20"></div>
+                    <p className="text-sm font-bold text-gray-900 underline decoration-2 underline-offset-4">{localStorage.getItem('userName') || 'Ajudan'}</p>
+                    <p className="text-[10px] text-gray-500 italic font-medium">Dokumen ini ditandatangani secara digital</p>
+                  </div>
                 </div>
               </div>
 

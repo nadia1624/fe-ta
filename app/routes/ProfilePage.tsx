@@ -261,7 +261,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900">{profileData.nama || '-'}</h3>
-              <p className="text-sm text-gray-600">{profileData.jabatan || 'Belum diisi'}</p>
+              <p className="text-sm text-gray-600">{profileData.jabatan || '-'}</p>
               <p className="text-sm text-blue-600 mt-1">{profileData.role?.nama_role || '-'}</p>
               {uploadingPhoto && (
                 <p className="text-xs text-blue-500 mt-1 animate-pulse">Mengupload foto...</p>

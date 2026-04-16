@@ -177,7 +177,7 @@ export default function ReviewDraftListPage() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <Badge className="bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-lg shrink-0">
+                                            <Badge className="bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-bold tracking-wide px-2.5 py-1 rounded-lg shrink-0">
                                                 Pending Review
                                             </Badge>
                                         </div>
@@ -278,7 +278,7 @@ export default function ReviewDraftListPage() {
                                 <div className="p-1.5 bg-blue-50 rounded-lg">
                                     <Newspaper className="w-4 h-4 text-blue-600" />
                                 </div>
-                                <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">Detail Draft Berita</h2>
+                                <h2 className="text-sm font-bold text-gray-800 tracking-wide">Detail Draft Berita</h2>
                             </div>
                             <button
                                 onClick={() => setShowDetailModal(false)}

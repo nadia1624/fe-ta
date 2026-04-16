@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
   Search, Calendar, Clock, MapPin, FileText,
-  Loader2, TrendingUp, ArrowRight
+  Loader2, TrendingUp, ArrowRight, User, Filter
 } from 'lucide-react';
 import { Link } from 'react-router';
 import CustomSelect from '../../components/ui/CustomSelect';
@@ -49,11 +49,28 @@ export default function LaporanKegiatanStafMediaPage() {
     const matchesPimpinan = filterPimpinan === 'all' ||
       tugas.pimpinans.some((p: any) => p.nama_pimpinan === filterPimpinan);
 
-    const matchesStatus = filterStatus === 'all' ||
-      (filterStatus === 'selesai' ? tugas.status === 'selesai' : tugas.status !== 'selesai');
+    const matchesStatus = filterStatus === 'all' || 
+      (filterStatus === 'selesai' && tugas.status === 'selesai') ||
+      (filterStatus === 'proses' && (tugas.status === 'proses' || tugas.status === 'progress')) ||
+      (filterStatus === 'belum' && (tugas.status === 'pending' || tugas.status === 'belum'));
 
     return matchesSearch && matchesPimpinan && matchesStatus;
   });
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'selesai':
+        return <Badge variant="success">Selesai</Badge>;
+      case 'proses':
+      case 'progress':
+        return <Badge variant="info">Berlangsung</Badge>;
+      case 'pending':
+      case 'belum':
+        return <Badge variant="warning">Belum Dimulai</Badge>;
+      default:
+        return <Badge>{status || 'Berlangsung'}</Badge>;
+    }
+  };
 
   const pimpinanOptions = [
     { value: 'all', label: 'Semua Pimpinan' },
@@ -120,27 +137,28 @@ export default function LaporanKegiatanStafMediaPage() {
       </div>
 
       <Card className="shadow-sm border-gray-100 overflow-hidden">
-        <CardHeader className="border-b border-gray-50 bg-white/50 px-4 md:px-6 py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <h3 className="text-sm md:text-base font-bold text-gray-900">
+        <CardHeader className="border-b border-gray-200">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+            <h3 className="text-base md:text-lg font-semibold text-gray-900">
               Daftar Laporan Kegiatan ({filteredTugas.length})
             </h3>
-            <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-3">
-              <div className="relative flex-1 md:w-64">
+            <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center gap-2 md:gap-3">
+              <div className="relative flex-1 md:flex-none md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Cari laporan..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none text-xs bg-gray-50/50"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                 />
               </div>
               <CustomSelect
                 value={filterPimpinan}
                 onChange={setFilterPimpinan}
                 options={pimpinanOptions}
-                className="w-full md:w-48 text-xs"
+                icon={<User className="w-4 h-4" />}
+                className="w-full md:w-48 text-sm"
               />
               <CustomSelect
                 value={filterStatus}
@@ -148,8 +166,10 @@ export default function LaporanKegiatanStafMediaPage() {
                 options={[
                   { value: 'all', label: 'Semua Status' },
                   { value: 'selesai', label: 'Selesai' },
+                  { value: 'proses', label: 'Berlangsung' },
                   { value: 'belum', label: 'Belum Dimulai' }
                 ]}
+                icon={<Filter className="w-4 h-4" />}
                 className="w-full md:w-36 text-xs"
               />
             </div>
@@ -164,66 +184,67 @@ export default function LaporanKegiatanStafMediaPage() {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader className="bg-gray-50/50">
-                  <TableRow className="hover:bg-transparent border-gray-100">
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider px-6">Pimpinan</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Kegiatan</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tanggal & Waktu</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tempat</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Progress</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status</TableHead>
-                    <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</TableHead>
+                <TableHeader>
+                  <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                    <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 px-6">Pimpinan</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4">Tempat</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Progress</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Status</TableHead>
+                    <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTugas.map((tugas) => (
-                    <TableRow key={tugas.id_penugasan} className="hover:bg-gray-50/50 border-gray-50 transition-colors">
+                  {filteredTugas.map((tugas, index) => (
+                    <TableRow key={tugas.id_penugasan} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                      <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex flex-col">
                           {tugas.pimpinans.map((p: any, idx: number) => (
                             <div key={idx} className="mb-1 last:mb-0">
-                              <span className="text-[13px] font-semibold text-gray-900 leading-tight block">{p.nama_pimpinan}</span>
-                              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">{p.nama_jabatan}</span>
+                              <div className="font-medium text-gray-900 text-sm">{p.nama_pimpinan}</div>
+                              <div className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</div>
                             </div>
                           ))}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-[13px] text-gray-700 font-medium leading-relaxed">{tugas.agenda.nama_kegiatan}</span>
+                        <div className="font-medium text-gray-900 text-sm">{tugas.agenda.nama_kegiatan}</div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col text-[12px]">
-                          <span className="text-gray-900 font-medium">{formatDate(tugas.agenda.tanggal_kegiatan)}</span>
-                          <span className="text-gray-500 text-[11px]">{tugas.agenda.waktu_mulai.slice(0, 5)} - {tugas.agenda.waktu_selesai.slice(0, 5)}</span>
+                      <TableCell className="whitespace-nowrap">
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-900">{formatDate(tugas.agenda.tanggal_kegiatan)}</div>
+                          <div className="text-gray-500">{tugas.agenda.waktu_mulai.slice(0, 5)} - {tugas.agenda.waktu_selesai.slice(0, 5)}</div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <span className="text-[12px] text-gray-600 font-medium">{tugas.agenda.lokasi_kegiatan}</span>
+                      <TableCell className="max-w-xs truncate">
+                        <span className="text-xs text-gray-600 font-medium">{tugas.agenda.lokasi_kegiatan}</span>
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1 text-[13px] text-blue-600 font-bold">
-                          <TrendingUp className="w-3.5 h-3.5" />
-                          <span>{tugas.laporanKegiatans?.length || 0} update</span>
+                        <div className="flex items-center justify-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-600">{tugas.laporanKegiatans?.length || 0} update</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant={tugas.status === 'selesai' ? 'success' : 'warning'} className="rounded-md font-bold px-2.5 py-0.5 text-[10px] uppercase shadow-sm">
-                          {tugas.status || 'proses'}
-                        </Badge>
+                        {getStatusBadge(tugas.status)}
                       </TableCell>
                       <TableCell className="text-center">
                         <Link to={`/staff-media/laporan-kegiatan/${tugas.id_penugasan}`}>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+                          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm">
                             <ArrowRight className="w-4 h-4" />
                           </Button>
                         </Link>
                       </TableCell>
+
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
               {filteredTugas.length === 0 && (
-                <div className="p-16 text-center text-gray-400 bg-white/50">
+                <div className="p-16 text-center text-gray-500 bg-white/50">
                   <FileText className="w-12 h-12 mx-auto mb-4 opacity-10" />
                   <p className="text-sm font-medium">Tidak ada laporan ditemukan</p>
                 </div>

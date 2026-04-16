@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { periodeApi } from '../../lib/api';
 import Swal from 'sweetalert2';
 
@@ -15,6 +15,8 @@ export default function PeriodeManagementPage() {
   const [periodeToDelete, setPeriodeToDelete] = useState<any>(null);
   const [periodeList, setPeriodeList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -167,6 +169,9 @@ export default function PeriodeManagementPage() {
     }
   };
 
+  const totalPages = Math.ceil(periodeList.length / ITEMS_PER_PAGE);
+  const paginatedPeriode = periodeList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
@@ -178,8 +183,8 @@ export default function PeriodeManagementPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Periode Management</h1>
-          <p className="text-sm text-gray-600 mt-1">Kelola data periode jabatan pimpinan</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Periode Management</h1>
+          <p className="text-sm text-gray-500 mt-1">Kelola data periode jabatan pimpinan</p>
         </div>
         <Button onClick={handleAdd}>
           <Plus className="w-4 h-4 mr-2" />
@@ -196,60 +201,123 @@ export default function PeriodeManagementPage() {
           {error && <div className="p-4 text-center text-red-500">{error}</div>}
 
           {!isLoading && !error && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Periode</TableHead>
-                  <TableHead>Tanggal Mulai</TableHead>
-                  <TableHead>Tanggal Selesai</TableHead>
-                  <TableHead>Keterangan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {periodeList.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-4">Tidak ada data periode</TableCell>
-                  </TableRow>
-                ) : (
-                  periodeList.map((periode) => (
-                    <TableRow key={periode.id_periode}>
-                      <TableCell className="font-medium">{periode.nama_periode}</TableCell>
-                      <TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                    <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                      <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Periode</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal Mulai</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal Selesai</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Keterangan</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4">Status</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 text-center py-4">Aksi</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {periodeList.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-4">Tidak ada data periode</TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedPeriode.map((periode, index) => (
+                    <TableRow key={periode.id_periode} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                      <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
+                      <TableCell className="font-semibold text-gray-900 text-sm whitespace-normal min-w-[150px]">{periode.nama_periode}</TableCell>
+                      <TableCell className="text-sm text-gray-500 font-medium tracking-tight">
                         {new Date(periode.tanggal_mulai).toLocaleDateString('id-ID', {
                           day: '2-digit',
                           month: 'short',
                           year: 'numeric'
                         })}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-sm text-gray-500 font-medium tracking-tight">
                         {new Date(periode.tanggal_selesai).toLocaleDateString('id-ID', {
                           day: '2-digit',
                           month: 'short',
                           year: 'numeric'
                         })}
                       </TableCell>
-                      <TableCell className="text-sm text-gray-600">{periode.keterangan}</TableCell>
+                      <TableCell className="text-sm text-gray-500 italic font-medium">{periode.keterangan || '-'}</TableCell>
                       <TableCell>
-                        <Badge variant={periode.status_periode === 'aktif' ? 'success' : 'secondary'}>
+                        <Badge variant={periode.status_periode === 'aktif' ? 'success' : 'secondary'} className="text-[10px] font-bold">
                           {periode.status_periode === 'aktif' ? 'Aktif' : 'Nonaktif'}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(periode)}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEdit(periode)}
+                            className="h-9 w-9 p-0 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-100 rounded-xl transition-all shadow-sm"
+                          >
                             <Edit2 className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(periode)}>
-                            <Trash2 className="w-4 h-4 text-red-600" />
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDelete(periode)}
+                            className="h-9 w-9 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl transition-all shadow-sm"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  )))}
-              </TableBody>
-            </Table>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="px-6 py-4 flex items-center justify-between border-t border-gray-100 bg-gray-50/30">
+                  <div className="text-xs font-bold text-gray-400 tracking-tight">
+                    Menampilkan <span className="text-gray-600">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="text-gray-600">{Math.min(currentPage * ITEMS_PER_PAGE, periodeList.length)}</span> dari <span className="text-gray-600">{periodeList.length}</span> data
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" />
+                      Prev
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button
+                          key={i + 1}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                            currentPage === i + 1
+                              ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                              : 'text-gray-400 hover:bg-white hover:text-gray-600 border border-transparent hover:border-gray-200'
+                          }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
@@ -266,7 +334,7 @@ export default function PeriodeManagementPage() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Nama Periode <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -282,7 +350,7 @@ export default function PeriodeManagementPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Tanggal Mulai <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -295,7 +363,7 @@ export default function PeriodeManagementPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Tanggal Selesai <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -310,7 +378,7 @@ export default function PeriodeManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Status <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -326,7 +394,7 @@ export default function PeriodeManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Keterangan
                   </label>
                   <textarea

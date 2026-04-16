@@ -178,24 +178,26 @@ export default function DraftBeritaPage() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50/50 hover:bg-transparent border-b border-gray-100">
-                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Judul Berita</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Agenda Terkait</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Staf Pengirim</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal Kirim</TableHead>
-                  <TableHead className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Revisi</TableHead>
-                  <TableHead className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</TableHead>
+                <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                  <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Judul Berita</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Agenda Terkait</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Staf Pengirim</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal Kirim</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Revisi</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Status</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDraft.map((draft) => {
+                {filteredDraft.map((draft, index) => {
                   const statusInfo = getStatusInfo(draft.status_draft);
                   const revisiCount = draft.revisions?.length || 1;
 
                   return (
-                    <TableRow key={draft.id_draft_berita} className="hover:bg-blue-50/30 transition-colors border-b border-gray-100 group">
-                      <TableCell className="px-6 py-4">
+                    <TableRow key={draft.id_draft_berita} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                      <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                      <TableCell>
                         <div className="max-w-md">
                           <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
                             {draft.judul_berita}
@@ -242,20 +244,20 @@ export default function DraftBeritaPage() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-4 text-center">
+                      <TableCell className="text-center">
                         <div className="flex justify-center">
                           <Badge className={`${statusInfo.badgeClass} text-[10px] px-2 py-0.5 font-semibold text-center border`}>
                             {statusInfo.label}
                           </Badge>
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleOpenDetail(draft)}
-                            className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700 rounded-lg group/btn"
+                            className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
                             title="Detail"
                           >
                             <Eye className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
@@ -265,7 +267,7 @@ export default function DraftBeritaPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700 rounded-lg group/btn"
+                                className="h-9 w-9 p-0 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-100 rounded-xl transition-all shadow-sm"
                                 title="Review"
                               >
                                 <MessageSquare className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
@@ -277,6 +279,14 @@ export default function DraftBeritaPage() {
                     </TableRow>
                   );
                 })}
+                {filteredDraft.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-12 text-gray-500">
+                      <FileText className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                      <p>Tidak ada draft berita yang ditemukan</p>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>

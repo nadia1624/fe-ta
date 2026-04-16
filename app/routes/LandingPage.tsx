@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { getToken, getActorSlug } from '../lib/api';
 import { Building2, Calendar, FileText, Users, CheckCircle, ArrowRight, Clock, Shield, Newspaper, ChevronRight, ChevronLeft, Menu, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { NewsSlider } from '../components/NewsSlider';
@@ -22,10 +23,32 @@ const heroSlides = [
 ];
 
 
+const navLinks = [
+  { label: 'Home', id: 'hero' },
+  { label: 'Fitur', id: 'fitur' },
+  { label: 'Alur', id: 'alur' },
+  { label: 'Berita', id: 'berita' },
+];
+
+
 export default function LandingPage() {
   const [beritaList, setBeritaList] = useState<any[]>([]);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeSection, setActiveSection] = useState('hero');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userSlug, setUserSlug] = useState('');
+  const navigate = useNavigate();
+
+  // Check login status
+  useEffect(() => {
+    const token = getToken();
+    const role = localStorage.getItem('userRole');
+    if (token && role) {
+      setIsLoggedIn(true);
+      setUserSlug(getActorSlug(role));
+    }
+  }, []);
 
   useEffect(() => {
     fetchBerita();
@@ -55,8 +78,35 @@ export default function LandingPage() {
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setActiveSection(id);
     setMobileMenu(false);
   };
+
+  // Scroll detection to update active section
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-40% 0px -40% 0px',
+      threshold: 0
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    navLinks.forEach((link) => {
+      const element = document.getElementById(link.id);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const features = [
     {
@@ -88,12 +138,6 @@ export default function LandingPage() {
     { num: '04', title: 'Pelaksanaan', desc: 'Kegiatan terlaksana dengan dokumentasi dan pelaporan lengkap' },
   ];
 
-  const navLinks = [
-    { label: 'Home', id: 'hero' },
-    { label: 'Fitur', id: 'fitur' },
-    { label: 'Alur', id: 'alur' },
-    { label: 'Berita', id: 'berita' },
-  ];
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 selection:bg-blue-100 selection:text-blue-700">
@@ -113,30 +157,51 @@ export default function LandingPage() {
             </div>
 
             {/* Desktop nav links */}
-            <nav className="hidden lg:flex items-center gap-2">
+            <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((link) => (
                 <button
                   key={link.id}
                   onClick={() => scrollTo(link.id)}
-                  className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all duration-200"
+                  className={`relative px-4 py-3 text-sm font-bold transition-all duration-300 flex flex-col items-center group ${
+                    activeSection === link.id 
+                      ? 'text-blue-600' 
+                      : 'text-slate-600 hover:text-blue-600'
+                  }`}
                 >
                   {link.label}
+                  {/* Underline Indicator */}
+                  <span className={`absolute bottom-1 w-8 h-1 bg-blue-600 rounded-full transition-all duration-300 ${
+                    activeSection === link.id 
+                      ? 'opacity-100 scale-x-100' 
+                      : 'opacity-0 scale-x-0 group-hover:opacity-40 group-hover:scale-x-100'
+                  }`} />
                 </button>
               ))}
             </nav>
 
             {/* Desktop auth buttons */}
             <div className="hidden md:flex items-center gap-3">
-              <Link to="/login">
-                <button className="px-6 py-2.5 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors">
-                  Masuk
-                </button>
-              </Link>
-              <Link to="/register">
-                <button className="px-6 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all duration-300 shadow-md hover:shadow-xl active:scale-95">
-                  Daftar Sekarang
-                </button>
-              </Link>
+              {isLoggedIn ? (
+                <Link to={`/${userSlug}/dashboard`}>
+                  <button className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-300 hover:-translate-y-0.5 active:scale-95 flex items-center gap-2">
+                    Masuk Ke Dashboard
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <button className="px-6 py-2.5 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors">
+                      Masuk
+                    </button>
+                  </Link>
+                  <Link to="/register">
+                    <button className="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-300 shadow-md hover:shadow-xl active:scale-95">
+                      Daftar Sekarang
+                    </button>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile hamburger */}
@@ -153,19 +218,37 @@ export default function LandingPage() {
                   <button
                     key={link.id}
                     onClick={() => scrollTo(link.id)}
-                    className="block w-full text-left px-4 py-3 text-sm font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                    className={`flex items-center justify-between w-full px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
+                      activeSection === link.id
+                        ? 'text-blue-600 bg-blue-50/50'
+                        : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/30'
+                    }`}
                   >
                     {link.label}
+                    {activeSection === link.id && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    )}
                   </button>
                 ))}
               </div>
               <div className="pt-4 mt-4 border-t border-slate-100 flex flex-col gap-2">
-                <Link to="/login" className="w-full">
-                  <button className="w-full px-4 py-3 text-sm font-bold text-slate-700 bg-slate-50 rounded-xl">Masuk</button>
-                </Link>
-                <Link to="/register" className="w-full">
-                  <button className="w-full px-4 py-3 text-sm font-bold text-white bg-slate-900 rounded-xl shadow-lg">Daftar Sekarang</button>
-                </Link>
+                {isLoggedIn ? (
+                  <Link to={`/${userSlug}/dashboard`} className="w-full">
+                    <button className="w-full px-4 py-3 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                      Dashboard Utama
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/login" className="w-full">
+                      <button className="w-full px-4 py-3 text-sm font-bold text-slate-700 bg-slate-50 rounded-xl">Masuk</button>
+                    </Link>
+                    <Link to="/register" className="w-full">
+                      <button className="w-full px-4 py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg">Daftar Sekarang</button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -204,9 +287,9 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-            <Link to="/register" className="w-full sm:w-auto">
+            <Link to={isLoggedIn ? `/${userSlug}/dashboard` : "/register"} className="w-full sm:w-auto">
               <button className="w-full sm:w-auto px-10 h-16 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-2xl shadow-blue-900/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
-                Mulai Pengajuan
+                {isLoggedIn ? 'Buka Dashboard' : 'Mulai Pengajuan'}
                 <ArrowRight className="w-5 h-5" />
               </button>
             </Link>
@@ -400,18 +483,29 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/register" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto px-10 h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/40 hover:shadow-blue-900/60 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
-                  Daftar Akun
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </Link>
-              <Link to="/login" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto px-10 h-14 bg-white hover:bg-white/15 border border-white/15 text-slate-900 font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
-                  Login Sistem
-                  <ChevronRight className="w-4 h-4 opacity-60" />
-                </button>
-              </Link>
+              {isLoggedIn ? (
+                <Link to={`/${userSlug}/dashboard`} className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-10 h-14 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl shadow-lg shadow-blue-900/40 hover:shadow-blue-900/60 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
+                    Masuk Ke Dashboard Utama
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/register" className="w-full sm:w-auto">
+                    <button className="w-full sm:w-auto px-10 h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/40 hover:shadow-blue-900/60 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
+                      Daftar Akun
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </Link>
+                  <Link to="/login" className="w-full sm:w-auto">
+                    <button className="w-full sm:w-auto px-10 h-14 bg-white hover:bg-white/15 border border-white/15 text-slate-900 font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                      Login Sistem
+                      <ChevronRight className="w-4 h-4 opacity-60" />
+                    </button>
+                  </Link>
+                </>
+              )}
             </div>
         </div>
 

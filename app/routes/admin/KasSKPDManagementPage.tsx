@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Trash2, X, AlertTriangle, Building2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, AlertTriangle, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { kaskpdApi } from '../../lib/api';
 import Swal from 'sweetalert2';
 
@@ -15,6 +15,8 @@ export default function KasSKPDManagementPage() {
   const [itemList, setItemList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const [formData, setFormData] = useState({
     nama_instansi: ''
@@ -46,6 +48,9 @@ export default function KasSKPDManagementPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const totalPages = Math.ceil(itemList.length / ITEMS_PER_PAGE);
+  const paginatedItemList = itemList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleAdd = () => {
     setModalMode('add');
@@ -159,8 +164,8 @@ export default function KasSKPDManagementPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">KaSKPD Management</h1>
-          <p className="text-sm text-gray-600 mt-1">Kelola data instansi KaSKPD pendamping</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">KaSKPD Management</h1>
+          <p className="text-sm text-gray-500 mt-1">Kelola data instansi KaSKPD pendamping</p>
         </div>
         <Button onClick={handleAdd}>
           <Plus className="w-4 h-4 mr-2" />
@@ -179,40 +184,102 @@ export default function KasSKPDManagementPage() {
           {error && <div className="p-4 text-center text-red-500">{error}</div>}
 
           {!isLoading && !error && (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="px-4 py-3">Nama Instansi</TableHead>
-                    <TableHead className="text-center w-[150px] px-4 py-3">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {itemList.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center py-8 text-gray-500">
-                        Tidak ada data KaSKPD
-                      </TableCell>
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                      <TableHead className="text-sm font-bold text-gray-900 text-center w-12 px-4 py-4">No.</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 px-4 py-4">Nama Instansi</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 text-center w-[150px] px-4 py-4">Aksi</TableHead>
                     </TableRow>
-                  ) : (
-                    itemList.map((item) => (
-                      <TableRow key={item.id_ka_skpd}>
-                        <TableCell className="font-medium px-4 py-3">{item.nama_instansi}</TableCell>
-                        <TableCell className="px-4 py-3">
-                          <div className="flex items-center justify-center gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
-                              <Edit2 className="w-4 h-4 text-amber-600" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete(item)}>
-                              <Trash2 className="w-4 h-4 text-red-600" />
-                            </Button>
-                          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedItemList.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center py-8 text-gray-500 font-medium italic">
+                          Tidak ada data KaSKPD ditemukan
                         </TableCell>
                       </TableRow>
-                    )))}
-                </TableBody>
-              </Table>
-            </div>
+                    ) : (
+                      paginatedItemList.map((item, index) => (
+                        <TableRow key={item.id_ka_skpd} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                          <TableCell className="text-center font-bold text-gray-400 text-xs px-4 py-3">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
+                          <TableCell className="font-semibold text-gray-900 text-sm px-4 py-3 font-inter">{item.nama_instansi}</TableCell>
+                          <TableCell className="px-4 py-3">
+                            <div className="flex items-center justify-center gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleEdit(item)}
+                                className="h-9 w-9 p-0 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-100 rounded-xl transition-all shadow-sm"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleDelete(item)}
+                                className="h-9 w-9 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl transition-all shadow-sm"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {totalPages > 1 && (
+                <div className="px-6 py-4 flex items-center justify-between border-t border-gray-100 bg-gray-50/30 font-inter">
+                  <div className="text-xs font-bold text-gray-400 tracking-tight">
+                    Menampilkan <span className="text-gray-600">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="text-gray-600">{Math.min(currentPage * ITEMS_PER_PAGE, itemList.length)}</span> dari <span className="text-gray-600">{itemList.length}</span> data
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" />
+                      Prev
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button
+                          key={i + 1}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                            currentPage === i + 1
+                              ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                              : 'text-gray-400 hover:bg-white hover:text-gray-600 border border-transparent hover:border-gray-200'
+                          }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
@@ -239,7 +306,7 @@ export default function KasSKPDManagementPage() {
 
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Nama Instansi <span className="text-red-500">*</span>
                   </label>
                   <input

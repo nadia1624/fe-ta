@@ -19,16 +19,16 @@ import {
 } from 'lucide-react';
 import { beritaApi } from '../../lib/api';
 
-const getStatusInfo = (status: string) => {
+const getStatusBadge = (status: string) => {
   switch (status) {
     case 'approved':
-      return { label: 'Disetujui', badgeClass: 'bg-green-100 text-green-700 border-green-200' };
+      return <Badge variant="success">Disetujui</Badge>;
     case 'draft':
-      return { label: 'Pending Review', badgeClass: 'bg-amber-100 text-amber-700 border-amber-200' };
+      return <Badge variant="warning">Pending Review</Badge>;
     case 'review':
-      return { label: 'Perlu Revisi', badgeClass: 'bg-red-100 text-red-700 border-red-200' };
+      return <Badge variant="danger">Perlu Revisi</Badge>;
     default:
-      return { label: status, badgeClass: 'bg-gray-100 text-gray-700 border-gray-200' };
+      return <Badge>{status}</Badge>;
   }
 };
 
@@ -136,56 +136,57 @@ export default function DraftBeritaMediaPage() {
       </div>
 
       {/* Search Bar */}
-      <div className="relative group max-w-lg">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
+      <div className="relative group max-w-lg mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
           placeholder="Cari judul berita atau agenda..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 border border-gray-200 bg-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm transition-all shadow-sm"
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
         />
       </div>
 
       {/* Table Card */}
-      <Card className="border-none shadow-sm ring-1 ring-gray-100 overflow-hidden">
-        <CardHeader className="bg-white border-b border-gray-50 px-6 py-4">
-          <h3 className="text-base font-bold text-gray-800">Riwayat Pengiriman</h3>
+      <Card className="shadow-sm border-gray-100 overflow-hidden">
+        <CardHeader className="border-b border-gray-200">
+          <h3 className="text-base md:text-lg font-semibold text-gray-900">Riwayat Pengiriman</h3>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-b border-gray-50">
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Judul Berita</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Agenda</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Terakhir Dikirim</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Versi</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">Aksi</TableHead>
+                <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                  <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Judul Berita</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Agenda</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Terakhir Dikirim</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Versi</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Status</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDraft.map((draft) => {
-                  const statusInfo = getStatusInfo(draft.status_draft);
+                {filteredDraft.map((draft, index) => {
                   const revisiCount = draft.revisions?.length || 1;
 
                   return (
-                    <TableRow key={draft.id_draft_berita} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
-                      <TableCell className="px-6 py-5 min-w-[200px]">
+                    <TableRow key={draft.id_draft_berita} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                      <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                      <TableCell className="px-6 py-4">
                         <div className="max-w-md">
-                          <p className="font-bold text-[13px] text-gray-800 line-clamp-2 leading-snug">
+                          <p className="font-medium text-gray-900 text-sm line-clamp-2">
                             {draft.judul_berita}
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-5 min-w-[150px]">
-                        <p className="text-[11px] font-semibold text-gray-600 leading-relaxed max-w-[200px] line-clamp-2">
+                      <TableCell>
+                        <p className="text-xs font-medium text-gray-600 line-clamp-2">
                           {draft.penugasan?.agenda?.nama_kegiatan || '-'}
                         </p>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <p className="text-[11px] text-gray-600 whitespace-nowrap">
+                      <TableCell className="whitespace-nowrap">
+                        <p className="text-xs text-gray-600">
                           {draft.tanggal_kirim ? new Date(draft.tanggal_kirim).toLocaleDateString('id-ID', {
                             day: 'numeric',
                             month: 'short',
@@ -193,21 +194,17 @@ export default function DraftBeritaMediaPage() {
                           }) : '-'}
                         </p>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <p className="text-[11px] text-gray-600 font-medium">
-                          v{revisiCount}
-                        </p>
+                      <TableCell className="text-center">
+                        <Badge variant="secondary" className="font-bold text-[10px]">v{revisiCount}</Badge>
                       </TableCell>
-                      <TableCell className="px-6 py-5">
-                        <Badge className={`${statusInfo.badgeClass} rounded-full px-3 py-0.5 text-[9px] font-bold border-none shadow-none uppercase tracking-wide`}>
-                          {statusInfo.label}
-                        </Badge>
+                      <TableCell className="text-center">
+                        {getStatusBadge(draft.status_draft)}
                       </TableCell>
-                      <TableCell className="px-6 py-5">
+                      <TableCell className="text-center">
                         <div className="flex items-center justify-center">
                           <button
                             onClick={() => handleOpenDetail(draft)}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors bg-blue-50/50 rounded-lg"
+                            className="h-9 w-9 p-0 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -218,7 +215,7 @@ export default function DraftBeritaMediaPage() {
                 })}
                 {filteredDraft.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12 text-gray-500">
+                    <TableCell colSpan={7} className="text-center py-12 text-gray-500">
                       <Newspaper className="w-12 h-12 mx-auto mb-3 opacity-20" />
                       <p className="text-sm italic">Belum ada draft berita yang ditemukan</p>
                     </TableCell>
@@ -240,7 +237,7 @@ export default function DraftBeritaMediaPage() {
                 <div className="p-1.5 bg-blue-50 rounded-lg">
                   <Newspaper className="w-4 h-4 text-blue-600" />
                 </div>
-                <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide">Detail Draft Berita</h2>
+                <h2 className="text-sm font-bold text-gray-800 tracking-wide">Detail Draft Berita</h2>
               </div>
               <button
                 onClick={() => setShowDetailModal(false)}
@@ -320,7 +317,7 @@ export default function DraftBeritaMediaPage() {
                   </div>
 
                   {/* Caption */}
-                  <p className="text-center text-[11px] text-gray-500 italic mt-2">
+                  <p className="text-center text-[10px] text-gray-500 italic mt-2">
                     {selectedDraft.judul_berita}
                   </p>
 

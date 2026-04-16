@@ -226,18 +226,20 @@ export default function MonitorPenugasanPage() {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Agenda</TableHead>
-                <TableHead>Staf Ditugaskan</TableHead>
-                <TableHead>Tanggal Kegiatan</TableHead>
-                <TableHead>Laporan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
+              <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Agenda</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Staf Ditugaskan</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal Kegiatan</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Laporan</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Status</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPenugasan.map((penugasan) => (
-                <TableRow key={penugasan.id_penugasan}>
+              {filteredPenugasan.map((penugasan, index) => (
+                <TableRow key={penugasan.id_penugasan} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                  <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                   <TableCell>
                     <div>
                       <p className="font-medium text-sm">
@@ -294,7 +296,7 @@ export default function MonitorPenugasanPage() {
                   <TableCell>
                     <div className="flex items-center justify-center gap-2">
                       <Link to={`/kasubag-protokol/penugasan/${penugasan.id_penugasan}`}>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm">
                           <ArrowRight className="w-4 h-4" />
                         </Button>
                       </Link>
@@ -304,7 +306,7 @@ export default function MonitorPenugasanPage() {
               ))}
               {filteredPenugasan.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     <ClipboardList className="w-10 h-10 mx-auto mb-2 text-gray-300" />
                     <p>Tidak ada penugasan protokol yang ditemukan</p>
                   </TableCell>

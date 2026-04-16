@@ -83,7 +83,7 @@ export default function RegisterPage() {
     }
   };
 
-  const inputClass = "w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all outline-none text-gray-900 font-medium text-sm placeholder:text-gray-400";
+  const inputClass = "w-full h-12 pl-11 pr-4 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all outline-none text-gray-900 font-medium text-sm";
 
   return (
     <div className="min-h-screen flex font-sans bg-white">
@@ -156,7 +156,7 @@ export default function RegisterPage() {
                 <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                   <span className="text-red-700 text-xs font-bold font-sans">!</span>
                 </div>
-                <p className="text-[11px] font-bold text-red-800 uppercase tracking-wide leading-none">{error}</p>
+                <p className="text-[12px] text-red-800 leading-none">{error}</p>
               </div>
             )}
 
@@ -165,9 +165,7 @@ export default function RegisterPage() {
               {/* Row 1: Nama & Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2 group">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">
-                    Nama Lengkap <span className="text-red-500">*</span>
-                  </label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">Nama Lengkap <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
                     <input
@@ -185,9 +183,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="space-y-2 group">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">
-                    Email Address <span className="text-red-500">*</span>
-                  </label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">Email Address <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
                     <input
@@ -208,9 +204,7 @@ export default function RegisterPage() {
               {/* Row 2: Password */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2 group">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">
-                    Password <span className="text-red-500">*</span>
-                  </label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">Password <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
                     <input
@@ -236,9 +230,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="space-y-2 group">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">
-                    Konfirmasi <span className="text-red-500">*</span>
-                  </label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">Konfirmasi <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
                     <input
@@ -266,9 +258,7 @@ export default function RegisterPage() {
               {/* Row 3: Jabatan & Instansi */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2 group">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">
-                    Jabatan <span className="text-red-500">*</span>
-                  </label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 group-focus-within:text-blue-600 transition-colors">Jabatan <span className="text-red-500">*</span></label>
                   <div className="relative">
                     <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
                     <input
@@ -337,7 +327,7 @@ export default function RegisterPage() {
                     name="alamat"
                     value={formData.alamat}
                     onChange={handleChange}
-                    className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all outline-none text-gray-900 font-medium text-sm placeholder:text-gray-400 resize-none"
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600 transition-all outline-none text-gray-900 font-medium text-sm resize-none"
                     placeholder="Alamat lengkap"
                     rows={2}
                     disabled={loading}

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit, Trash2, Search, X, AlertTriangle } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, X, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { userApi, pimpinanApi, periodeApi } from '../../lib/api';
 import Swal from 'sweetalert2';
 
@@ -42,14 +42,10 @@ export default function UserManagementPage() {
 
   const [users, setUsers] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
-  const [activeAssignments, setActiveAssignments] = useState<any[]>([]);
-  const [pimpinanList, setPimpinanList] = useState<Pimpinan[]>([]);
-  const [periodeList, setPeriodeList] = useState<any[]>([]);
-  const [availablePeriodes, setAvailablePeriodes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
-  const [pimpinanSearchQuery, setPimpinanSearchQuery] = useState('');
-  const [isPimpinanDropdownOpen, setIsPimpinanDropdownOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     nama: '',
@@ -62,46 +58,18 @@ export default function UserManagementPage() {
     instansi: '',
     no_hp: '',
     status_aktif: true,
-    // Ajudan specific
-    id_pimpinan_ajudan: '', // Used for UI state (selected pimpinan)
-    id_jabatan_ajudan: '', // Actual Foreign Key for backend
-    id_periode_ajudan: '',
-    nama_pimpinan_selected: '' // For UI display only
   });
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [usersRes, rolesRes, assignmentsRes, periodeRes] = await Promise.all([
+      const [usersRes, rolesRes] = await Promise.all([
         userApi.getAll(),
-        userApi.getRoles(),
-        pimpinanApi.getActiveAssignments(),
-        periodeApi.getAll()
+        userApi.getRoles()
       ]);
 
       if (usersRes.success) setUsers(usersRes.data);
       if (rolesRes.success) setRoles(rolesRes.data);
-      if (periodeRes.success) setPeriodeList(periodeRes.data);
-
-      if (assignmentsRes.success) {
-        setActiveAssignments(assignmentsRes.data);
-
-        // Extract unique Pimpinan from active assignments
-        const uniquePimpinans = new Map();
-        assignmentsRes.data.forEach((item: any) => {
-          if (item.pimpinan) {
-            uniquePimpinans.set(item.pimpinan.id_pimpinan, { // Use keys from backend properly
-              id_pimpinan: item.pimpinan.id_pimpinan,
-              nama_pimpinan: item.pimpinan.nama_pimpinan,
-              nip: item.pimpinan.nip,
-              jabatan: item.jabatan?.nama_jabatan || '',
-              status: 'aktif'
-            });
-          }
-        });
-        setPimpinanList(Array.from(uniquePimpinans.values()));
-      }
-
     } catch (error) {
       console.error("Error fetching data:", error);
       Swal.fire('Error', 'Gagal memuat data', 'error');
@@ -140,6 +108,13 @@ export default function UserManagementPage() {
     return matchesSearch && matchesFilter;
   });
 
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterRole]);
+
   const uniqueRoles = [...new Set(users.map(u => u.role?.nama_role).filter(Boolean))];
 
   const handleAdd = () => {
@@ -155,14 +130,8 @@ export default function UserManagementPage() {
       jabatan: '',
       instansi: '',
       no_hp: '',
-      status_aktif: true,
-      id_pimpinan_ajudan: '',
-      id_jabatan_ajudan: '', // Reset
-      id_periode_ajudan: '',
-      nama_pimpinan_selected: ''
+      status_aktif: true
     });
-    setPimpinanSearchQuery('');
-    setAvailablePeriodes([]);
     setShowModal(true);
   };
 
@@ -170,61 +139,18 @@ export default function UserManagementPage() {
     setModalMode('edit');
     setSelectedUser(user);
 
-    // Initial Ajudan Data
-    let pimpinanId = '';
-    let jabatanId = '';
-    let periodeId = '';
-    let pimpinanName = '';
-
-    if (user.pimpinanAjudans && user.pimpinanAjudans.length > 0) {
-      const assignment = user.pimpinanAjudans[0];
-      // Structure changed: assignment.periodeJabatan -> pimpinan
-
-      // Before: assignment.id_pimpinan, assignment.periodePimpinan.pimpinan
-      // After: assignment.id_jabatan, assignment.periodeJabatan.pimpinan
-
-      // We need to resolve pimpinan from periodeJabatan
-      if (assignment.periodeJabatan?.pimpinan) {
-        pimpinanId = assignment.periodeJabatan.pimpinan.id_pimpinan;
-        pimpinanName = assignment.periodeJabatan.pimpinan.nama_pimpinan;
-      }
-
-      jabatanId = assignment.id_jabatan;
-      periodeId = assignment.id_periode;
-    }
-
     setFormData({
       nama: user.nama,
       email: user.email,
       nip: user.nip || '',
       password: '',
       confirm_password: '',
-      role_id: user.id_role,
+      role_id: user.id_role ? String(user.id_role) : '',
       jabatan: user.jabatan || '',
       instansi: user.instansi || '',
       no_hp: user.no_hp || '',
       status_aktif: user.status_aktif === 'aktif' || user.status_aktif === true,
-      id_pimpinan_ajudan: pimpinanId,
-      id_jabatan_ajudan: jabatanId,
-      id_periode_ajudan: periodeId,
-      nama_pimpinan_selected: pimpinanName
     });
-
-    setPimpinanSearchQuery(pimpinanName);
-
-    // Set available periodes based on pimpinanId if it exists
-    if (pimpinanId) {
-      // Find assignments for this pimpinan (assignments are now PeriodeJabatan objects)
-      // We filter by pimpinan.id_pimpinan inside the nested object
-      const pimpinanAssignments = activeAssignments.filter(a => a.pimpinan?.id_pimpinan === pimpinanId);
-
-      const periods = pimpinanAssignments.map(a => a.periode).filter(Boolean);
-      const uniquePeriods = Array.from(new Set(periods.map((p: any) => p.id_periode)))
-        .map(id => periods.find((p: any) => p.id_periode === id));
-      setAvailablePeriodes(uniquePeriods);
-    } else {
-      setAvailablePeriodes([]);
-    }
 
     setShowModal(true);
   };
@@ -275,16 +201,6 @@ export default function UserManagementPage() {
       }
     }
 
-    // Ajudan Validation
-    const selectedRoleObj = roles.find(r => r.id_role == formData.role_id);
-    if (selectedRoleObj && selectedRoleObj.nama_role.toLowerCase() === 'ajudan') {
-      if (!formData.id_pimpinan_ajudan || !formData.id_periode_ajudan) {
-        Swal.fire('Error', 'Untuk Role Ajudan, Pimpinan dan Periode wajib dipilih', 'error');
-        setIsLoading(false);
-        return;
-      }
-    }
-
     try {
       const payload = {
         ...formData,
@@ -321,81 +237,19 @@ export default function UserManagementPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
-    if (name === 'id_periode_ajudan') {
-      // When periode selected, find the id_jabatan from assignments
-      // We know id_pimpinan_ajudan (selected pimpinan) and now id_periode_ajudan
-
-      const assignment = activeAssignments.find(a =>
-        a.pimpinan?.id_pimpinan === formData.id_pimpinan_ajudan &&
-        a.id_periode === value
-      );
-
-      setFormData({
-        ...formData,
-        id_periode_ajudan: value,
-        id_jabatan_ajudan: assignment ? assignment.id_jabatan : ''
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-      });
-    }
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    });
   };
 
-  // Filter pimpinan list for dropdown
-  const filteredPimpinanList = pimpinanList.filter(p =>
-    p.nama_pimpinan.toLowerCase().includes(pimpinanSearchQuery.toLowerCase()) ||
-    p.nip.toLowerCase().includes(pimpinanSearchQuery.toLowerCase())
-  );
-
-  const isAjudan = () => {
-    const selected = roles.find(r => r.id_role == formData.role_id);
-    return selected?.nama_role.toLowerCase() === 'ajudan';
-  };
-
-  // Update available periodes when pimpinan is selected
-  const handlePimpinanSelect = (pimpinan: Pimpinan) => {
-    setFormData(prev => ({
-      ...prev,
-      id_pimpinan_ajudan: pimpinan.id_pimpinan,
-      nama_pimpinan_selected: pimpinan.nama_pimpinan,
-      id_periode_ajudan: '',
-      id_jabatan_ajudan: '' // Reset
-    }));
-    setPimpinanSearchQuery(pimpinan.nama_pimpinan);
-    setIsPimpinanDropdownOpen(false);
-
-    // Filter available periodes containing this pimpinan
-    // activeAssignments are PeriodeJabatan records
-    const pimpinanAssignments = activeAssignments.filter(a => a.pimpinan?.id_pimpinan === pimpinan.id_pimpinan);
-    const periods = pimpinanAssignments.map(a => a.periode).filter(Boolean);
-    const uniquePeriods = Array.from(new Set(periods.map((p: any) => p.id_periode)))
-      .map(id => periods.find((p: any) => p.id_periode === id));
-
-    setAvailablePeriodes(uniquePeriods);
-
-    // Auto-select if only one
-    if (uniquePeriods.length === 1) {
-      const selectedPeriodeId = uniquePeriods[0].id_periode;
-
-      // Find the id_jabatan for this single assignment
-      const assignment = pimpinanAssignments.find(a => a.id_periode === selectedPeriodeId);
-
-      setFormData(prev => ({
-        ...prev,
-        id_periode_ajudan: selectedPeriodeId,
-        id_jabatan_ajudan: assignment ? assignment.id_jabatan : ''
-      }));
-    }
-  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">User Management</h1>
-          <p className="text-sm text-gray-600 mt-1">Kelola pengguna dan role akses sistem</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">User Management</h1>
+          <p className="text-sm text-gray-500 mt-1">Kelola pengguna dan role akses sistem</p>
         </div>
         <Button onClick={handleAdd}>
           <Plus className="w-4 h-4 mr-2" />
@@ -443,67 +297,70 @@ export default function UserManagementPage() {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Nama</TableHead>
-                <TableHead>NIP</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Instansi/Pimpinan</TableHead>
-                <TableHead>No. HP</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Aksi</TableHead>
+              <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Nama</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">NIP</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Email</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Role</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Instansi</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">No. HP</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Status</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 text-center py-4">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-8 text-gray-500 font-medium italic">
                     Memuat data...
                   </TableCell>
                 </TableRow>
               ) : filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-8 text-gray-500 font-medium italic">
                     Tidak ada data user yang sesuai dengan pencarian
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers.map((user) => (
-                  <TableRow key={user.id_user}>
-                    <TableCell className="font-medium">{user.nama}</TableCell>
-                    <TableCell className="text-sm font-mono text-gray-600">{user.nip}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{user.email}</TableCell>
+                paginatedUsers.map((user, index) => (
+                  <TableRow key={user.id_user} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                    <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
+                    <TableCell className="font-semibold text-gray-900 text-sm whitespace-normal min-w-[150px]">{user.nama}</TableCell>
+                    <TableCell className="text-sm font-medium text-gray-600 tracking-tight">{user.nip || '-'}</TableCell>
+                    <TableCell className="text-sm text-gray-500">{user.email}</TableCell>
                     <TableCell>
-                      <Badge variant={getRoleBadgeVariant(user.role?.nama_role)}>
+                      <Badge variant={getRoleBadgeVariant(user.role?.nama_role)} className="text-[10px] font-bold px-2 py-0">
                         {user.role?.nama_role}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm">
-                      {user.role?.nama_role?.toLowerCase() === 'ajudan' ? (
-                        user.pimpinanAjudans?.[0]?.periodeJabatan?.pimpinan?.nama_pimpinan ? (
-                          <div className="flex flex-col">
-                            <span className="font-medium text-blue-700">{user.pimpinanAjudans[0].periodeJabatan.pimpinan.nama_pimpinan}</span>
-                            <span className="text-xs text-gray-400">{user.pimpinanAjudans[0].periodeJabatan.periode?.nama_periode}</span>
-                          </div>
-                        ) : '-'
-                      ) : (
-                        user.instansi || '-'
-                      )}
+                    <TableCell className="text-sm text-gray-600">
+                      <span className="font-medium">{user.instansi || '-'}</span>
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">{user.no_hp}</TableCell>
+                    <TableCell className="text-sm text-gray-500 font-medium">{user.no_hp || '-'}</TableCell>
                     <TableCell>
-                      <Badge variant={user.status_aktif === 'aktif' || user.status_aktif === true ? 'success' : 'secondary'}>
-                        {user.status_aktif === 'aktif' || user.status_aktif === true ? 'Aktif' : 'Tidak Aktif'}
+                      <Badge variant={user.status_aktif === 'aktif' || user.status_aktif === true ? 'success' : 'secondary'} className="text-[10px] font-bold">
+                        {user.status_aktif === 'aktif' || user.status_aktif === true ? 'Aktif' : 'Nonaktif'}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(user)}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleEdit(user)}
+                          className="h-9 w-9 p-0 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-100 rounded-xl transition-all shadow-sm"
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         {user.role?.nama_role !== 'Admin' && (
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(user)}>
-                            <Trash2 className="w-4 h-4 text-red-600" />
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDelete(user)}
+                            className="h-9 w-9 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl transition-all shadow-sm"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         )}
                       </div>
@@ -513,6 +370,54 @@ export default function UserManagementPage() {
               )}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 flex items-center justify-between border-t border-gray-100 bg-gray-50/30">
+              <div className="text-xs font-bold text-gray-400 tracking-tight">
+                Menampilkan <span className="text-gray-600">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="text-gray-600">{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)}</span> dari <span className="text-gray-600">{filteredUsers.length}</span> data
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Prev
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                        currentPage === i + 1
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                          : 'text-gray-400 hover:bg-white hover:text-gray-600 border border-transparent hover:border-gray-200'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -537,7 +442,7 @@ export default function UserManagementPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Nama Lengkap <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -552,7 +457,7 @@ export default function UserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       NIP <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -567,7 +472,7 @@ export default function UserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Email <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -582,7 +487,7 @@ export default function UserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       No HP <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -597,8 +502,8 @@ export default function UserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Password {modalMode === 'add' ? <span className="text-red-500">*</span> : <span className="text-gray-500 text-xs">(Kosongkan jika tidak ingin mengubah)</span>}
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                      Password {modalMode === 'add' ? <span className="text-red-500">*</span> : <span className="text-gray-500 text-[10px] lowercase tracking-normal">(Kosongkan jika tidak ingin mengubah)</span>}
                     </label>
                     <input
                       type="password"
@@ -613,8 +518,8 @@ export default function UserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Konfirmasi Password {modalMode === 'add' ? <span className="text-red-500">*</span> : <span className="text-gray-500 text-xs">(Opsional)</span>}
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                      Konfirmasi Password {modalMode === 'add' ? <span className="text-red-500">*</span> : <span className="text-gray-500 text-[10px] lowercase tracking-normal">(Opsional)</span>}
                     </label>
                     <input
                       type="password"
@@ -629,7 +534,7 @@ export default function UserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Role <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -647,7 +552,7 @@ export default function UserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Jabatan <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -662,74 +567,10 @@ export default function UserManagementPage() {
                   </div>
                 </div>
 
-                {isAjudan() && (
-                  <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg space-y-4">
-                    <h4 className="font-semibold text-blue-800 text-sm">Assignment Ajudan</h4>
-
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* Pimpinan Searchable Dropdown */}
-                      <div className="relative">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Pilih Pimpinan <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                          <input
-                            type="text"
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                            placeholder="Cari Pimpinan..."
-                            value={pimpinanSearchQuery}
-                            onChange={(e) => {
-                              setPimpinanSearchQuery(e.target.value);
-                              setIsPimpinanDropdownOpen(true);
-                            }}
-                            onFocus={() => setIsPimpinanDropdownOpen(true)}
-                            onBlur={() => setTimeout(() => setIsPimpinanDropdownOpen(false), 200)}
-                          />
-                        </div>
-                        {isPimpinanDropdownOpen && filteredPimpinanList.length > 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                            {filteredPimpinanList.map(p => (
-                              <div
-                                key={p.id_pimpinan}
-                                className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm"
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
-                                  handlePimpinanSelect(p);
-                                }}
-                              >
-                                <div className="font-medium">{p.nama_pimpinan}</div>
-                                <div className="text-xs text-gray-500">{p.nip}</div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Periode Bertugas <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          name="id_periode_ajudan"
-                          value={formData.id_periode_ajudan}
-                          onChange={handleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                        >
-                          <option value="">Pilih Periode</option>
-                          {availablePeriodes.map(per => (
-                            <option key={per.id_periode} value={per.id_periode}>
-                              {per.nama_periode} ({per.tahun_mulai}-{per.tahun_selesai})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* Ajudan Assignment removed - now managed in Penugasan Ajudan menu */}
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Instansi <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -752,7 +593,7 @@ export default function UserManagementPage() {
                       onChange={handleChange}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <span className="text-sm font-medium text-gray-700">Status Aktif</span>
+                    <span className="text-xs font-bold text-gray-500">Status Aktif</span>
                   </label>
                 </div>
 
