@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Calendar, List, CalendarDays, Eye, X, Search, Filter, UserCheck, RefreshCw, Clock, Edit2, FileText, ChevronDown } from 'lucide-react';
+import { Calendar, List, CalendarDays, Eye, X, Search, Filter, UserCheck, RefreshCw, Clock, Edit2, FileText, Download, MapPin, User, Phone, AlertCircle } from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 import Swal from 'sweetalert2';
@@ -243,8 +243,7 @@ export default function AgendaPimpinanPage() {
             id_jabatan: sap.id_jabatan_hadir,
             nama_pimpinan: assignment.pimpinan?.nama_pimpinan,
             status_kehadiran: 'hadir',
-            representing: originalInvitation?.periodeJabatan?.pimpinan?.nama_pimpinan || sap.periodeJabatanDiusulkan?.pimpinan?.nama_pimpinan || 'Pimpinan Lain',
-            surat_disposisi: originalInvitation?.surat_disposisi || null
+            representing: originalInvitation?.periodeJabatan?.pimpinan?.nama_pimpinan || sap.periodeJabatanDiusulkan?.pimpinan?.nama_pimpinan || 'Pimpinan Lain'
           });
         }
       }
@@ -515,17 +514,6 @@ export default function AgendaPimpinanPage() {
                                   </span>
                                 )}
                               </span>
-                              {stat.type === 'representative' && stat.surat_disposisi && (
-                                <a
-                                  href={`http://localhost:3000/api/${stat.surat_disposisi.replace(/\\/g, '/')}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-indigo-600 hover:text-indigo-800"
-                                  title="Lihat Surat Disposisi"
-                                >
-                                  <FileText className="w-3 h-3" />
-                                </a>
-                              )}
                               {getStatusBadge(stat.status_kehadiran)}
                             </div>
                           ))}
@@ -535,9 +523,9 @@ export default function AgendaPimpinanPage() {
                         {getStatusBadge(latestRecord?.status_agenda || 'pending')}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => { setSelectedAgenda(agenda); setShowDetailModal(true); }}
                           className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
                         >
@@ -589,6 +577,39 @@ export default function AgendaPimpinanPage() {
                     <p className="text-sm font-medium">{selectedAgenda.pemohon?.nama}</p>
                     <p className="text-xs text-gray-500">{selectedAgenda.pemohon?.instansi}</p>
                   </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kontak Person</label>
+                    <p className="text-sm font-medium flex items-center gap-2">
+                      <Phone className="w-3 h-3 text-emerald-500" /> {selectedAgenda.contact_person || '-'}
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <AlertCircle className="w-3 h-3 text-amber-500" /> Catatan
+                    </label>
+                    {selectedAgenda.keterangan ? (
+                      <p className="text-sm text-gray-700 italic border-l-2 border-amber-200 pl-3 py-1 bg-amber-50/30 rounded-r">
+                        "{selectedAgenda.keterangan}"
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic pl-3">-</p>
+                    )}
+                  </div>
+                  <div className="pt-3">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">KaSKPD Pendamping</label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAgenda.kaskpdPendampings && selectedAgenda.kaskpdPendampings.length > 0 ? (
+                        selectedAgenda.kaskpdPendampings.map((kp: any, idx: number) => (
+                          <div key={idx} className="bg-white border border-gray-200 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-gray-700 flex items-center gap-2 shadow-sm italic text-wrap">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            {kp.kaskpd?.nama_instansi}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">-</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -616,31 +637,11 @@ export default function AgendaPimpinanPage() {
                         {stat.type === 'invited' && stat.status_kehadiran === 'diwakilkan' && (
                           <div className="space-y-1">
                             <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {stat.raw_ap.nama_perwakilan}</p>
-                            {stat.raw_ap.surat_disposisi && (
-                              <a
-                                href={`http://localhost:3000/api/${stat.raw_ap.surat_disposisi.replace(/\\/g, '/')}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1"
-                              >
-                                <FileText className="w-3 h-3" /> Lihat Disposisi
-                              </a>
-                            )}
                           </div>
                         )}
                         {stat.type === 'representative' && (
                           <div className="space-y-1">
                             <p className="text-[10px] text-indigo-500 italic">Disposisi oleh: {stat.representing}</p>
-                            {stat.surat_disposisi && (
-                              <a
-                                href={`http://localhost:3000/api/${stat.surat_disposisi.replace(/\\/g, '/')}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[10px] flex items-center gap-1 text-indigo-600 hover:underline mt-1 font-medium"
-                              >
-                                <FileText className="w-3 h-3" /> Lihat Surat Disposisi
-                              </a>
-                            )}
                           </div>
                         )}
                       </div>

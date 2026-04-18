@@ -439,17 +439,7 @@ export default function AgendaPimpinanStafProtokolPage() {
                               <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
                               {getStatusBadge(ap.status_kehadiran)}
                             </div>
-                            {ap.status_kehadiran === 'diwakilkan' && ap.surat_disposisi && (
-                              <a
-                                href={`http://localhost:3000/${ap.surat_disposisi.replace(/\\/g, '/')}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1 w-fit"
-                              >
-                                <FileText className="w-3 h-3" /> Surat Disposisi
-                              </a>
-                            )}
-                          </div>
+                            </div>
                         ))}
                       </div>
                     </TableCell>
@@ -545,16 +535,6 @@ export default function AgendaPimpinanStafProtokolPage() {
                               <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
                                 Diwakili oleh: {ap.nama_perwakilan}
                               </p>
-                              {ap.surat_disposisi && (
-                                <a
-                                  href={`http://localhost:3000/${ap.surat_disposisi.replace(/\\/g, '/')}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1"
-                                >
-                                  <FileText className="w-3 h-3" /> Lihat Disposisi
-                                </a>
-                              )}
                             </div>
                           )}
                         </div>

@@ -14,6 +14,7 @@ export default [
   route("berita/:id", "routes/NewsDetailPage.tsx"),
   route("forgot-password", "routes/ForgotPasswordPage.tsx"),
   route("reset-password/:token", "routes/ResetPasswordPage.tsx"),
+  route("google-auth-success", "routes/google-auth-success.tsx"),
 
   // Protected Routes Group
   layout("layouts/AuthGuard.tsx", [

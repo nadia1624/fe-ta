@@ -3,17 +3,15 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { CheckCircle, XCircle, Eye, X, UserCheck, Download, FileText, RefreshCw, ChevronDown } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, X, UserCheck, FileText, RefreshCw, Download, Calendar} from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
-import SignaturePad from '../../components/ui/SignaturePad';
 import Swal from 'sweetalert2';
 
 export default function KonfirmasiAgendaPage() {
   const [loading, setLoading] = useState(true);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showKonfirmasiModal, setShowKonfirmasiModal] = useState(false);
-  const [showDisposisiPreview, setShowDisposisiPreview] = useState(false);
   const [selectedAgenda, setSelectedAgenda] = useState<any>(null);
   const [selectedAp, setSelectedAp] = useState<any>(null);
 
@@ -21,12 +19,11 @@ export default function KonfirmasiAgendaPage() {
     kehadiran: 'hadir',
     perwakilan_id_jabatan: '',
     perwakilan_id_periode: '',
-    perwakilan_nama: '', // For display
-    perwakilan_jabatan: '', // For display
-    perwakilan_tipe: 'pimpinan' as 'pimpinan' | 'manual', // NEW
+    perwakilan_nama: '', 
+    perwakilan_jabatan: '', 
+    perwakilan_tipe: 'pimpinan' as 'pimpinan' | 'manual',
     alasan: '',
-    catatan: '',
-    tanda_tangan: '' // NEW
+    catatan: ''
   });
 
   const [activeAssignments, setActiveAssignments] = useState<any[]>([]);
@@ -40,24 +37,20 @@ export default function KonfirmasiAgendaPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Get assignments
       const assignRes = await pimpinanApi.getActiveAssignments();
       if (assignRes.success) {
         setActiveAssignments(assignRes.data);
       }
 
-      // 2. Get active pimpinan for delegation
       const pimpinanRes = await pimpinanApi.getAll();
       if (pimpinanRes.success && pimpinanRes.data) {
         setAllPimpinan(pimpinanRes.data.filter((p: any) => p.status_aktif === 'aktif' || p.status_aktif === 'Aktif'));
       }
 
-      // 3. Get agendas assigned to the Ajudan's leaders
       const agendaRes = await agendaApi.getLeaderAgendas({});
       if (agendaRes.success) {
         setAgendaList(agendaRes.data);
       }
-
     } catch (error) {
       console.error('Failed to fetch data', error);
       Swal.fire('Error', 'Gagal memuat data dari server', 'error');
@@ -82,8 +75,7 @@ export default function KonfirmasiAgendaPage() {
       perwakilan_jabatan: '',
       perwakilan_tipe: 'pimpinan',
       alasan: '',
-      catatan: '',
-      tanda_tangan: ''
+      catatan: ''
     });
     setShowDetailModal(false);
     setShowKonfirmasiModal(true);
@@ -91,11 +83,7 @@ export default function KonfirmasiAgendaPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setKonfirmasiData({
-      ...konfirmasiData,
-      [name]: value
-    });
-
+    
     if (name === 'perwakilan_id_jabatan') {
       const val = value;
       if (val) {
@@ -117,6 +105,11 @@ export default function KonfirmasiAgendaPage() {
           perwakilan_jabatan: ''
         }));
       }
+    } else {
+      setKonfirmasiData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
 
@@ -126,7 +119,7 @@ export default function KonfirmasiAgendaPage() {
 
     try {
       const data = new FormData();
-      let finalStatus = konfirmasiData.kehadiran === 'wakilkan' ? 'diwakilkan' : (konfirmasiData.kehadiran === 'tolak' ? 'tidak_hadir' : 'hadir');
+      const finalStatus = konfirmasiData.kehadiran === 'wakilkan' ? 'diwakilkan' : (konfirmasiData.kehadiran === 'tolak' ? 'tidak_hadir' : 'hadir');
       data.append('status_kehadiran', finalStatus);
 
       if (finalStatus === 'diwakilkan') {
@@ -135,9 +128,6 @@ export default function KonfirmasiAgendaPage() {
           data.append('id_periode_perwakilan', konfirmasiData.perwakilan_id_periode);
         } else {
           data.append('nama_perwakilan', konfirmasiData.perwakilan_nama);
-        }
-        if (konfirmasiData.tanda_tangan) {
-            data.append('tanda_tangan', konfirmasiData.tanda_tangan);
         }
       }
       data.append('keterangan', `${konfirmasiData.alasan ? konfirmasiData.alasan + '. ' : ''}${konfirmasiData.catatan}`);
@@ -150,20 +140,10 @@ export default function KonfirmasiAgendaPage() {
       );
 
       if (res.success) {
-        if (finalStatus === 'hadir') {
-          Swal.fire('Berhasil', 'Konfirmasi kehadiran berhasil disimpan', 'success');
-          setShowKonfirmasiModal(false);
-        } else if (finalStatus === 'tidak_hadir') {
-          Swal.fire('Berhasil', 'Konfirmasi tidak hadir berhasil disimpan', 'success');
-          setShowKonfirmasiModal(false);
-        } else {
-          Swal.fire('Berhasil', 'Konfirmasi perwakilan berhasil. Surat disposisi siap digenerate.', 'success');
-          setShowKonfirmasiModal(false);
-          setShowDisposisiPreview(true);
-        }
+        Swal.fire('Berhasil', 'Konfirmasi kehadiran berhasil disimpan', 'success');
+        setShowKonfirmasiModal(false);
         fetchData();
       } else {
-        // Check if it's a schedule conflict (409)
         if (res.message?.toLowerCase().includes('bentrok')) {
           Swal.fire({
             icon: 'warning',
@@ -181,37 +161,10 @@ export default function KonfirmasiAgendaPage() {
     }
   };
 
-  const generateDisposisiContent = () => {
-    const today = new Date().toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
-
-    const nomorDisposisi = selectedAgenda ? `DIS/${selectedAgenda.id_agenda}/SESPRI/${new Date().getMonth() + 1}/${new Date().getFullYear()}` : '';
-
-    let kepada = `${konfirmasiData.perwakilan_nama} (${konfirmasiData.perwakilan_jabatan})`;
-    if (konfirmasiData.perwakilan_tipe === 'manual') {
-      kepada = konfirmasiData.perwakilan_nama;
-    }
-
-    return {
-      nomor: nomorDisposisi,
-      tanggal: today,
-      dari: selectedAp ? `${selectedAp.periodeJabatan?.pimpinan?.nama_pimpinan} (${selectedAp.periodeJabatan?.jabatan?.nama_jabatan})` : '',
-      kepada: kepada,
-      perihal: `Disposisi Perwakilan Kehadiran - ${selectedAgenda?.nama_kegiatan}`,
-      agenda: selectedAgenda,
-      alasan: konfirmasiData.alasan,
-      catatan: konfirmasiData.catatan,
-      tanda_tangan: konfirmasiData.tanda_tangan
-    };
-  };
-
   const myPendingTasks: any[] = [];
-  const hadirs = [];
-  const diwakilkans = [];
-  const ditolaks = [];
+  const hadirs: any[] = [];
+  const diwakilkans: any[] = [];
+  const ditolaks: any[] = [];
 
   agendaList.forEach(agenda => {
     const latestStatus = agenda.statusAgendas?.[0]?.status_agenda;
@@ -251,55 +204,27 @@ export default function KonfirmasiAgendaPage() {
         <p className="text-sm text-gray-600 mt-1">Konfirmasi kehadiran atau penunjukan perwakilan pimpinan</p>
       </div>
 
-      {/* Stats - Original Simple Style */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Perlu Konfirmasi</p>
-                <p className="text-2xl font-semibold text-gray-900">{myPendingTasks.length}</p>
+        {[
+          { label: 'Perlu Konfirmasi', value: myPendingTasks.length, icon: UserCheck, color: 'text-blue-600' },
+          { label: 'Hadir Sendiri', value: hadirs.length, icon: CheckCircle, color: 'text-green-600' },
+          { label: 'Diwakilkan', value: diwakilkans.length, icon: UserCheck, color: 'text-indigo-600' },
+          { label: 'Tidak Hadir', value: ditolaks.length, icon: XCircle, color: 'text-red-600' }
+        ].map((stat, i) => (
+          <Card key={i}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">{stat.label}</p>
+                  <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                </div>
+                <stat.icon className={`w-8 h-8 ${stat.color}`} />
               </div>
-              <UserCheck className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Hadir Sendiri</p>
-                <p className="text-2xl font-semibold text-gray-900">{hadirs.length}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Diwakilkan</p>
-                <p className="text-2xl font-semibold text-gray-900">{diwakilkans.length}</p>
-              </div>
-              <UserCheck className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Tidak Hadir</p>
-                <p className="text-2xl font-semibold text-gray-900">{ditolaks.length}</p>
-              </div>
-              <XCircle className="w-8 h-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Simple Table */}
       <Card>
         <CardHeader>
           <h3 className="text-lg font-semibold text-gray-900">Agenda Perlu Konfirmasi ({myPendingTasks.length})</h3>
@@ -314,19 +239,17 @@ export default function KonfirmasiAgendaPage() {
                 <TableHead className="text-sm font-bold text-gray-900 py-4">Pemohon</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 py-4">Pimpinan</TableHead>
-                <TableHead className="text-sm font-bold text-gray-900 py-4">Status</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {myPendingTasks.length === 0 && (
+              {myPendingTasks.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-10 text-gray-500">
-                    Tidak ada agenda perlu konfirmasi yang ditemukan
+                  <TableCell colSpan={7} className="text-center py-10 text-gray-500">
+                    Tidak ada agenda perlu konfirmasi saat ini
                   </TableCell>
                 </TableRow>
-              )}
-              {myPendingTasks.map((task, index) => (
+              ) : myPendingTasks.map((task, index) => (
                 <TableRow key={`${task.id_agenda}-${index}`} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
                   <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                   <TableCell className="font-medium text-sm">{task.nomor_surat}</TableCell>
@@ -345,15 +268,9 @@ export default function KonfirmasiAgendaPage() {
                   <TableCell>
                     <div>
                       <p className="text-sm font-medium">
-                        {new Date(task.tanggal_kegiatan).toLocaleDateString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
+                        {new Date(task.tanggal_kegiatan).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {task.waktu_mulai.slice(0, 5)} - {task.waktu_selesai.slice(0, 5)}
-                      </p>
+                      <p className="text-xs text-gray-500">{task.waktu_mulai.slice(0, 5)} - {task.waktu_selesai.slice(0, 5)}</p>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -363,530 +280,228 @@ export default function KonfirmasiAgendaPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="warning">Pending</Badge>
-                  </TableCell>
-                  <TableCell>
                     <div className="flex items-center justify-center gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleDetail(task)}
-                        className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleDetail(task)} className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl">
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleKonfirmasi(task, task.targetedAp)}
-                        className="h-9 w-9 p-0 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border border-green-100 rounded-xl transition-all shadow-sm"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleKonfirmasi(task, task.targetedAp)} className="h-9 w-9 p-0 bg-green-50 text-green-600 hover:bg-green-100 rounded-xl">
                         <UserCheck className="w-4 h-4" />
                       </Button>
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
-              {myPendingTasks.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-6 text-gray-500">
-                    Tidak ada agenda yang perlu dikonfirmasi.
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
 
-      {/* Modal Detail Original */}
       {showDetailModal && selectedAgenda && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Detail Agenda</h3>
-                <button
-                  onClick={() => setShowDetailModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+            <CardHeader className="flex flex-row items-center justify-between border-b">
+              <h3 className="text-lg font-semibold text-gray-900">Detail Agenda</h3>
+              <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Informasi Surat</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">Nomor Surat</label>
-                      <p className="text-sm text-gray-900">{selectedAgenda.nomor_surat}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">Tanggal Surat</label>
-                      <p className="text-sm text-gray-900">{new Date(selectedAgenda.tanggal_surat).toLocaleDateString('id-ID')}</p>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <label className="text-xs font-medium text-gray-600">Perihal</label>
-                    <p className="text-sm text-gray-900">{selectedAgenda.perihal}</p>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Informasi Pemohon</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">Nama Pemohon</label>
-                      <p className="text-sm text-gray-900">{selectedAgenda.pemohon?.nama}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">Instansi</label>
-                      <p className="text-sm text-gray-900">{selectedAgenda.pemohon?.instansi}</p>
-                    </div>
-                  </div>
-                </div>
-
+            <CardContent className="space-y-4 pt-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 grid grid-cols-2 gap-3">
+                <div className="col-span-2 font-semibold text-blue-800 text-sm mb-1">Informasi Surat</div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Judul Kegiatan</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedAgenda.nama_kegiatan}</p>
+                  <label className="text-xs font-medium text-gray-600">Nomor Surat</label>
+                  <p className="text-sm text-gray-900">{selectedAgenda.nomor_surat}</p>
                 </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600">Tanggal Surat</label>
+                  <p className="text-sm text-gray-900">{new Date(selectedAgenda.tanggal_surat).toLocaleDateString('id-ID')}</p>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-600">Perihal</label>
+                  <p className="text-sm text-gray-900">{selectedAgenda.perihal}</p>
+                </div>
+              </div>
 
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Informasi Kegiatan</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Tanggal</label>
-                    <p className="text-sm text-gray-900 mt-1">
-                      {new Date(selectedAgenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                    <label className="text-xs font-medium text-gray-600">Nama Kegiatan</label>
+                    <p className="text-sm font-medium text-gray-900">{selectedAgenda.nama_kegiatan}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600">Waktu</label>
+                    <p className="text-sm font-medium text-gray-900">
+                      {selectedAgenda.waktu_mulai.slice(0, 5)} - {selectedAgenda.waktu_selesai.slice(0, 5)}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Waktu</label>
-                    <p className="text-sm text-gray-900 mt-1">{selectedAgenda.waktu_mulai.slice(0, 5)} - {selectedAgenda.waktu_selesai.slice(0, 5)}</p>
+                    <label className="text-xs font-medium text-gray-600">Tanggal</label>
+                    <p className="text-sm font-medium text-gray-900">
+                      {new Date(selectedAgenda.tanggal_kegiatan).toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600">Lokasi</label>
+                    <p className="text-sm font-medium text-gray-900">{selectedAgenda.lokasi_kegiatan}</p>
                   </div>
                 </div>
+              </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Tempat</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedAgenda.lokasi_kegiatan}</p>
-                </div>
 
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-2">Pimpinan yang Diminta Hadir</h4>
-                  <div className="space-y-2">
-                    {selectedAgenda.agendaPimpinans?.map((ap: any, i: number) => {
-                      const isMine = activeAssignments.some(as => as.id_jabatan === ap.id_jabatan && as.id_periode === ap.id_periode);
-                      return (
-                        <div key={i} className="flex justify-between items-center bg-white p-2 rounded border">
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
-                            <p className="text-xs text-gray-600">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
-                          </div>
-                          {isMine ? (
-                            <Button size="sm" onClick={() => { setShowDetailModal(false); handleKonfirmasi(selectedAgenda, ap); }}>Konfirmasi</Button>
-                          ) : (
-                            <></>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Keterangan</label>
-                  <p className="text-sm text-gray-900 mt-1">{selectedAgenda.keterangan || '-'}</p>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setShowDetailModal(false)} className="flex-1">
-                    Tutup
-                  </Button>
-                </div>
+              <div className="pt-2 border-t flex justify-end">
+                <Button variant="outline" onClick={() => setShowDetailModal(false)}>Tutup</Button>
               </div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Modal Konfirmasi Kehadiran Original */}
       {showKonfirmasiModal && selectedAgenda && selectedAp && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Konfirmasi Kehadiran Pimpinan</h3>
-                <button
-                  onClick={() => setShowKonfirmasiModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+            <CardHeader className="flex flex-row items-center justify-between border-b">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Konfirmasi Kehadiran</h3>
+                <p className="text-sm text-gray-500">Pilih status kehadiran pimpinan untuk agenda ini</p>
               </div>
+              <button onClick={() => setShowKonfirmasiModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmitKonfirmasi} className="space-y-4">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-gray-900">{selectedAgenda.nama_kegiatan}</p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    {new Date(selectedAgenda.tanggal_kegiatan).toLocaleDateString('id-ID')} · {selectedAgenda.waktu_mulai.slice(0, 5)} - {selectedAgenda.waktu_selesai.slice(0, 5)}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">📍 {selectedAgenda.lokasi_kegiatan}</p>
-                  <div className="mt-2 pt-2 border-t border-gray-300">
-                    <p className="text-xs font-medium text-gray-700">Pimpinan:</p>
-                    <p className="text-sm font-semibold text-gray-900">{selectedAp.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
-                    <p className="text-xs text-gray-600">{selectedAp.periodeJabatan?.jabatan?.nama_jabatan}</p>
+            <CardContent className="p-6 space-y-6">
+              {/* Agenda Summary Info */}
+              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-3 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-600 p-2 rounded-lg text-white">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 leading-tight">{selectedAgenda.nama_kegiatan}</h4>
+                    <p className="text-[10px] text-gray-500 mt-0.5">
+                      {new Date(selectedAgenda.tanggal_kegiatan).toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Status Kehadiran <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setKonfirmasiData({ ...konfirmasiData, kehadiran: 'hadir' })}
-                      className={`p-4 border-2 rounded-lg transition-all ${konfirmasiData.kehadiran === 'hadir'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-300 hover:border-gray-400'
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Pimpinan yang Didampingi</label>
+                <p className="text-sm font-bold text-gray-900">{selectedAp.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
+                <p className="text-xs text-gray-500">{selectedAp.periodeJabatan?.jabatan?.nama_jabatan}</p>
+              </div>
+
+              <form onSubmit={handleSubmitKonfirmasi} className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-xs font-medium text-gray-600">Pilih status kehadiran</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: 'hadir', label: 'Hadir', icon: CheckCircle, active: 'border-blue-600 bg-blue-50 text-blue-700' },
+                      { id: 'wakilkan', label: 'Delegasi', icon: UserCheck, active: 'border-blue-600 bg-blue-50 text-blue-700' },
+                      { id: 'tolak', label: 'Tolak', icon: XCircle, active: 'border-blue-600 bg-blue-50 text-blue-700' }
+                    ].map(status => (
+                      <button
+                        key={status.id}
+                        type="button"
+                        onClick={() => setKonfirmasiData({ ...konfirmasiData, kehadiran: status.id as any })}
+                        className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${
+                          konfirmasiData.kehadiran === status.id 
+                            ? status.active 
+                            : 'border-gray-200 hover:border-blue-200 text-gray-400'
                         }`}
-                    >
-                      <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${konfirmasiData.kehadiran === 'hadir' ? 'text-green-600' : 'text-gray-400'
-                        }`} />
-                      <p className="text-sm font-semibold text-gray-900">Hadir Sendiri</p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setKonfirmasiData({ ...konfirmasiData, kehadiran: 'wakilkan' })}
-                      className={`p-4 border-2 rounded-lg transition-all ${konfirmasiData.kehadiran === 'wakilkan'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                    >
-                      <UserCheck className={`w-6 h-6 mx-auto mb-2 ${konfirmasiData.kehadiran === 'wakilkan' ? 'text-blue-600' : 'text-gray-400'
-                        }`} />
-                      <p className="text-sm font-semibold text-gray-900">Diwakilkan</p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setKonfirmasiData({ ...konfirmasiData, kehadiran: 'tolak' })}
-                      className={`p-4 border-2 rounded-lg transition-all ${konfirmasiData.kehadiran === 'tolak'
-                        ? 'border-red-500 bg-red-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                    >
-                      <XCircle className={`w-6 h-6 mx-auto mb-2 ${konfirmasiData.kehadiran === 'tolak' ? 'text-red-600' : 'text-gray-400'
-                        }`} />
-                      <p className="text-sm font-semibold text-gray-900">Tidak Hadir</p>
-                    </button>
+                      >
+                        <status.icon className="w-6 h-6 mb-2" />
+                        <span className="text-xs font-semibold">{status.label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 {konfirmasiData.kehadiran === 'wakilkan' && (
-                  <div className="space-y-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-sm font-semibold text-gray-900">Data Perwakilan</h4>
-                      <div className="flex bg-white rounded-md border p-1 border-gray-300">
-                        <button
-                          type="button"
-                          onClick={() => setKonfirmasiData({ ...konfirmasiData, perwakilan_tipe: 'pimpinan', perwakilan_nama: '' })}
-                          className={`px-3 py-1 text-xs font-semibold rounded-sm transition-colors ${konfirmasiData.perwakilan_tipe === 'pimpinan' ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-                        >Dari Sistem</button>
-                        <button
-                          type="button"
-                          onClick={() => setKonfirmasiData({ ...konfirmasiData, perwakilan_tipe: 'manual', perwakilan_id_jabatan: '', perwakilan_id_periode: '', perwakilan_jabatan: '' })}
-                          className={`px-3 py-1 text-xs font-semibold rounded-sm transition-colors ${konfirmasiData.perwakilan_tipe === 'manual' ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-                        >Manual</button>
+                  <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-gray-900">Detail Perwakilan</span>
+                      <div className="flex bg-white rounded-lg border p-1 scale-90">
+                        {['pimpinan', 'manual'].map(t => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setKonfirmasiData({ 
+                              ...konfirmasiData, 
+                              perwakilan_tipe: t as any, 
+                              perwakilan_nama: '', 
+                              perwakilan_id_jabatan: '', 
+                              perwakilan_id_periode: '', 
+                              perwakilan_jabatan: '' 
+                            })}
+                            className={`px-3 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                              konfirmasiData.perwakilan_tipe === t ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-400'
+                            }`}
+                          >
+                            {t === 'pimpinan' ? 'Pimpinan' : 'Manual'}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
                     {konfirmasiData.perwakilan_tipe === 'pimpinan' ? (
-                      <>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Pilih Perwakilan (Aktif) <span className="text-red-500">*</span>
-                        </label>
-                        <CustomSelect
+                      <div className="space-y-3">
+                         <CustomSelect
                           value={konfirmasiData.perwakilan_id_jabatan ? `${konfirmasiData.perwakilan_id_jabatan}|${konfirmasiData.perwakilan_id_periode}` : ''}
                           onChange={(val) => handleChange({ target: { name: 'perwakilan_id_jabatan', value: val } } as any)}
                           options={allPimpinan
-                            .filter(p => 
-                              !selectedAgenda?.agendaPimpinans?.some(
-                                (ap: any) => ap.id_jabatan === p.id_jabatan && ap.id_periode === p.id_periode
-                              ) &&
-                              !activeAssignments.some(
-                                (as: any) => as.id_jabatan === p.id_jabatan && as.id_periode === p.id_periode
-                              )
-                            )
-                            .map((p) => ({
-                              value: `${p.id_jabatan}|${p.id_periode}`,
-                              label: `${p.pimpinan?.nama_pimpinan} (${p.jabatan?.nama_jabatan})`
-                            }))
+                            .filter(p => !selectedAgenda?.agendaPimpinans?.some((ap: any) => ap.id_jabatan === p.id_jabatan) && !activeAssignments.some((as: any) => as.id_jabatan === p.id_jabatan))
+                            .map((p) => ({ value: `${p.id_jabatan}|${p.id_periode}`, label: `${p.pimpinan?.nama_pimpinan} (${p.jabatan?.nama_jabatan})` }))
                           }
-                          placeholder="-- Pilih Perwakilan --"
-                          className="w-full"
+                          placeholder="Pilih pimpinan..."
+                          className="bg-white"
                         />
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Jabatan Perwakilan
-                          </label>
-                          <input
-                            type="text"
-                            name="perwakilan_jabatan"
-                            value={konfirmasiData.perwakilan_jabatan}
-                            readOnly
-                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700"
-                            placeholder="Jabatan akan terisi otomatis"
-                          />
-                        </div>
-                      </>
+                        {konfirmasiData.perwakilan_jabatan && (
+                          <div className="px-3 py-2 bg-white border border-gray-100 rounded-lg">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Jabatan perwakilan</p>
+                            <p className="text-xs text-gray-700 font-medium">{konfirmasiData.perwakilan_jabatan}</p>
+                          </div>
+                        )}
+                      </div>
                     ) : (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Nama / Jabatan Perwakilan <span className="text-red-500">*</span>
-                        </label>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-gray-600 ml-1">Nama & jabatan perwakilan</label>
                         <input
                           type="text"
                           name="perwakilan_nama"
                           value={konfirmasiData.perwakilan_nama}
                           onChange={handleChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                          placeholder="Contoh: Bpk. Adi (Asisten Perekonomian)"
+                          className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
+                          placeholder="Contoh: Budi - Staf Protokol"
                           required
                         />
                       </div>
                     )}
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Alasan Perwakilan <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        name="alasan"
-                        value={konfirmasiData.alasan}
-                        onChange={handleChange}
-                        rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                        placeholder="Contoh: Pimpinan ada agenda penting di luar kota"
-                        required
-                      />
-                    </div>
-
-                    <div className="pt-2 border-t border-blue-200">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tanda Tangan Pimpinan <span className="text-red-500">*</span>
-                      </label>
-                      <SignaturePad 
-                        onSave={(sig) => setKonfirmasiData(prev => ({ ...prev, tanda_tangan: sig }))}
-                        onClear={() => setKonfirmasiData(prev => ({ ...prev, tanda_tangan: '' }))}
-                        placeholder="Silakan bubuhkan tanda tangan pimpinan..."
-                      />
-                      {!konfirmasiData.tanda_tangan && (
-                        <p className="text-[10px] text-red-500 mt-1">Tanda tangan wajib diisi untuk penugasan perwakilan</p>
-                      )}
-                    </div>
                   </div>
                 )}
 
-                {konfirmasiData.kehadiran === 'tolak' && (
-                  <div className="space-y-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Alasan Tidak Hadir <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        name="alasan"
-                        value={konfirmasiData.alasan}
-                        onChange={handleChange}
-                        rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
-                        placeholder="Masukkan alasan pimpinan tidak bisa hadir..."
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Catatan Tambahan
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-600 ml-1">
+                    {konfirmasiData.kehadiran === 'tolak' ? 'Alasan pembatalan' : 'Catatan tambahan'}
                   </label>
                   <textarea
-                    name="catatan"
-                    value={konfirmasiData.catatan}
+                    name="alasan"
+                    value={konfirmasiData.alasan}
                     onChange={handleChange}
-                    rows={2}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Catatan tambahan (opsional)"
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-gray-400"
+                    placeholder={konfirmasiData.kehadiran === 'tolak' ? "Berikan alasan..." : "Ketik catatan (opsional)..."}
+                    required={konfirmasiData.kehadiran === 'tolak'}
                   />
                 </div>
 
-                <div className={`${konfirmasiData.kehadiran === 'hadir' ? 'bg-green-50 border-green-200' : (konfirmasiData.kehadiran === 'tolak' ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200')} border rounded-lg p-3`}>
-                  <p className={`text-sm ${konfirmasiData.kehadiran === 'hadir' ? 'text-green-900' : (konfirmasiData.kehadiran === 'tolak' ? 'text-red-900' : 'text-blue-900')}`}>
-                    {konfirmasiData.kehadiran === 'hadir' ? (
-                      <>
-                        <strong>✓ Pimpinan akan hadir sendiri</strong><br />
-                        Status agenda akan diupdate menjadi "Terkonfirmasi"
-                      </>
-                    ) : konfirmasiData.kehadiran === 'tolak' ? (
-                      <>
-                        <strong>! Pimpinan tidak dapat hadir</strong><br />
-                        Status agenda akan diupdate menjadi "Ditolak / Absen"
-                      </>
-                    ) : (
-                      <>
-                        <strong>📄 Surat Disposisi akan digenerate otomatis</strong><br />
-                        Sistem akan membuat surat disposisi kepada perwakilan yang ditunjuk.
-                      </>
-                    )}
-                  </p>
-                </div>
-
                 <div className="flex gap-3 pt-2">
-                  <Button type="button" variant="outline" onClick={() => setShowKonfirmasiModal(false)} className="flex-1">
+                  <Button type="button" variant="outline" onClick={() => setShowKonfirmasiModal(false)} className="flex-1 h-10 text-sm">
                     Batal
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={konfirmasiData.kehadiran === 'wakilkan' && !konfirmasiData.tanda_tangan}>
-                    {konfirmasiData.kehadiran === 'hadir' ? 'Konfirmasi Hadir' : (konfirmasiData.kehadiran === 'tolak' ? 'Konfirmasi Tidak Hadir' : 'Tunjuk Perwakilan')}
+                  <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold h-10 shadow-sm transition-all active:scale-95">
+                    Simpan konfirmasi
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Modal Preview Surat Disposisi Original */}
-      {showDisposisiPreview && selectedAgenda && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-lg font-semibold text-gray-900">Surat Disposisi</h3>
-                </div>
-                <button
-                  onClick={() => setShowDisposisiPreview(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-white border-2 border-gray-300 rounded-lg p-8 space-y-6">
-                <div className="text-center border-b-2 border-gray-900 pb-4">
-                  <h2 className="text-xl font-bold text-gray-900">PEMERINTAH KOTA</h2>
-                  <h3 className="text-lg font-semibold text-gray-900 mt-1">BAGIAN PROTOKOL DAN KOMUNIKASI PIMPINAN</h3>
-                  <p className="text-sm text-gray-600 mt-2">
-                    Jl. Pemerintahan No. 1, Kota · Telp: (021) 12345678
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Nomor</span>
-                    <span>: {generateDisposisiContent().nomor}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">Tanggal</span>
-                    <span>: {generateDisposisiContent().tanggal}</span>
-                  </div>
-                </div>
-
-                <div className="text-center py-2">
-                  <h4 className="text-lg font-bold text-gray-900 underline">SURAT DISPOSISI</h4>
-                  <p className="text-sm text-gray-600 mt-1">Penugasan Perwakilan Kehadiran Pimpinan</p>
-                </div>
-
-                <div className="space-y-3 text-sm">
-                  <div className="grid grid-cols-[120px_10px_1fr] gap-1">
-                    <span className="font-medium">Dari</span>
-                    <span>:</span>
-                    <span>{generateDisposisiContent().dari}</span>
-                  </div>
-                  <div className="grid grid-cols-[120px_10px_1fr] gap-1">
-                    <span className="font-medium">Kepada</span>
-                    <span>:</span>
-                    <span>{generateDisposisiContent().kepada}</span>
-                  </div>
-                  <div className="grid grid-cols-[120px_10px_1fr] gap-1">
-                    <span className="font-medium">Perihal</span>
-                    <span>:</span>
-                    <span className="font-semibold">{generateDisposisiContent().perihal}</span>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 space-y-2">
-                  <h5 className="font-semibold text-sm">Detail Kegiatan:</h5>
-                  <div className="text-sm space-y-1">
-                    <p><strong>Tanggal:</strong> {new Date(selectedAgenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
-                      weekday: 'long',
-                      day: '2-digit',
-                      month: 'long',
-                      year: 'numeric'
-                    })}</p>
-                    <p><strong>Waktu:</strong> {selectedAgenda.waktu_mulai.slice(0, 5)} - {selectedAgenda.waktu_selesai.slice(0, 5)}</p>
-                    <p><strong>Tempat:</strong> {selectedAgenda.lokasi_kegiatan}</p>
-                    <p><strong>Keterangan:</strong> {selectedAgenda.keterangan || '-'}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="font-medium text-sm mb-2">Alasan Perwakilan:</p>
-                  <p className="text-sm text-gray-700 bg-yellow-50 border border-yellow-200 rounded p-3">
-                    {konfirmasiData.alasan}
-                  </p>
-                </div>
-
-                {konfirmasiData.catatan && (
-                  <div>
-                    <p className="font-medium text-sm mb-2">Catatan:</p>
-                    <p className="text-sm text-gray-700">{konfirmasiData.catatan}</p>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-end pt-8">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-gray-600">Tanda Tangan Pimpinan:</p>
-                    {konfirmasiData.tanda_tangan ? (
-                      <div className="border border-gray-100 rounded-xl p-2 bg-gray-50/50">
-                        <img src={konfirmasiData.tanda_tangan} alt="Tanda tangan" className="h-20 object-contain mx-auto" />
-                        <p className="text-xs font-semibold text-center mt-2 border-t pt-1 border-gray-200">{selectedAp?.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
-                      </div>
-                    ) : (
-                      <div className="h-24 w-48 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-[10px] text-center p-4 bg-gray-50/30">
-                        Tanda tangan pimpinan belum tersedia
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="text-right space-y-1">
-                    <p className="text-sm text-gray-600">Bandung, {generateDisposisiContent().tanggal}</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-2">Ajudan Pimpinan,</p>
-                    <div className="h-20"></div>
-                    <p className="text-sm font-bold text-gray-900 underline decoration-2 underline-offset-4">{localStorage.getItem('userName') || 'Ajudan'}</p>
-                    <p className="text-[10px] text-gray-500 italic font-medium">Dokumen ini ditandatangani secara digital</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <Button variant="outline" onClick={() => setShowDisposisiPreview(false)} className="flex-1">
-                  Tutup
-                </Button>
-                <Button onClick={() => window.print()} className="flex-1 border">
-                  <Download className="w-4 h-4 mr-2" />
-                  Print / Download PDF
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>

@@ -118,16 +118,15 @@ export default function AgendaPimpinanPage() {
       const res = await agendaApi.update(selectedAgenda.id_agenda, data);
 
       if (res.success) {
-        Swal.fire('Berhasil', 'Kontak Person dan Catatan berhasil diperbarui', 'success');
+        Swal.fire('Berhasil', 'Agenda berhasil diperbarui', 'success');
         setIsEditingNotes(false);
-        fetchData(); // Refresh the list
+        fetchData(); // Refresh the main list
 
-        // Update the selected agenda to reflect changes in the modal immediately
-        setSelectedAgenda((prev: any) => ({
-          ...prev,
-          contact_person: editNotesForm.contact_person,
-          keterangan: editNotesForm.keterangan
-        }));
+        // Update the selected agenda with the full reloaded data from server
+        // This now includes the updated kaskpdPendampings associations
+        if (res.data) {
+          setSelectedAgenda(res.data);
+        }
       } else {
         Swal.fire('Gagal', res.message, 'error');
       }
@@ -238,6 +237,10 @@ export default function AgendaPimpinanPage() {
   });
 
   const filteredData = agendaList.filter(item => {
+    // 0. Exclude canceled agendas
+    const latestStatus = item.statusAgendas?.[0]?.status_agenda;
+    if (latestStatus === 'canceled') return false;
+
     // 1. Search filter
     const matchSearch =
       item.nama_kegiatan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -600,17 +603,7 @@ export default function AgendaPimpinanPage() {
                               <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
                               {getStatusBadge(ap.status_kehadiran)}
                             </div>
-                            {ap.status_kehadiran === 'diwakilkan' && ap.surat_disposisi && (
-                              <a
-                                href={`http://localhost:3000/api/${ap.surat_disposisi.replace(/\\/g, '/')}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1 w-fit"
-                              >
-                                <FileText className="w-3 h-3" /> Surat Disposisi
-                              </a>
-                            )}
-                          </div>
+                            </div>
                         ))}
                       </div>
                     </TableCell>
@@ -926,16 +919,6 @@ export default function AgendaPimpinanPage() {
                           {ap.status_kehadiran === 'diwakilkan' && (
                             <div className="space-y-1">
                               <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">Diwakili oleh: {ap.nama_perwakilan}</p>
-                              {ap.surat_disposisi && (
-                                <a
-                                  href={`http://localhost:3000/${ap.surat_disposisi.replace(/\\/g, '/')}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline mt-1"
-                                >
-                                  <FileText className="w-3 h-3" /> Lihat Disposisi
-                                </a>
-                              )}
                             </div>
                           )}
                         </div>

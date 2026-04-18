@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Eye, CheckCircle, XCircle, FileText, Search, Filter, X, RefreshCw, Clock, RotateCcw, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Eye, CheckCircle, XCircle, FileText, Search, Filter, X, RefreshCw, Clock, RotateCcw, AlertTriangle, ChevronDown, Download } from 'lucide-react';
 import { agendaApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 
@@ -21,7 +21,6 @@ interface Agenda {
   waktu_selesai: string;
   nama_kegiatan: string;
   lokasi_kegiatan: string;
-  contact_person: string;
   keterangan: string;
   pemohon: {
     id_user: string;
@@ -327,7 +326,7 @@ export default function VerifikasiPermohonanPage() {
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            {(latestStatus === 'pending' || latestStatus === 'revision') && (
+                            {latestStatus === 'pending' && (
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
@@ -454,10 +453,6 @@ export default function VerifikasiPermohonanPage() {
                     <label className="text-sm font-medium text-gray-700">Lokasi Kegiatan</label>
                     <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.lokasi_kegiatan || '-'}</p>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Contact Person</label>
-                    <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.contact_person || '-'}</p>
-                  </div>
                 </div>
 
                 {/* Pimpinan yang diundang */}
@@ -474,19 +469,19 @@ export default function VerifikasiPermohonanPage() {
                   </div>
                 )}
 
-                {selectedPermohonan.keterangan && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Keterangan</label>
-                    <p className="text-sm text-gray-900 mt-1">{selectedPermohonan.keterangan}</p>
-                  </div>
-                )}
 
                 {selectedPermohonan.surat_permohonan && (
                   <div>
                     <label className="text-sm font-medium text-gray-700">File Surat</label>
-                    <p className="text-sm text-blue-600 mt-1 hover:underline cursor-pointer">
+                    <a
+                      href={`/api/${selectedPermohonan.surat_permohonan}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 mt-1 hover:underline flex items-center gap-2 w-fit"
+                    >
+                      <Download className="w-4 h-4" />
                       {selectedPermohonan.surat_permohonan.split('/').pop()}
-                    </p>
+                    </a>
                   </div>
                 )}
 
@@ -524,7 +519,7 @@ export default function VerifikasiPermohonanPage() {
                   <Button variant="outline" onClick={() => setShowDetailModal(false)} className="flex-1">
                     Tutup
                   </Button>
-                  {(getLatestStatus(selectedPermohonan) === 'pending' || getLatestStatus(selectedPermohonan) === 'revision') && (
+                  {getLatestStatus(selectedPermohonan) === 'pending' && (
                     <Button
                       onClick={() => {
                         setShowDetailModal(false);

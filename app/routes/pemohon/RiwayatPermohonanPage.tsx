@@ -105,6 +105,35 @@ export default function RiwayatPermohonanPage() {
 
     setEditLoading(true);
     try {
+      // 1. Validate File Size if new file is uploaded
+      if (editFile && editFile.size > 5 * 1024 * 1024) {
+        Swal.fire('Peringatan', 'Ukuran file surat permohonan maksimal 5 MB', 'warning');
+        setEditLoading(false);
+        return;
+      }
+
+      // 2. Validate Tanggal Kegiatan (min. tomorrow)
+      const selectedDate = new Date(editForm.tanggal_kegiatan);
+      selectedDate.setHours(0, 0, 0, 0);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+
+      if (selectedDate < tomorrow) {
+        Swal.fire('Peringatan', 'Tanggal kegiatan minimal harus besok', 'warning');
+        setEditLoading(false);
+        return;
+      }
+
+      // 3. Validate Waktu (Mulai < Selesai)
+      if (editForm.waktu_mulai && editForm.waktu_selesai) {
+        if (editForm.waktu_mulai >= editForm.waktu_selesai) {
+          Swal.fire('Peringatan', 'Waktu mulai harus lebih dulu daripada waktu selesai', 'warning');
+          setEditLoading(false);
+          return;
+        }
+      }
+
       const formData = new FormData();
       Object.entries(editForm).forEach(([key, value]) => {
         if (value) formData.append(key, value);
@@ -123,6 +152,49 @@ export default function RiwayatPermohonanPage() {
       Swal.fire('Error', 'Gagal terhubung ke server', 'error');
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleCancel = async (request: any) => {
+    const result = await Swal.fire({
+      title: 'Apakah Anda yakin?',
+      text: "Permohonan yang dibatalkan tidak dapat diproses kembali.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Ya, Batalkan!',
+      cancelButtonText: 'Batal',
+      customClass: {
+        confirmButton: 'rounded-lg px-4 py-2',
+        cancelButton: 'rounded-lg px-4 py-2'
+      }
+    });
+
+    if (result.isConfirmed) {
+      setLoading(true);
+      try {
+        const response = await agendaApi.cancel(request.id_agenda);
+        if (response.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Dibatalkan!',
+            text: 'Permohonan Anda berhasil dibatalkan.',
+            confirmButtonText: 'OK',
+            customClass: {
+              confirmButton: 'rounded-lg px-4 py-2'
+            }
+          });
+          setShowDetailModal(false);
+          fetchData();
+        } else {
+          Swal.fire('Gagal', response.message || 'Gagal membatalkan permohonan', 'error');
+        }
+      } catch (err) {
+        Swal.fire('Error', 'Terjadi kesalahan jaringan', 'error');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -279,25 +351,38 @@ export default function RiwayatPermohonanPage() {
                       )}
                     </div>
 
-                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 w-full sm:w-auto mt-3 sm:mt-0 p-1 sm:p-0 bg-gray-50/50 sm:bg-transparent rounded-2xl sm:rounded-none border border-gray-100/50 sm:border-0">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDetail(request)}
-                        className="rounded-xl hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-gray-100"
+                        className="flex-1 sm:flex-none h-10 px-5 rounded-xl bg-white border border-gray-100 shadow-sm shadow-gray-200 text-blue-600 hover:text-white hover:bg-blue-600 hover:border-blue-600 hover:shadow-blue-200 hover:-translate-y-0.5 transition-all duration-300 group/btn"
                       >
-                        <Eye className="w-4 h-4 mr-2 text-blue-500" />
-                        <span className="font-semibold">Detail</span>
+                        <Eye className="w-4 h-4 mr-2 text-blue-500 group-hover/btn:text-white transition-colors" />
+                        <span className="font-bold text-xs tracking-tight">Detail</span>
                       </Button>
+                      
                       {statusInfo.status === 'revision' && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(request)}
-                          className="rounded-xl hover:bg-blue-50 hover:shadow-md transition-all border border-transparent hover:border-blue-100 text-blue-600"
+                          className="flex-1 sm:flex-none h-10 px-5 rounded-xl bg-amber-50/80 border border-amber-100 text-amber-700 hover:bg-amber-500 hover:text-white hover:border-amber-500 hover:shadow-lg hover:shadow-amber-100 hover:-translate-y-0.5 transition-all duration-300 group/btn"
                         >
-                          <Edit3 className="w-4 h-4 mr-2" />
-                          <span className="font-semibold">Edit & Kirim Ulang</span>
+                          <Edit3 className="w-4 h-4 mr-2 text-amber-600 group-hover/btn:text-white transition-colors" />
+                          <span className="font-bold text-xs tracking-tight text-nowrap">Revisi</span>
+                        </Button>
+                      )}
+                      
+                      {(statusInfo.status === 'pending' || statusInfo.status === 'revision') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCancel(request)}
+                          className="flex-1 sm:flex-none h-10 px-5 rounded-xl bg-red-50/50 border border-transparent text-red-600 hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-100 hover:-translate-y-0.5 transition-all duration-300 group/btn"
+                        >
+                          <XCircle className="w-4 h-4 mr-2 text-red-500 group-hover/btn:text-white transition-colors" />
+                          <span className="font-bold text-xs tracking-tight">Batal</span>
                         </Button>
                       )}
                     </div>
@@ -398,10 +483,17 @@ export default function RiwayatPermohonanPage() {
                 {selectedRequest.agendaPimpinans?.length > 0 ? (
                   <div className="space-y-2">
                     {selectedRequest.agendaPimpinans.map((ap: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <Users className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm text-gray-900 font-medium">{ap.periodeJabatan?.jabatan?.nama_jabatan || ap.id_jabatan}</span>
-                        {ap.periodeJabatan?.pimpinan?.nama_pimpinan && <span className="text-xs text-gray-500">({ap.periodeJabatan.pimpinan.nama_pimpinan})</span>}
+                      <div key={idx} className="flex flex-col gap-1 p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Users className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm text-gray-900 font-medium">{ap.periodeJabatan?.jabatan?.nama_jabatan || ap.id_jabatan}</span>
+                          {ap.periodeJabatan?.pimpinan?.nama_pimpinan && <span className="text-xs text-gray-500">({ap.periodeJabatan.pimpinan.nama_pimpinan})</span>}
+                        </div>
+                        {ap.status_kehadiran === 'diwakilkan' && (
+                          <div className="ml-7 text-[10px] font-bold text-blue-600 bg-blue-50 w-fit px-2 py-0.5 rounded border border-blue-100 italic">
+                             Diwakili oleh: {ap.nama_perwakilan || '-'}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -434,11 +526,31 @@ export default function RiwayatPermohonanPage() {
                 </div>
               )}
 
-              <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={() => setShowDetailModal(false)} className="flex-1">Tutup</Button>
+               <div className="flex flex-wrap items-center gap-4 pt-6 border-t mt-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setShowDetailModal(false)} 
+                  className="flex-1 h-12 rounded-2xl bg-gray-50 border border-gray-100 text-gray-600 hover:bg-gray-100 font-bold transition-all"
+                >
+                  Tutup
+                </Button>
+                
                 {getStatusInfo(selectedRequest).status === 'revision' && (
-                  <Button onClick={() => { setShowDetailModal(false); handleEdit(selectedRequest); }} className="flex-1">
-                    <Edit3 className="w-4 h-4 mr-2" />Edit & Kirim Ulang
+                  <Button 
+                    onClick={() => { setShowDetailModal(false); handleEdit(selectedRequest); }} 
+                    className="flex-[3] h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 transition-all font-bold"
+                  >
+                    <Edit3 className="w-5 h-5 mr-3" />Edit & Kirim Ulang
+                  </Button>
+                )}
+                
+                {(getStatusInfo(selectedRequest).status === 'pending' || getStatusInfo(selectedRequest).status === 'revision') && (
+                  <Button 
+                    variant="ghost"
+                    onClick={() => handleCancel(selectedRequest)} 
+                    className="flex-1 h-12 rounded-2xl bg-red-50 border border-red-100 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-xl hover:shadow-red-50 font-bold transition-all group/cancel"
+                  >
+                    <XCircle className="w-5 h-5 mr-2 text-red-500 group-hover/cancel:text-white transition-colors" />Batalkan
                   </Button>
                 )}
               </div>
@@ -500,7 +612,11 @@ export default function RiwayatPermohonanPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Kegiatan <span className="text-red-500">*</span></label>
-                    <input type="date" value={editForm.tanggal_kegiatan} onChange={e => setEditForm({ ...editForm, tanggal_kegiatan: e.target.value })}
+                    <input 
+                      type="date" 
+                      value={editForm.tanggal_kegiatan} 
+                      onChange={e => setEditForm({ ...editForm, tanggal_kegiatan: e.target.value })}
+                      min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
                   </div>
                   <div>
@@ -521,12 +637,6 @@ export default function RiwayatPermohonanPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Deskripsi Kegiatan</label>
-                  <textarea value={editForm.keterangan} onChange={e => setEditForm({ ...editForm, keterangan: e.target.value })} rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Jelaskan detail kegiatan..." />
-                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Upload Surat Baru (opsional)</label>

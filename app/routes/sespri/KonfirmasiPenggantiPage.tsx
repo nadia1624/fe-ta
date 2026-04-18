@@ -173,16 +173,6 @@ export default function KonfirmasiPenggantiPage() {
                           <p className="font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
                           <div className="flex flex-col gap-1 mt-0.5">
                             <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 w-fit">Diwakili oleh: {ap.nama_perwakilan}</span>
-                            {ap.surat_disposisi && (
-                              <a
-                                href={`http://localhost:3000/api/${ap.surat_disposisi.replace(/\\/g, '/')}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[10px] flex items-center gap-1 text-blue-600 hover:underline w-fit"
-                              >
-                                <FileText className="w-3 h-3" /> Surat Disposisi
-                              </a>
-                            )}
                           </div>
                         </div>
                       ))}
@@ -200,11 +190,6 @@ export default function KonfirmasiPenggantiPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {delegatedAgendas.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-500 py-6">Tidak ada agenda pimpinan yang diwakilkan.</TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -309,17 +294,6 @@ export default function KonfirmasiPenggantiPage() {
                             <p className="text-xs text-gray-600 mt-1 italic">"{ap.keterangan}"</p>
                           )}
 
-                          {ap.surat_disposisi && (
-                            <a
-                              href={`http://localhost:3000/api/${ap.surat_disposisi.replace(/\\/g, '/')}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 mt-3 bg-white border border-gray-300 rounded shadow-sm text-xs font-medium text-blue-600 hover:bg-gray-50 hover:text-blue-700 transition-colors"
-                            >
-                              <FileText className="w-3.5 h-3.5" />
-                              Lihat Surat Disposisi
-                            </a>
-                          )}
                         </div>
                       </div>
                     ))}

@@ -550,6 +550,18 @@ export const agendaApi = {
         return res.json();
     },
 
+    async cancel(id_agenda: string): Promise<ApiResponse> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE_URL}/agenda/${id_agenda}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return res.json();
+    },
+
     async getLeaderAgendas(params: { start_date?: string; end_date?: string; id_jabatan?: string; id_periode?: string }): Promise<ApiResponse> {
         const token = getToken();
         const queryParams = new URLSearchParams(params as any).toString();
