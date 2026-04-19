@@ -228,10 +228,12 @@ export default function MonitorPenugasanPage() {
             <TableHeader>
               <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
                 <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
-                <TableHead className="text-sm font-bold text-gray-900 py-4">Agenda</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Pimpinan</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Tempat</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 py-4">Staf Ditugaskan</TableHead>
-                <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal Kegiatan</TableHead>
-                <TableHead className="text-sm font-bold text-gray-900 py-4">Laporan</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Progress</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 py-4">Status</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
               </TableRow>
@@ -241,34 +243,25 @@ export default function MonitorPenugasanPage() {
                 <TableRow key={penugasan.id_penugasan} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
                   <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
                   <TableCell>
-                    <div>
-                      <p className="font-medium text-sm">
-                        {penugasan.agenda?.nama_kegiatan || '-'}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        👤 {penugasan.pimpinans?.length > 0
-                          ? penugasan.pimpinans.map(p => p.nama_pimpinan).join(', ')
-                          : '-'}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        📍 {penugasan.agenda?.lokasi_kegiatan || '-'}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      {penugasan.nama_staf.length > 0
-                        ? penugasan.nama_staf.map((staf, idx) => (
-                          <p key={idx} className="text-sm text-gray-900">{staf}</p>
+                    <div className="text-sm space-y-1">
+                      {penugasan.pimpinans?.length > 0
+                        ? penugasan.pimpinans.map((p, idx) => (
+                          <div key={idx}>
+                            <div className="font-medium text-gray-900">{p.nama_pimpinan}</div>
+                            <div className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</div>
+                          </div>
                         ))
-                        : <p className="text-sm text-gray-400 italic">Tidak ada staf</p>
-                      }
-                      <Badge variant="info" className="text-xs mt-1">Protokol</Badge>
+                        : <div className="text-gray-400 italic">-</div>}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>
-                      <p className="text-sm font-medium">
+                    <div className="font-medium text-sm text-gray-900 max-w-[200px] truncate" title={penugasan.agenda?.nama_kegiatan}>
+                      {penugasan.agenda?.nama_kegiatan || '-'}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap font-medium">
+                    <div className="text-sm">
+                      <div className="text-gray-900">
                         {penugasan.agenda?.tanggal_kegiatan
                           ? new Date(penugasan.agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
                             day: '2-digit',
@@ -276,20 +269,33 @@ export default function MonitorPenugasanPage() {
                             year: 'numeric'
                           })
                           : '-'}
-                      </p>
+                      </div>
                       {penugasan.agenda?.waktu_mulai && (
-                        <p className="text-xs text-gray-500">
+                        <div className="text-gray-500 font-normal">
                           {formatTime(penugasan.agenda.waktu_mulai)} – {formatTime(penugasan.agenda.waktu_selesai)}
-                        </p>
+                        </div>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <ClipboardList className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-600">
-                        {penugasan.laporanKegiatans?.length ?? 0} laporan
-                      </span>
+                    <div className="text-sm text-gray-600 max-w-[150px] truncate" title={penugasan.agenda?.lokasi_kegiatan}>
+                      {penugasan.agenda?.lokasi_kegiatan || '-'}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      {penugasan.nama_staf.length > 0
+                        ? penugasan.nama_staf.map((staf, idx) => (
+                          <p key={idx} className="text-xs text-gray-700 font-medium px-2 py-0.5 bg-gray-100 rounded-md w-fit">{staf}</p>
+                        ))
+                        : <p className="text-xs text-gray-400 italic">Tidak ada staf</p>
+                      }
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-600">{penugasan.laporanKegiatans?.length ?? 0} update</span>
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(penugasan.status_pelaksanaan)}</TableCell>
@@ -306,7 +312,7 @@ export default function MonitorPenugasanPage() {
               ))}
               {filteredPenugasan.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                     <ClipboardList className="w-10 h-10 mx-auto mb-2 text-gray-300" />
                     <p>Tidak ada penugasan protokol yang ditemukan</p>
                   </TableCell>

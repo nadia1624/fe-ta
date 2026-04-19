@@ -343,6 +343,30 @@ export default function KonfirmasiAgendaPage() {
                     <label className="text-xs font-medium text-gray-600">Lokasi</label>
                     <p className="text-sm font-medium text-gray-900">{selectedAgenda.lokasi_kegiatan}</p>
                   </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600">Kontak Person</label>
+                    <p className="text-sm font-medium text-blue-600">{selectedAgenda.contact_person || '-'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600">KaSKPD Pendamping</label>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {selectedAgenda.kaskpdPendampings && selectedAgenda.kaskpdPendampings.length > 0 ? (
+                        selectedAgenda.kaskpdPendampings.map((k: any, i: number) => (
+                          <Badge key={i} variant="secondary" className="text-[10px] bg-white border border-gray-200">
+                            {k.kaskpd?.nama_instansi}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-xs text-gray-400 italic">Tidak ada pendamping</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600">Catatan Agenda</label>
+                    <p className="text-sm text-gray-700 mt-1 bg-amber-50/50 p-2 rounded border border-amber-100/50 italic">
+                      {selectedAgenda.keterangan || '-'}
+                    </p>
+                  </div>
                 </div>
               </div>
 

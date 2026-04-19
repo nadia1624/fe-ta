@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ArrowRight, Search, Filter, TrendingUp, User, Clock } from 'lucide-react';
+import { ArrowRight, Search, Filter, TrendingUp, User, Clock, CheckCircle } from 'lucide-react';
 import CustomSelect from '../../components/ui/CustomSelect';
 
 export default function LaporanKegiatanStafProtokolPage() {
@@ -74,9 +74,10 @@ export default function LaporanKegiatanStafProtokolPage() {
     }
   };
 
-  const totalLaporan = laporanList.length;
-  const sudahDilaporkan = laporanList.filter(l => l.status_laporan === 'Selesai').length;
-  const belumDilaporkan = laporanList.filter(l => l.status_laporan === 'Belum Dimulai').length;
+  const statsTotal = laporanList.length;
+  const statsSelesai = laporanList.filter(l => l.status_laporan === 'Selesai').length;
+  const statsBerlangsung = laporanList.filter(l => l.status_laporan === 'Berlangsung').length;
+  const statsBelumDimulai = laporanList.filter(l => l.status_laporan === 'Belum Dimulai').length;
 
   return (
     <div className="space-y-4 md:space-y-6 pb-6">
@@ -86,42 +87,55 @@ export default function LaporanKegiatanStafProtokolPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-600 mb-1">Total Agenda</p>
-                <p className="text-2xl md:text-3xl font-semibold text-blue-600">{totalLaporan}</p>
+                <p className="text-sm text-gray-600">Total Agenda</p>
+                <p className="text-2xl font-semibold text-blue-600">{statsTotal}</p>
               </div>
-              <div className="bg-blue-50 p-2 md:p-3 rounded-lg">
-                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-600 mb-1">Selesai</p>
-                <p className="text-2xl md:text-3xl font-semibold text-green-600">{sudahDilaporkan}</p>
+                <p className="text-sm text-gray-600">Selesai</p>
+                <p className="text-2xl font-semibold text-green-600">{statsSelesai}</p>
               </div>
-              <div className="bg-green-50 p-2 md:p-3 rounded-lg">
-                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+              <div className="bg-green-50 p-3 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-600 mb-1">Belum Dimulai</p>
-                <p className="text-2xl md:text-3xl font-semibold text-orange-600">{belumDilaporkan}</p>
+                <p className="text-sm text-gray-600">Berlangsung</p>
+                <p className="text-2xl font-semibold text-blue-600">{statsBerlangsung}</p>
               </div>
-              <div className="bg-orange-50 p-2 md:p-3 rounded-lg">
-                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Belum Dimulai</p>
+                <p className="text-2xl font-semibold text-orange-600">{statsBelumDimulai}</p>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-lg">
+                <Clock className="w-6 h-6 text-orange-600" />
               </div>
             </div>
           </CardContent>

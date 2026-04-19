@@ -40,10 +40,31 @@ export default function AssignStaffPage() {
   };
 
   const handleAssign = (agenda: any) => {
+    if (isPastAgenda(agenda.tanggal_kegiatan, agenda.waktu_selesai)) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Agenda Terlewat',
+        text: 'Maaf, agenda ini sudah melewati jadwal pimpinan dan tidak dapat ditugaskan lagi.',
+        confirmButtonColor: '#2563eb'
+      });
+      return;
+    }
     setSelectedSlot(agenda);
     setSelectedStaff([]);
     setDeskripsi('');
     setShowModal(true);
+  };
+
+  const isPastAgenda = (dateString: string, timeString: string) => {
+    if (!dateString || !timeString) return false;
+    try {
+      // Backend provides date YYYY-MM-DD and time HH:MM:SS
+      const agendaDateTime = new Date(`${dateString}T${timeString}`);
+      return agendaDateTime < new Date();
+    } catch (e) {
+      console.error('Date parsing error:', e);
+      return false;
+    }
   };
 
   const handleStaffSelection = (staffId: string) => {
@@ -153,37 +174,55 @@ export default function AssignStaffPage() {
           <CardContent className="p-0">
             {filteredAgenda.length > 0 ? (
               <div className="divide-y divide-gray-200">
-                {filteredAgenda.map((agenda) => {
-                  const pimpinans = agenda.agendaPimpinans || [];
-                  const pimpinanNames = pimpinans
-                    .map((ap: any) => ap.periodeJabatan?.pimpinan?.nama_pimpinan)
-                    .filter(Boolean)
-                    .join(', ');
+                    {filteredAgenda.map((agenda) => {
+                      const pimpinans = agenda.agendaPimpinans || [];
+                      const pimpinanNames = pimpinans
+                        .map((ap: any) => ap.periodeJabatan?.pimpinan?.nama_pimpinan)
+                        .filter(Boolean)
+                        .join(', ');
+                      
+                      const passed = isPastAgenda(agenda.tanggal_kegiatan, agenda.waktu_selesai);
 
-                  return (
-                    <div key={agenda.id_agenda} className="px-6 py-4 hover:bg-gray-50 transition-colors border-l-4 border-blue-500">
-                      <div className="flex items-start justify-between mb-2">
-                        <p className="font-medium text-gray-900 flex-1">{agenda.nama_kegiatan}</p>
-                        <Badge variant="outline" className="whitespace-nowrap ml-2 text-blue-700 bg-blue-50 border-blue-200">
-                          {agenda.waktu_mulai?.slice(0, 5)} - {agenda.waktu_selesai?.slice(0, 5)}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1 text-[13px] text-gray-600 mb-3">
-                        <p><strong>Pimpinan:</strong> {pimpinanNames || 'N/A'}</p>
-                        <p><strong>Lokasi:</strong> {agenda.lokasi_kegiatan}</p>
-                        <p><strong>Tanggal:</strong> {new Date(agenda.tanggal_kegiatan || '').toLocaleDateString('id-ID', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric'
-                        })}</p>
-                      </div>
-                      <Button size="sm" onClick={() => handleAssign(agenda)} className="w-full bg-blue-600 hover:bg-blue-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Tugaskan Staf
-                      </Button>
-                    </div>
-                  );
-                })}
+                      return (
+                        <div 
+                          key={agenda.id_agenda} 
+                          className={`px-6 py-4 hover:bg-gray-50 transition-colors border-l-4 ${passed ? 'border-gray-300 opacity-75 bg-gray-50/50' : 'border-blue-500'}`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <p className={`font-medium flex-1 ${passed ? 'text-gray-500' : 'text-gray-900'}`}>{agenda.nama_kegiatan}</p>
+                            <Badge variant="outline" className={`whitespace-nowrap ml-2 ${passed ? 'text-gray-400 bg-gray-100 border-gray-200' : 'text-blue-700 bg-blue-50 border-blue-200'}`}>
+                              {agenda.waktu_mulai?.slice(0, 5)} - {agenda.waktu_selesai?.slice(0, 5)}
+                            </Badge>
+                          </div>
+                          <div className={`space-y-1 text-[13px] mb-3 ${passed ? 'text-gray-400' : 'text-gray-600'}`}>
+                            <p><strong>Pimpinan:</strong> {pimpinanNames || 'N/A'}</p>
+                            <p><strong>Lokasi:</strong> {agenda.lokasi_kegiatan}</p>
+                            <p><strong>Tanggal:</strong> {new Date(agenda.tanggal_kegiatan || '').toLocaleDateString('id-ID', {
+                              day: '2-digit',
+                              month: 'long',
+                              year: 'numeric'
+                            })}</p>
+                          </div>
+                          
+                          {passed ? (
+                            <div className="flex items-center gap-2 p-2 bg-amber-50 border border-amber-100 rounded-lg text-amber-700 text-xs font-medium mb-1">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              Jadwal agenda sudah lewat
+                            </div>
+                          ) : null}
+
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleAssign(agenda)} 
+                            className={`w-full ${passed ? 'bg-gray-300 cursor-not-allowed hover:bg-gray-300 text-gray-500' : 'bg-blue-600 hover:bg-blue-700'}`}
+                            disabled={passed}
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Tugaskan Staf
+                          </Button>
+                        </div>
+                      );
+                    })}
               </div>
             ) : (
               <div className="p-8 text-center text-gray-500">

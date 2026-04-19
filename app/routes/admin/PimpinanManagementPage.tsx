@@ -3,16 +3,14 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Trash2, X, AlertTriangle, Search, Check, UserPlus, Users, Mail, Calendar, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Search, UserPlus, Users, Mail, Calendar, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { pimpinanApi, periodeApi } from '../../lib/api';
 import Swal from 'sweetalert2';
 
 export default function PimpinanManagementPage() {
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedPimpinan, setSelectedPimpinan] = useState<any>(null);
-  const [pimpinanToDelete, setPimpinanToDelete] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [pimpinanList, setPimpinanList] = useState<any[]>([]);
   const [periodeOptions, setPeriodeOptions] = useState<any[]>([]);
@@ -107,10 +105,6 @@ export default function PimpinanManagementPage() {
     setShowModal(true);
   };
 
-  const handleDelete = (item: any) => {
-    setPimpinanToDelete(item);
-    setShowDeleteModal(true);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,36 +172,6 @@ export default function PimpinanManagementPage() {
     });
   };
 
-  const handleConfirmDelete = async () => {
-    if (pimpinanToDelete) {
-      setIsLoading(true);
-      try {
-        const payload = {
-          id_jabatan: pimpinanToDelete.id_jabatan,
-          id_periode: pimpinanToDelete.id_periode
-        };
-
-        const response = await pimpinanApi.delete(payload);
-        if (response.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Terhapus!',
-            text: `Data pimpinan berhasil dihapus!`,
-            timer: 2000,
-            showConfirmButton: false
-          });
-          setShowDeleteModal(false);
-          fetchData();
-        } else {
-          Swal.fire('Gagal', response.message, 'error');
-        }
-      } catch (error: any) {
-        Swal.fire('Error', error.message, 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
 
   const handleResendSync = async (item: any) => {
     const id_pimpinan = item.pimpinan?.id_pimpinan;
@@ -325,14 +289,6 @@ export default function PimpinanManagementPage() {
                           className="h-9 w-9 p-0 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-100 rounded-xl transition-all shadow-sm"
                         >
                           <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleDelete(item)}
-                          className="h-9 w-9 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl transition-all shadow-sm"
-                        >
-                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -623,94 +579,7 @@ export default function PimpinanManagementPage() {
         </div>
       )}
 
-      {/* Modal Delete */}
-      {showDeleteModal && pimpinanToDelete && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Konfirmasi Hapus Pimpinan
-                </h3>
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Icon & Message */}
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-700 mb-2">
-                      Apakah Anda yakin ingin menghapus data pimpinan berikut?
-                    </p>
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
-                      <p className="text-sm font-semibold text-gray-900">{pimpinanToDelete.pimpinan?.nama_pimpinan}</p>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          {pimpinanToDelete.jabatan?.nama_jabatan}
-                        </Badge>
-                        <Badge variant={pimpinanToDelete.status_aktif === 'aktif' ? 'success' : 'secondary'}>
-                          {pimpinanToDelete.status_aktif === 'aktif' ? 'Aktif' : 'Nonaktif'}
-                        </Badge>
-                      </div>
-                      <div className="pt-1 space-y-1">
-                        <p className="text-xs text-gray-600">
-                          <span className="font-medium">Periode:</span> {pimpinanToDelete.periode?.nama_periode}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          <span className="font-medium">NIP:</span> {pimpinanToDelete.pimpinan?.nip}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Warning */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800">
-                    <strong>Peringatan:</strong> Data pimpinan yang dihapus tidak dapat dikembalikan.
-                    Semua agenda dan disposisi yang terkait dengan pimpinan ini akan terpengaruh.
-                  </p>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowDeleteModal(false)}
-                    className="flex-1"
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={handleConfirmDelete}
-                    className="flex-1"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Menghapus...' : (
-                      <>
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Hapus Pimpinan
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

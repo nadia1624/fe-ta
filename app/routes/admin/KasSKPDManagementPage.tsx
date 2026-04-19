@@ -369,7 +369,7 @@ export default function KasSKPDManagementPage() {
 
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                   <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                    ⚠️ <strong>Perhatian:</strong> Penghapusan ini bersifat permanen. Jika instansi ini sudah digunakan dalam agenda pimpinan, penghapusan mungkin akan gagal atau menyebabkan data terkait terpengaruh.
+                    <strong>Perhatian:</strong> Penghapusan ini bersifat permanen. Data tidak dapat dihapus jika instansi ini sudah terdaftar sebagai pendamping dalam agenda pimpinan.
                   </p>
                 </div>
 

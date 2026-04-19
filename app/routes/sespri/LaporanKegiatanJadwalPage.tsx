@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
   Search, Calendar, Clock, MapPin, FileText,
-  Loader2, TrendingUp, ArrowRight
+  Loader2, TrendingUp, ArrowRight, User, Filter, CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router';
 import CustomSelect from '../../components/ui/CustomSelect';
@@ -53,7 +53,9 @@ export default function LaporanKegiatanJadwalPage() {
       pimpinans.some((p: any) => p.nama_pimpinan === filterPimpinan);
 
     const matchesStatus = filterStatus === 'all' ||
-      (filterStatus === 'selesai' ? tugas.status === 'selesai' : tugas.status !== 'selesai');
+      (filterStatus === 'selesai' && tugas.status === 'selesai') ||
+      (filterStatus === 'progress' && (tugas.status === 'progress' || (tugas.status === 'pending' && tugas.laporanKegiatans?.length > 0))) ||
+      (filterStatus === 'pending' && tugas.status === 'pending' && (!tugas.laporanKegiatans || tugas.laporanKegiatans.length === 0));
 
     return matchesSearch && matchesPimpinan && matchesStatus;
   });
@@ -70,9 +72,10 @@ export default function LaporanKegiatanJadwalPage() {
     return new Date(dateStr).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
-  const totalAgenda = tugasProtokol.length;
-  const sudahSelesai = tugasProtokol.filter(t => t.status === 'selesai').length;
-  const belumDimulai = tugasProtokol.filter(t => t.status !== 'selesai').length;
+  const statsTotal = tugasProtokol.length;
+  const statsSelesai = tugasProtokol.filter(t => t.status === 'selesai').length;
+  const statsBerlangsung = tugasProtokol.filter(t => t.status === 'progress' || (t.status === 'pending' && t.laporanKegiatans?.length > 0)).length;
+  const statsBelumDimulai = tugasProtokol.filter(t => t.status === 'pending' && (!t.laporanKegiatans || t.laporanKegiatans.length === 0)).length;
 
   return (
     <div className="space-y-4 md:space-y-6 pb-8">
@@ -83,42 +86,55 @@ export default function LaporanKegiatanJadwalPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-        <Card className="shadow-sm border-gray-100 py-2">
-          <CardContent className="p-4 md:p-6 pb-2">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-500 font-medium mb-1">Total Agenda</p>
-                <p className="text-2xl md:text-3xl font-bold text-blue-600">{totalAgenda}</p>
+                <p className="text-sm text-gray-600">Total Agenda</p>
+                <p className="text-2xl font-semibold text-blue-600">{statsTotal}</p>
               </div>
-              <div className="bg-blue-50 p-2 md:p-3 rounded-lg">
-                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-sm border-gray-100 py-2">
-          <CardContent className="p-4 md:p-6 pb-2">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-500 font-medium mb-1">Selesai</p>
-                <p className="text-2xl md:text-3xl font-bold text-green-600">{sudahSelesai}</p>
+                <p className="text-sm text-gray-600">Selesai</p>
+                <p className="text-2xl font-semibold text-green-600">{statsSelesai}</p>
               </div>
-              <div className="bg-green-50 p-2 md:p-3 rounded-lg">
-                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+              <div className="bg-green-50 p-3 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-sm border-gray-100 py-2">
-          <CardContent className="p-4 md:p-6 pb-2 border-orange-100">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs md:text-sm text-gray-500 font-medium mb-1 border-gray-100">Belum Dimulai</p>
-                <p className="text-2xl md:text-3xl font-bold text-orange-600">{belumDimulai}</p>
+                <p className="text-sm text-gray-600">Berlangsung</p>
+                <p className="text-2xl font-semibold text-blue-600">{statsBerlangsung}</p>
               </div>
-              <div className="bg-orange-50 p-2 md:p-3 rounded-lg">
-                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Belum Dimulai</p>
+                <p className="text-2xl font-semibold text-orange-600">{statsBelumDimulai}</p>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-lg">
+                <Clock className="w-6 h-6 text-orange-600" />
               </div>
             </div>
           </CardContent>
@@ -146,6 +162,7 @@ export default function LaporanKegiatanJadwalPage() {
                 value={filterPimpinan}
                 onChange={setFilterPimpinan}
                 options={pimpinanOptions}
+                icon={<User className="w-4 h-4" />}
                 className="w-full md:w-48 text-xs"
               />
               <CustomSelect
@@ -154,8 +171,10 @@ export default function LaporanKegiatanJadwalPage() {
                 options={[
                   { value: 'all', label: 'Semua Status' },
                   { value: 'selesai', label: 'Selesai' },
-                  { value: 'belum', label: 'Belum Dimulai' }
+                  { value: 'progress', label: 'Berlangsung' },
+                  { value: 'pending', label: 'Belum Dimulai' }
                 ]}
+                icon={<Filter className="w-4 h-4" />}
                 className="w-full md:w-36 text-xs"
               />
             </div>
@@ -215,8 +234,11 @@ export default function LaporanKegiatanJadwalPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant={tugas.status === 'selesai' ? 'success' : 'warning'} className="rounded-md font-bold px-2.5 py-0.5 text-[10px] shadow-sm">
-                          {tugas.status === 'selesai' ? 'Selesai' : (tugas.status === 'proses' ? 'Proses' : (tugas.status || 'Proses'))}
+                        <Badge 
+                          variant={tugas.status === 'selesai' ? 'success' : (tugas.status === 'progress' || (tugas.status === 'pending' && tugas.laporanKegiatans?.length > 0) ? 'info' : 'warning')} 
+                          className="font-bold shadow-sm whitespace-nowrap"
+                        >
+                          {tugas.status === 'selesai' ? 'Selesai' : (tugas.status === 'progress' || (tugas.status === 'pending' && tugas.laporanKegiatans?.length > 0) ? 'Berlangsung' : 'Belum Dimulai')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">

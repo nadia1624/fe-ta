@@ -36,7 +36,10 @@ export default function TugasDetailPage() {
           tanggal_penugasan: p.tanggal_penugasan,
           instruksi: p.deskripsi_penugasan,
           staf_ditugaskan: p.nama_staf || [],
-          progress_reports: p.laporanKegiatans || []
+          progress_reports: p.laporanKegiatans || [],
+          contact_person: p.agenda?.contact_person || '-',
+          catatan_agenda: p.agenda?.keterangan || '-',
+          kaskpd_pendamping: p.agenda?.kaskpdPendampings?.map((k: any) => k.kaskpd?.nama_instansi).filter(Boolean) || []
         });
       }
     } catch (error) {
@@ -73,13 +76,14 @@ export default function TugasDetailPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Berlangsung':
-        return <Badge variant="info">Berlangsung</Badge>;
+        return <Badge variant="info" className="bg-blue-50 text-blue-700 border-blue-100">Berlangsung</Badge>;
+      case 'Belum Dimulai':
       case 'Belum Dilaporkan':
-        return <Badge variant="warning">Belum Dilaporkan</Badge>;
+        return <Badge variant="warning" className="bg-amber-50 text-amber-700 border-amber-100">Belum Dimulai</Badge>;
       case 'Selesai':
-        return <Badge variant="success">Selesai</Badge>;
+        return <Badge variant="success" className="bg-green-50 text-green-700 border-green-100">Selesai</Badge>;
       default:
-        return <Badge>{status}</Badge>;
+        return <Badge className="bg-gray-50 text-gray-700 border-gray-100">{status}</Badge>;
     }
   };
 
@@ -194,6 +198,42 @@ export default function TugasDetailPage() {
                   {tugas.staf_ditugaskan.length > 0
                     ? tugas.staf_ditugaskan.join(', ')
                     : <span className="text-gray-400 italic">Tidak ada staf</span>}
+                </p>
+              </div>
+            </div>
+
+            {/* ── Additional Coordination Info ── */}
+            <div>
+              <label className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+                <User className="w-3.5 h-3.5" /> Kontak Person
+              </label>
+              <p className="text-sm font-semibold text-blue-600">{tugas.contact_person}</p>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+                <Users className="w-3.5 h-3.5" /> KaSKPD Pendamping
+              </label>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {tugas.kaskpd_pendamping.length > 0 ? (
+                  tugas.kaskpd_pendamping.map((k: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="bg-gray-100 text-[10px] text-gray-700">
+                      {k}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-[11px] text-gray-400 italic">Tidak ada pendamping</p>
+                )}
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+                <ClipboardList className="w-3.5 h-3.5" /> Catatan Agenda
+              </label>
+              <div className="bg-amber-50/50 p-3 rounded-lg border border-amber-100/50">
+                <p className="text-sm text-gray-900 italic leading-relaxed">
+                  {tugas.catatan_agenda || '-'}
                 </p>
               </div>
             </div>

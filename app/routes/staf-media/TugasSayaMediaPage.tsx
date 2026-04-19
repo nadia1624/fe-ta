@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Search, Filter, Calendar, Clock, MapPin, User, Upload, X, FileText, Eye, Edit, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Filter, Calendar, Clock, MapPin, User, Upload, X, FileText, Eye, Edit, Loader2, AlertCircle, TrendingUp, CheckCircle } from 'lucide-react';
 import CustomSelect from '../../components/ui/CustomSelect';
 import MonthPicker from '../../components/ui/month-picker';
 import { penugasanApi, beritaApi } from '../../lib/api';
@@ -61,11 +61,10 @@ export default function TugasSayaMediaPage() {
       ? tugas.draftBeritas[tugas.draftBeritas.length - 1]
       : null;
 
-    let displayStatus = 'Belum Upload';
+    let displayStatus = 'Belum Dimulai';
     if (latestDraft) {
-      if (latestDraft.status_draft === 'approved') displayStatus = 'Disetujui';
-      else if (latestDraft.status_draft === 'draft') displayStatus = 'Pending Review';
-      else if (latestDraft.status_draft === 'review') displayStatus = 'Perlu Revisi';
+      if (latestDraft.status_draft === 'approved') displayStatus = 'Selesai';
+      else if (latestDraft.status_draft === 'draft' || latestDraft.status_draft === 'review') displayStatus = 'Berlangsung';
     }
 
     const matchStatus = filterStatus === 'all' || displayStatus === filterStatus;
@@ -230,29 +229,57 @@ export default function TugasSayaMediaPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <Card className="border-none shadow-sm">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Total Tugas</p>
-            <p className="text-2xl font-bold text-gray-900">{statsTotal}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Tugas</p>
+                <p className="text-2xl font-semibold text-blue-600">{statsTotal}</p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm">
+        <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-orange-500 font-medium uppercase tracking-wider">Belum Upload</p>
-            <p className="text-2xl font-bold text-orange-600">{statsBelumUpload}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Belum Upload</p>
+                <p className="text-2xl font-semibold text-orange-600">{statsBelumUpload}</p>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-lg">
+                <Clock className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm">
+        <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-blue-500 font-medium uppercase tracking-wider">Pending Review</p>
-            <p className="text-2xl font-bold text-blue-600">{statsPending}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Pending Review</p>
+                <p className="text-2xl font-semibold text-blue-600">{statsPending}</p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <Clock className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm">
+        <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-red-500 font-medium uppercase tracking-wider">Perlu Revisi</p>
-            <p className="text-2xl font-bold text-red-600">{statsPerluRevisi}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Perlu Revisi</p>
+                <p className="text-2xl font-semibold text-red-600">{statsPerluRevisi}</p>
+              </div>
+              <div className="bg-red-50 p-3 rounded-lg">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -282,10 +309,9 @@ export default function TugasSayaMediaPage() {
                 onChange={setFilterStatus}
                 options={[
                   { value: 'all', label: 'Semua Status' },
-                  { value: 'Belum Upload', label: 'Belum Upload' },
-                  { value: 'Pending Review', label: 'Pending Review' },
-                  { value: 'Perlu Revisi', label: 'Perlu Revisi' },
-                  { value: 'Disetujui', label: 'Disetujui' }
+                  { value: 'Selesai', label: 'Selesai' },
+                  { value: 'Berlangsung', label: 'Berlangsung' },
+                  { value: 'Belum Dimulai', label: 'Belum Dimulai' }
                 ]}
                 icon={<Filter className="w-4 h-4" />}
                 className="w-full sm:w-48"

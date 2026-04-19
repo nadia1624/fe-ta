@@ -318,18 +318,18 @@ export default function VerifikasiPermohonanPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleDetail(agenda)}
                               className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
                             {latestStatus === 'pending' && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => handleVerifikasi(agenda)}
                                 className="h-9 w-9 p-0 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border border-green-100 rounded-xl transition-all shadow-sm"
                               >

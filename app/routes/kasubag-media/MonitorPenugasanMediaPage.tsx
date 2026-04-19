@@ -104,29 +104,27 @@ export default function MonitorPenugasanMediaPage() {
             ? item.draftBeritas[item.draftBeritas.length - 1] 
             : null;
         
-        const matchesStatus = statusFilter === 'all' || 
-            (statusFilter === 'none' && !latestDraft) ||
-            latestDraft?.status_draft === statusFilter;
+        let displayStatus = 'Belum Dimulai';
+        if (latestDraft) {
+            if (latestDraft.status_draft === 'approved') displayStatus = 'Selesai';
+            else if (latestDraft.status_draft === 'draft' || latestDraft.status_draft === 'review') displayStatus = 'Berlangsung';
+        }
+
+        const matchesStatus = statusFilter === 'all' || displayStatus === statusFilter;
 
         return matchesSearch && matchesStatus;
     });
 
-    const statsDraft = penugasanList.filter(p => {
-        const latest = p.draftBeritas && p.draftBeritas.length > 0 ? p.draftBeritas[p.draftBeritas.length - 1] : null;
-        return latest?.status_draft === 'draft';
-    }).length;
-
-    const statsReview = penugasanList.filter(p => {
-        const latest = p.draftBeritas && p.draftBeritas.length > 0 ? p.draftBeritas[p.draftBeritas.length - 1] : null;
-        return latest?.status_draft === 'review';
-    }).length;
-
-    const statsApproved = penugasanList.filter(p => {
+    const statsTotal = penugasanList.length;
+    const statsSelesai = penugasanList.filter(p => {
         const latest = p.draftBeritas && p.draftBeritas.length > 0 ? p.draftBeritas[p.draftBeritas.length - 1] : null;
         return latest?.status_draft === 'approved';
     }).length;
-
-    const statsTotal = penugasanList.length;
+    const statsBerlangsung = penugasanList.filter(p => {
+        const latest = p.draftBeritas && p.draftBeritas.length > 0 ? p.draftBeritas[p.draftBeritas.length - 1] : null;
+        return latest && (latest.status_draft === 'draft' || latest.status_draft === 'review');
+    }).length;
+    const statsBelumDimulai = penugasanList.filter(p => !p.draftBeritas || p.draftBeritas.length === 0).length;
 
 
     const getDraftStatusBadge = (drafts?: DraftBerita[]) => {
@@ -136,13 +134,13 @@ export default function MonitorPenugasanMediaPage() {
         const latest = drafts[drafts.length - 1];
         switch (latest.status_draft) {
             case 'approved':
-                return <Badge className="bg-green-100 text-green-700 border-green-200 text-[10px]">Disetujui</Badge>;
+                return <Badge variant="success">Disetujui</Badge>;
             case 'draft':
-                return <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px]">Menunggu Review</Badge>;
+                return <Badge variant="warning">Menunggu Review</Badge>;
             case 'review':
-                return <Badge className="bg-red-100 text-red-700 border-red-200 text-[10px]">Perlu Revisi</Badge>;
+                return <Badge variant="destructive">Perlu Revisi</Badge>;
             default:
-                return <Badge className="bg-gray-100 text-gray-700 border-gray-200 text-[10px]">{latest.status_draft}</Badge>;
+                return <Badge>{latest.status_draft}</Badge>;
         }
     };
 
@@ -187,55 +185,55 @@ export default function MonitorPenugasanMediaPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <Card className="border-none shadow-sm transition-all hover:shadow-md">
-                    <CardContent className="p-4 md:p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Total Penugasan</p>
-                                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsTotal}</p>
+                                <p className="text-sm text-gray-600">Total Penugasan</p>
+                                <p className="text-2xl font-semibold text-blue-600">{statsTotal}</p>
                             </div>
-                            <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
-                                <TrendingUp className="w-5 h-5 md:w-6 md:h-6" />
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                                <TrendingUp className="w-6 h-6 text-blue-600" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm transition-all hover:shadow-md">
-                    <CardContent className="p-4 md:p-6">
+                <Card>
+                    <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Menunggu Review</p>
-                                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsDraft}</p>
+                                <p className="text-sm text-gray-600">Selesai</p>
+                                <p className="text-2xl font-semibold text-green-600">{statsSelesai}</p>
                             </div>
-                            <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
-                                <Clock className="w-5 h-5 md:w-6 md:h-6" />
+                            <div className="bg-green-50 p-3 rounded-lg">
+                                <CheckCircle className="w-6 h-6 text-green-600" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm transition-all hover:shadow-md">
-                    <CardContent className="p-4 md:p-6">
+                <Card>
+                    <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Perlu Revisi</p>
-                                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsReview}</p>
+                                <p className="text-sm text-gray-600">Berlangsung</p>
+                                <p className="text-2xl font-semibold text-blue-600">{statsBerlangsung}</p>
                             </div>
-                            <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
-                                <AlertCircle className="w-5 h-5 md:w-6 md:h-6" />
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                                <TrendingUp className="w-6 h-6 text-blue-600" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="border-none shadow-sm transition-all hover:shadow-md">
-                    <CardContent className="p-4 md:p-6">
+                <Card>
+                    <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs md:text-sm font-medium text-gray-500 mb-1">Selesai/Disetujui</p>
-                                <p className="text-2xl md:text-3xl font-bold text-gray-900">{statsApproved}</p>
+                                <p className="text-sm text-gray-600">Belum Dimulai</p>
+                                <p className="text-2xl font-semibold text-orange-600">{statsBelumDimulai}</p>
                             </div>
-                            <div className="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
-                                <CheckCircle className="w-5 h-5 md:w-6 md:h-6" />
+                            <div className="bg-orange-50 p-3 rounded-lg">
+                                <Clock className="w-6 h-6 text-orange-600" />
                             </div>
                         </div>
                     </CardContent>
@@ -263,10 +261,9 @@ export default function MonitorPenugasanMediaPage() {
                                 onChange={setStatusFilter}
                                 options={[
                                     { value: 'all', label: 'Semua Status' },
-                                    { value: 'draft', label: 'Menunggu Review' },
-                                    { value: 'approved', label: 'Disetujui' },
-                                    { value: 'review', label: 'Perlu Revisi' },
-                                    { value: 'none', label: 'Belum Ada Draft' },
+                                    { value: 'Selesai', label: 'Selesai' },
+                                    { value: 'Berlangsung', label: 'Berlangsung' },
+                                    { value: 'Belum Dimulai', label: 'Belum Dimulai' },
                                 ]}
                                 icon={<Filter className="w-3.5 h-3.5" />}
                                 className="w-full sm:w-48 bg-white border-blue-100 shadow-sm"

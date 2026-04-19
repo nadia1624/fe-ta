@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Search, Filter, Calendar, Clock, MapPin, User, ClipboardList, Eye, ChevronDown } from 'lucide-react';
+import { Search, Filter, Calendar, Clock, MapPin, User, ClipboardList, Eye, ChevronDown, TrendingUp, CheckCircle } from 'lucide-react';
 import MonthPicker from '../../components/ui/month-picker';
 import CustomSelect from '../../components/ui/CustomSelect';
 
@@ -96,29 +96,57 @@ export default function TugasSayaPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4 md:p-6">
-            <p className="text-xs text-gray-600 mb-1">Total Tugas</p>
-            <p className="text-2xl md:text-3xl font-semibold text-blue-600">{totalTugas}</p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Tugas</p>
+                <p className="text-2xl font-semibold text-blue-600">{totalTugas}</p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 md:p-6">
-            <p className="text-xs text-gray-600 mb-1">Belum Dimulai</p>
-            <p className="text-2xl md:text-3xl font-semibold text-orange-600">{belumDimulai}</p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Selesai</p>
+                <p className="text-2xl font-semibold text-green-600">{selesai}</p>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 md:p-6">
-            <p className="text-xs text-gray-600 mb-1">Berlangsung</p>
-            <p className="text-2xl md:text-3xl font-semibold text-blue-600">{berlangsung}</p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Berlangsung</p>
+                <p className="text-2xl font-semibold text-blue-600">{berlangsung}</p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 md:p-6">
-            <p className="text-xs text-gray-600 mb-1">Selesai</p>
-            <p className="text-2xl md:text-3xl font-semibold text-green-600">{selesai}</p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Belum Dimulai</p>
+                <p className="text-2xl font-semibold text-orange-600">{belumDimulai}</p>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-lg">
+                <Clock className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

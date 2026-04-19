@@ -64,7 +64,14 @@ export default function SubmitRequestPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        Swal.fire('Error', 'Ukuran file surat permohonan maksimal 5 MB', 'error');
+        e.target.value = '';
+        setFile(null);
+      } else {
+        setFile(selectedFile);
+      }
     }
   };
 
@@ -89,6 +96,10 @@ export default function SubmitRequestPage() {
     // Time validation: end time > start time
     if (formData.waktu_selesai <= formData.waktu_mulai) {
       return Swal.fire('Error', 'Waktu selesai tidak boleh lebih awal dari waktu mulai.', 'error');
+    }
+
+    if (file && file.size > 5 * 1024 * 1024) {
+      return Swal.fire('Error', 'Ukuran file surat permohonan maksimal 5 MB', 'error');
     }
 
     setIsLoading(true);

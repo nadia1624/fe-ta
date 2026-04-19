@@ -57,6 +57,9 @@ interface PenugasanDetail {
         waktu_mulai: string;
         waktu_selesai: string;
         lokasi_kegiatan: string;
+        contact_person?: string;
+        keterangan?: string;
+        kaskpdPendampings?: any[];
     } | null;
     laporanKegiatans: LaporanKegiatan[];
     draftBeritas: DraftBerita[];
@@ -134,10 +137,14 @@ export default function DetailPenugasanMediaPage() {
     };
 
     const getStatusInfo = () => {
-        if (!penugasan) return { label: 'Unknown', variant: 'default' as any };
-        if (penugasan.status === 'selesai' || penugasan.status_pelaksanaan === 'Selesai') return { label: 'Selesai', variant: 'success' as any };
-        if (penugasan.laporanKegiatans?.length > 0) return { label: 'Berlangsung', variant: 'info' as any };
-        return { label: 'Belum Dimulai', variant: 'warning' as any };
+        if (!penugasan) return { label: 'Unknown', variant: 'default' as any, className: '' };
+        if (penugasan.status === 'selesai' || penugasan.status_pelaksanaan === 'Selesai') {
+            return { label: 'Selesai', variant: 'success' as any, className: 'bg-green-50 text-green-700 border-green-100' };
+        }
+        if (penugasan.status === 'progress' || (penugasan.laporanKegiatans?.length > 0)) {
+            return { label: 'Berlangsung', variant: 'info' as any, className: 'bg-blue-50 text-blue-700 border-blue-100' };
+        }
+        return { label: 'Belum Dimulai', variant: 'warning' as any, className: 'bg-amber-50 text-amber-700 border-amber-100' };
     };
 
     const getDraftStatusInfo = (status: string) => {
@@ -212,7 +219,7 @@ export default function DetailPenugasanMediaPage() {
                 <CardHeader className="border-b border-gray-100">
                     <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-gray-900">Informasi Penugasan</h3>
-                        <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                        <Badge variant={statusInfo.variant} className={statusInfo.className}>{statusInfo.label}</Badge>
                     </div>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -301,11 +308,54 @@ export default function DetailPenugasanMediaPage() {
                         <div className="md:col-span-2">
                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5 pt-2 border-t border-gray-50">
                                 <ClipboardList className="w-4 h-4 text-blue-600" />
-                                Deskripsi Penugasan
+                                Deskripsi Penugasan (Kepada Staf)
                             </label>
-                            <p className="text-sm text-gray-700 leading-relaxed">
+                            <p className="text-sm text-gray-700 leading-relaxed font-medium">
                                 {penugasan.deskripsi_penugasan || <span className="italic text-gray-400">Tidak ada deskripsi</span>}
                             </p>
+                        </div>
+
+                        {/* Kontak Person */}
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                <User className="w-4 h-4 text-blue-600" />
+                                Kontak Person
+                            </label>
+                            <p className="text-sm text-blue-600 font-bold">
+                                {penugasan.agenda?.contact_person || '-'}
+                            </p>
+                        </div>
+
+                        {/* KaSKPD Pendamping */}
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                <Users className="w-4 h-4 text-blue-600" />
+                                KaSKPD Pendamping
+                            </label>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                                {penugasan.agenda?.kaskpdPendampings && penugasan.agenda.kaskpdPendampings.length > 0 ? (
+                                    penugasan.agenda.kaskpdPendampings.map((k: any, i: number) => (
+                                        <Badge key={i} variant="secondary" className="bg-white text-[10px] text-gray-700 border-gray-200">
+                                            {k.kaskpd?.nama_instansi}
+                                        </Badge>
+                                    ))
+                                ) : (
+                                    <p className="text-[10px] text-gray-400 italic">Tidak ada pendamping</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Catatan Agenda */}
+                        <div className="md:col-span-2">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                                <ClipboardList className="w-4 h-4 text-blue-600" />
+                                Catatan Agenda
+                            </label>
+                            <div className="mt-1 p-3 bg-amber-50/50 border border-amber-100/50 rounded-xl font-medium">
+                                <p className="text-sm text-gray-800 leading-relaxed italic">
+                                    {penugasan.agenda?.keterangan || '-'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </CardContent>

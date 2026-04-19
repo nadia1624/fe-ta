@@ -3,16 +3,14 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Trash2, X, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { periodeApi } from '../../lib/api';
 import Swal from 'sweetalert2';
 
 export default function PeriodeManagementPage() {
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedPeriode, setSelectedPeriode] = useState<any>(null);
-  const [periodeToDelete, setPeriodeToDelete] = useState<any>(null);
   const [periodeList, setPeriodeList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -80,10 +78,6 @@ export default function PeriodeManagementPage() {
     setShowModal(true);
   };
 
-  const handleDelete = (periode: any) => {
-    setPeriodeToDelete(periode);
-    setShowDeleteModal(true);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,39 +129,6 @@ export default function PeriodeManagementPage() {
     }
   };
 
-  const handleDeleteConfirm = async () => {
-    if (periodeToDelete) {
-      setIsLoading(true);
-      try {
-        const response = await periodeApi.delete(periodeToDelete.id_periode);
-        if (response.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Terhapus!',
-            text: `Periode "${periodeToDelete.nama_periode}" berhasil dihapus!`,
-            timer: 2000,
-            showConfirmButton: false
-          });
-          setShowDeleteModal(false);
-          fetchPeriode();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Gagal Menghapus',
-            text: response.message,
-          });
-        }
-      } catch (err: any) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Terjadi Kesalahan',
-          text: err.message,
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
 
   const totalPages = Math.ceil(periodeList.length / ITEMS_PER_PAGE);
   const paginatedPeriode = periodeList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -253,14 +214,6 @@ export default function PeriodeManagementPage() {
                             className="h-9 w-9 p-0 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700 border border-amber-100 rounded-xl transition-all shadow-sm"
                           >
                             <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleDelete(periode)}
-                            className="h-9 w-9 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl transition-all shadow-sm"
-                          >
-                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -421,93 +374,7 @@ export default function PeriodeManagementPage() {
         </div>
       )}
 
-      {/* Modal Delete */}
-      {showDeleteModal && periodeToDelete && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Konfirmasi Hapus Periode
-                </h3>
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Icon & Message */}
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-700 mb-2">
-                      Apakah Anda yakin ingin menghapus periode berikut?
-                    </p>
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-1">
-                      <p className="text-sm font-semibold text-gray-900">{periodeToDelete.nama_periode}</p>
-                      <p className="text-xs text-gray-600">
-                        {new Date(periodeToDelete.tanggal_mulai).toLocaleDateString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric'
-                        })} - {new Date(periodeToDelete.tanggal_selesai).toLocaleDateString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
-                      </p>
-                      <div className="pt-1">
-                        <Badge variant={periodeToDelete.status_periode === 'aktif' ? 'success' : 'secondary'}>
-                          {periodeToDelete.status_periode === 'aktif' ? 'Aktif' : 'Nonaktif'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Warning */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800">
-                    <strong>Peringatan:</strong> Data periode yang dihapus tidak dapat dikembalikan. Pastikan Anda yakin dengan tindakan ini.
-                  </p>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowDeleteModal(false)}
-                    className="flex-1"
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={handleDeleteConfirm}
-                    className="flex-1"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Menghapus...' : (
-                      <>
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Hapus Periode
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

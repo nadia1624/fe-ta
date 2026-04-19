@@ -43,6 +43,9 @@ interface PenugasanDetail {
     waktu_mulai: string;
     waktu_selesai: string;
     lokasi_kegiatan: string;
+    contact_person?: string;
+    keterangan?: string;
+    kaskpdPendampings?: any[];
     agendaPimpinans?: any[];
   } | null;
   slotAgendaStaffs: SlotStaff[];
@@ -83,14 +86,14 @@ export default function LaporanKegiatanJadwalDetailPage() {
   };
 
   const getDisplayStatus = () => {
-    if (!penugasan) return { label: 'Unknown', variant: 'default' as any };
+    if (!penugasan) return { label: 'Unknown', variant: 'default' as any, className: '' };
     if (penugasan.status === 'selesai' || penugasan.status_pelaksanaan === 'Selesai') {
-      return { label: 'Selesai', variant: 'success' as any };
+      return { label: 'Selesai', variant: 'success' as any, className: 'bg-green-50 text-green-700 border-green-100' };
     }
-    if (penugasan.laporanKegiatans && penugasan.laporanKegiatans.length > 0) {
-      return { label: 'Berlangsung', variant: 'info' as any };
+    if (penugasan.status === 'progress' || (penugasan.laporanKegiatans && penugasan.laporanKegiatans.length > 0)) {
+      return { label: 'Berlangsung', variant: 'info' as any, className: 'bg-blue-50 text-blue-700 border-blue-100' };
     }
-    return { label: 'Belum Dimulai', variant: 'warning' as any };
+    return { label: 'Belum Dimulai', variant: 'warning' as any, className: 'bg-amber-50 text-amber-700 border-amber-100' };
   };
 
   const statusInfo = getDisplayStatus();
@@ -150,7 +153,7 @@ export default function LaporanKegiatanJadwalDetailPage() {
         <CardHeader className="border-b border-gray-100">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Informasi Penugasan</h3>
-            <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+            <Badge variant={statusInfo.variant} className={statusInfo.className}>{statusInfo.label}</Badge>
           </div>
         </CardHeader>
         <CardContent className="pt-6">
@@ -233,11 +236,50 @@ export default function LaporanKegiatanJadwalDetailPage() {
             <div className="md:col-span-2">
               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <ClipboardList className={`w-4 h-4 ${themeText}`} />
-                Deskripsi Penugasan
+                Deskripsi Penugasan (Kepada Staf)
               </label>
               <p className="text-sm text-gray-900 mt-1">
                 {penugasan.deskripsi_penugasan || <span className="italic text-gray-400">Tidak ada deskripsi</span>}
               </p>
+            </div>
+
+            {/* ── Additional Coordination Info ── */}
+            <div>
+              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <User className={`w-4 h-4 ${themeText}`} />
+                Kontak Person
+              </label>
+              <p className="text-sm text-blue-600 font-bold mt-1">
+                {penugasan.agenda?.contact_person || '-'}
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <Users className={`w-4 h-4 ${themeText}`} />
+                KaSKPD Pendamping
+              </label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {penugasan.agenda?.kaskpdPendampings && penugasan.agenda.kaskpdPendampings.length > 0 ? (
+                  penugasan.agenda.kaskpdPendampings.map((k: any, i: number) => (
+                    <Badge key={i} variant="secondary" className="bg-gray-100 text-gray-700 border-gray-200">
+                      {k.kaskpd?.nama_instansi}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 italic">Tidak ada pendamping</p>
+                )}
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <ClipboardList className={`w-4 h-4 ${themeText}`} />
+                Catatan Agenda
+              </label>
+              <div className="mt-2 p-3 bg-amber-50/50 border border-amber-100/50 rounded-xl">
+                <p className="text-sm text-gray-800 leading-relaxed italic">
+                  {penugasan.agenda?.keterangan || '-'}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>

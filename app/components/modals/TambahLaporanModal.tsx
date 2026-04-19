@@ -222,21 +222,21 @@ export default function TambahLaporanModal({
                 {/* ─── CAMERA CANVAS VIEW ─── */}
                 {cameraOpen && (
                     <>
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-900 flex-shrink-0">
-                            <h3 className="text-lg font-semibold text-white">Ambil Foto</h3>
-                            <button onClick={stopCamera} className="text-gray-300 hover:text-white">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white flex-shrink-0">
+                            <h3 className="text-lg font-semibold text-gray-900">Ambil Foto</h3>
+                            <button onClick={stopCamera} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
+                        <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden min-h-[300px] sm:min-h-[400px]">
                             {cameraError ? (
                                 <div className="text-center text-white px-6 py-8">
                                     <Camera className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                    <p className="text-sm">{cameraError}</p>
+                                    <p className="text-sm font-medium">{cameraError}</p>
                                     <button
                                         onClick={() => startCamera(facingMode)}
-                                        className="mt-4 text-xs px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30"
+                                        className="mt-4 text-xs px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
                                     >
                                         Coba Lagi
                                     </button>
@@ -252,20 +252,24 @@ export default function TambahLaporanModal({
                             )}
                             <button
                                 onClick={switchCamera}
-                                className="absolute top-3 right-3 p-2 bg-black/50 rounded-full text-white hover:bg-black/70"
+                                type="button"
+                                className="absolute top-4 right-4 p-2.5 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-all active:scale-95 shadow-lg"
                                 title="Ganti kamera"
                             >
                                 <SwitchCamera className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="flex items-center justify-center py-6 bg-gray-900 flex-shrink-0">
+                        <div className="flex items-center justify-center py-8 bg-gray-50 border-t border-gray-100 flex-shrink-0">
                             <button
+                                type="button"
                                 onClick={capturePhoto}
                                 disabled={!!cameraError}
-                                className="w-16 h-16 rounded-full bg-white border-4 border-gray-400 hover:scale-105 active:scale-95 transition-transform disabled:opacity-40 flex items-center justify-center"
+                                className="w-20 h-20 rounded-full flex items-center justify-center bg-white border-4 border-blue-100 hover:border-blue-600 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:scale-100 shadow-xl group p-1.5"
                             >
-                                <div className="w-11 h-11 rounded-full bg-gray-200" />
+                                <div className="w-full h-full rounded-full bg-blue-600 group-hover:bg-blue-700 flex items-center justify-center transition-colors shadow-inner">
+                                    <Camera className="w-8 h-8 text-white opacity-90 group-hover:scale-110 transition-transform" />
+                                </div>
                             </button>
                         </div>
 

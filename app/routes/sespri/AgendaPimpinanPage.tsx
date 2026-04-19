@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
-  Plus, Edit2, Trash2, Eye, Calendar, X,
+  Plus, Edit2, Trash2, Eye, Calendar as CalendarIcon, X,
   AlertTriangle, Search, Filter, List,
   CalendarDays, RefreshCw, CheckCircle,
   Clock, UserCheck, ExternalLink, FileText, Building, Phone
@@ -12,7 +12,15 @@ import {
 import { agendaApi, pimpinanApi, kaskpdApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 import MultiSelect from '../../components/ui/MultiSelect';
+import { Calendar } from '../../components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
+import { TimePicker } from '../../components/ui/time-picker';
+import { cn } from '../../components/ui/utils';
+import moment from 'moment';
+import 'moment/locale/id';
 import Swal from 'sweetalert2';
+
+moment.locale('id');
 
 export default function AgendaPimpinanPage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -161,6 +169,30 @@ export default function AgendaPimpinanPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Date validation: must be after today
+    const todayStr = moment().format('YYYY-MM-DD');
+    if (formData.tanggal_kegiatan <= todayStr) {
+      return Swal.fire('Error', 'Tanggal kegiatan harus setelah hari ini (minimal besok)', 'error');
+    }
+
+    // Time validation: end time > start time
+    if (formData.waktu_selesai <= formData.waktu_mulai) {
+      return Swal.fire('Error', 'Waktu selesai tidak boleh lebih awal dari waktu mulai.', 'error');
+    }
+
+    // File validation
+    if (!formData.file_surat) {
+      return Swal.fire('Peringatan', 'Surat permohonan wajib diupload', 'warning');
+    }
+    if (formData.file_surat.size > 5 * 1024 * 1024) {
+      return Swal.fire('Error', 'Ukuran file surat permohonan maksimal 5 MB', 'error');
+    }
+
+    if (selectedPimpinans.length === 0) {
+      return Swal.fire('Peringatan', 'Pilih minimal satu pimpinan', 'warning');
+    }
+
     try {
       const data = new FormData();
       data.append('nomor_surat', formData.nomor_surat);
@@ -174,16 +206,6 @@ export default function AgendaPimpinanPage() {
       data.append('keterangan', formData.keterangan);
       if (formData.contact_person) {
         data.append('contact_person', formData.contact_person);
-      }
-
-      if (selectedPimpinans.length === 0) {
-        Swal.fire('Peringatan', 'Pilih minimal satu pimpinan', 'warning');
-        return;
-      }
-
-      if (!formData.file_surat) {
-        Swal.fire('Peringatan', 'Surat permohonan wajib diupload', 'warning');
-        return;
       }
 
       const invited = selectedPimpinans.map(val => {
@@ -204,6 +226,12 @@ export default function AgendaPimpinanPage() {
       }
     } catch (error) {
       Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+    }
+  };
+
+  const handleDateSelect = (name: string, date: Date | undefined) => {
+    if (date) {
+      setFormData(prev => ({ ...prev, [name]: moment(date).format('YYYY-MM-DD') }));
     }
   };
 
@@ -354,7 +382,7 @@ export default function AgendaPimpinanPage() {
                 <p className="text-sm text-gray-600">Total Agenda</p>
                 <p className="text-2xl font-semibold text-blue-600">{statsTotal}</p>
               </div>
-              <Calendar className="w-8 h-8 text-blue-600" />
+              <CalendarIcon className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -671,7 +699,7 @@ export default function AgendaPimpinanPage() {
                           </label>
                         );
                       })}
-                    </div>
+                  </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -681,7 +709,28 @@ export default function AgendaPimpinanPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Surat</label>
-                      <input type="date" name="tanggal_surat" value={formData.tanggal_surat} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={cn(
+                              "flex w-full items-center justify-between px-4 py-2 bg-white border rounded-lg text-left text-sm transition-all shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none",
+                              !formData.tanggal_surat && "text-gray-400"
+                            )}
+                          >
+                            <span>{formData.tanggal_surat ? moment(formData.tanggal_surat).format('DD MMMM YYYY') : "Pilih tanggal"}</span>
+                            <CalendarIcon className="w-4 h-4 text-gray-400" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formData.tanggal_surat ? new Date(formData.tanggal_surat) : undefined}
+                            onSelect={(date) => handleDateSelect('tanggal_surat', date)}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
 
@@ -697,18 +746,52 @@ export default function AgendaPimpinanPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Nama Kegiatan <span className="text-red-500">*</span></label>
                         <input name="nama_kegiatan" value={formData.nama_kegiatan} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
                       </div>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal <span className="text-red-500">*</span></label>
-                          <input type="date" name="tanggal_kegiatan" value={formData.tanggal_kegiatan} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                className={cn(
+                                  "flex w-full items-center justify-between px-4 py-2 bg-white border rounded-lg text-left text-sm transition-all shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none",
+                                  !formData.tanggal_kegiatan && "text-gray-400"
+                                )}
+                              >
+                                <span>{formData.tanggal_kegiatan ? moment(formData.tanggal_kegiatan).format('DD MMMM YYYY') : "Pilih tanggal"}</span>
+                                <CalendarIcon className="w-4 h-4 text-gray-400" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={formData.tanggal_kegiatan ? new Date(formData.tanggal_kegiatan) : undefined}
+                                onSelect={(date) => handleDateSelect('tanggal_kegiatan', date)}
+                                initialFocus
+                                disabled={(date) => {
+                                  const today = new Date();
+                                  today.setHours(0, 0, 0, 0);
+                                  return date <= today;
+                                }}
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Mulai <span className="text-red-500">*</span></label>
-                          <input type="time" name="waktu_mulai" value={formData.waktu_mulai} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
+                          <TimePicker
+                            value={formData.waktu_mulai}
+                            onChange={(val) => setFormData(prev => ({ ...prev, waktu_mulai: val }))}
+                            placeholder="08:00"
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Selesai <span className="text-red-500">*</span></label>
-                          <input type="time" name="waktu_selesai" value={formData.waktu_selesai} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg" required />
+                          <TimePicker
+                            value={formData.waktu_selesai}
+                            onChange={(val) => setFormData(prev => ({ ...prev, waktu_selesai: val }))}
+                            placeholder="10:00"
+                          />
                         </div>
                       </div>
                       <div>
@@ -717,12 +800,25 @@ export default function AgendaPimpinanPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Upload Surat <span className="text-red-500">*</span></label>
+                        <div className="flex flex-col gap-2">
                         <input
                           type="file"
-                          onChange={(e) => setFormData(prev => ({ ...prev, file_surat: e.target.files?.[0] || null }))}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            if (file && file.size > 5 * 1024 * 1024) {
+                              Swal.fire('Error', 'Ukuran file surat permohonan maksimal 5 MB', 'error');
+                              e.target.value = '';
+                              setFormData(prev => ({ ...prev, file_surat: null }));
+                            } else {
+                              setFormData(prev => ({ ...prev, file_surat: file }));
+                            }
+                          }}
                           className="w-full text-sm border p-2 rounded-lg bg-white"
+                          accept=".pdf"
                           required
                         />
+                        <p className="text-[10px] text-gray-500">PDF maksimal 5 MB</p>
+                        </div>
                       </div>
                     </div>
                   </div>
