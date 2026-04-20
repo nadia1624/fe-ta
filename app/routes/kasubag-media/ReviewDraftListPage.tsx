@@ -23,7 +23,7 @@ import {
 import { Link } from 'react-router';
 import { beritaApi } from '../../lib/api';
 import MonthPicker from '../../components/ui/month-picker';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function ReviewDraftListPage() {
     const [drafts, setDrafts] = useState<any[]>([]);
@@ -65,28 +65,22 @@ export default function ReviewDraftListPage() {
     };
 
     const handleApprove = async (draft: any) => {
-        const result = await Swal.fire({
-            title: 'Setujui Draft Berita?',
-            html: `Draft <strong>"${draft.judul_berita}"</strong> akan ditandai sebagai disetujui.`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Setujui!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#2563eb',
-            cancelButtonColor: '#9ca3af',
-        });
-        if (!result.isConfirmed) return;
+        const { isConfirmed } = await toast.confirm(
+            'Setujui Draft Berita?',
+            `Draft <strong>"${draft.judul_berita}"</strong> akan ditandai sebagai disetujui.`
+        );
+        if (!isConfirmed) return;
         try {
             const res = await beritaApi.reviewDraft(draft.id_draft_berita, { status_draft: 'approved', catatan: '' });
             if (res.success) {
-                await Swal.fire({ icon: 'success', title: 'Disetujui!', text: 'Draft berhasil disetujui.', timer: 1800, showConfirmButton: false });
+                toast.success('Disetujui!', 'Draft berhasil disetujui.');
                 fetchReviewDrafts();
                 setShowDetailModal(false);
             } else {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: res.message });
+                toast.error('Gagal', res.message);
             }
         } catch {
-            Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan.' });
+            toast.error('Gagal', 'Terjadi kesalahan.');
         }
     };
 

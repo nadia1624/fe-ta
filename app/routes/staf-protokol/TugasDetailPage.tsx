@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Plus, Calendar, MapPin, User, Users, FileText, ClipboardList, Check, Clock, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, MapPin, User, Users, FileText, ClipboardList, Check, Clock, TrendingUp, Image } from 'lucide-react';
 import TambahLaporanModal from '../../components/modals/TambahLaporanModal';
 
 export default function TugasDetailPage() {
@@ -183,7 +183,7 @@ export default function TugasDetailPage() {
             {/* Keterangan / Instruksi */}
             <div>
               <label className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
-                <ClipboardList className="w-3.5 h-3.5" /> Keterangan
+                <ClipboardList className="w-3.5 h-3.5" /> Deskripsi Penugasan
               </label>
               <p className="text-sm text-gray-900">{tugas.instruksi || '-'}</p>
             </div>
@@ -294,7 +294,7 @@ export default function TugasDetailPage() {
                       {report.dokumentasi_laporan && (
                         <div>
                           <p className="text-xs text-gray-500 mb-1.5 flex items-center gap-1">
-                            🖼 Dokumentasi
+                            <Image className="w-3.5 h-3.5" /> Dokumentasi
                           </p>
                           <div className="w-full rounded-lg bg-gray-50 border border-gray-200 overflow-hidden">
                             <img

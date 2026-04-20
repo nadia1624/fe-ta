@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
   ArrowLeft, ClipboardList, Calendar, MapPin, Clock, User,
-  Loader2, AlertCircle, Users, FileText, TrendingUp
+  Loader2, AlertCircle, Users, FileText, TrendingUp, Image
 } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
 
@@ -343,7 +343,7 @@ export default function LaporanKegiatanJadwalDetailPage() {
                       {report.dokumentasi_laporan && (
                         <div>
                           <p className="text-xs text-gray-500 mb-1.5 flex items-center gap-1">
-                            🖼 Dokumentasi
+                            <Image className="w-3.5 h-3.5" /> Dokumentasi
                           </p>
                           <div className="w-full rounded-lg bg-gray-50 border border-gray-200 overflow-hidden shadow-inner">
                             <img

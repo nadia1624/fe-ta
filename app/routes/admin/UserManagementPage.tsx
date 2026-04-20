@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Plus, Edit, Trash2, Search, X, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { userApi, pimpinanApi, periodeApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 interface Pimpinan {
   id_pimpinan: string;
@@ -35,10 +35,8 @@ export default function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [userToDelete, setUserToDelete] = useState<any>(null);
 
   const [users, setUsers] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
@@ -72,7 +70,7 @@ export default function UserManagementPage() {
       if (rolesRes.success) setRoles(rolesRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
-      Swal.fire('Error', 'Gagal memuat data', 'error');
+      toast.error('Gagal memuat data');
     } finally {
       setIsLoading(false);
     }
@@ -155,35 +153,38 @@ export default function UserManagementPage() {
     setShowModal(true);
   };
 
-  const handleDelete = (user: any) => {
-    setUserToDelete(user);
-    setShowDeleteModal(true);
-  };
+  const handleDelete = async (user: any) => {
+    // Prevent deleting Admin
+    if (user.role?.nama_role === 'Admin') {
+      return toast.error('Hapus Ditolak', 'User dengan role Admin tidak dapat dihapus');
+    }
 
-  const confirmDelete = async () => {
-    if (userToDelete) {
-      // Prevent deleting Admin
-      if (userToDelete.role?.nama_role === 'Admin') {
-        Swal.fire('Error', 'User dengan role Admin tidak dapat dihapus', 'error');
-        setShowDeleteModal(false);
-        setUserToDelete(null);
-        return;
-      }
+    const { isConfirmed } = await toast.confirm(
+      'Konfirmasi Hapus User',
+      `Apakah Anda yakin ingin menghapus user ${user.nama}?`,
+      'danger',
+      `<div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-left mt-4 space-y-1">
+        <p class="text-sm font-bold text-gray-900">${user.nama}</p>
+        <p class="text-xs text-gray-500">${user.email}</p>
+        <p class="text-xs text-gray-500 font-medium">${user.role?.nama_role} - ${user.instansi}</p>
+      </div>
+      <p class="text-xs text-red-500 font-medium mt-3 text-center italic">Tindakan ini tidak dapat dikembalikan!</p>`
+    );
+
+    if (isConfirmed) {
       setIsLoading(true);
       try {
-        const res = await userApi.delete(userToDelete.id_user);
+        const res = await userApi.delete(user.id_user);
         if (res.success) {
-          Swal.fire('Berhasil!', 'User telah dihapus.', 'success');
+          toast.success('Berhasil!', 'User telah dihapus.');
           fetchData();
         } else {
-          Swal.fire('Gagal', res.message, 'error');
+          toast.error('Gagal', res.message);
         }
       } catch (error: any) {
-        Swal.fire('Error', error.message || 'Gagal menghapus user', 'error');
+        toast.error('Error', error.message || 'Gagal menghapus user');
       } finally {
         setIsLoading(false);
-        setShowDeleteModal(false);
-        setUserToDelete(null);
       }
     }
   };
@@ -195,7 +196,7 @@ export default function UserManagementPage() {
     // Password Validation
     if (modalMode === 'add' || (modalMode === 'edit' && formData.password)) {
       if (formData.password !== formData.confirm_password) {
-        Swal.fire('Error', 'Password dan konfirmasi password tidak cocok!', 'error');
+        toast.error('Gagal', 'Password dan konfirmasi password tidak cocok!');
         setIsLoading(false);
         return;
       }
@@ -215,20 +216,14 @@ export default function UserManagementPage() {
       }
 
       if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: `User berhasil ${modalMode === 'add' ? 'ditambahkan' : 'diupdate'}!`,
-          timer: 1500,
-          showConfirmButton: false
-        });
+        toast.success('Berhasil!', `User berhasil ${modalMode === 'add' ? 'ditambahkan' : 'diupdate'}!`);
         setShowModal(false);
         fetchData();
       } else {
-        Swal.fire('Gagal', response.message, 'error');
+        toast.error('Gagal', response.message);
       }
     } catch (error: any) {
-      Swal.fire('Error', error.message || 'Terjadi kesalahan', 'error');
+      toast.error('Error', error.message || 'Terjadi kesalahan');
     } finally {
       setIsLoading(false);
     }
@@ -629,74 +624,7 @@ export default function UserManagementPage() {
         </div>
       )}
 
-      {/* Modal Delete User */}
-      {showDeleteModal && userToDelete && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Konfirmasi Hapus User
-                </h3>
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Icon & Message */}
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-700 mb-2">
-                      Apakah Anda yakin ingin menghapus user berikut?
-                    </p>
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-1">
-                      <p className="text-sm font-semibold text-gray-900">{userToDelete.nama}</p>
-                      <p className="text-xs text-gray-600">{userToDelete.email}</p>
-                      <p className="text-xs text-gray-600">{userToDelete.role?.nama_role} - {userToDelete.instansi}</p>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Warning */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800">
-                    <strong>Peringatan:</strong> Data yang dihapus tidak dapat dikembalikan. Pastikan Anda yakin dengan tindakan ini.
-                  </p>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowDeleteModal(false)}
-                    className="flex-1"
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={confirmDelete}
-                    className="flex-1"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Hapus User
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

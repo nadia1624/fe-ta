@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone, MapPin, Briefcase, Building, Info, ChevronLeft } from 'lucide-react';
 import { authApi } from '../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../lib/swal';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -57,21 +57,11 @@ export default function RegisterPage() {
       });
 
       if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Registrasi Berhasil!',
-          text: 'Akun Anda telah berhasil dibuat. Silakan login untuk mulai mengajukan permohonan agenda.',
-          confirmButtonText: 'Login Sekarang',
-          confirmButtonColor: '#2563eb',
-          allowOutsideClick: false,
-          customClass: {
-            popup: 'rounded-2xl',
-            confirmButton: 'rounded-xl font-bold px-8 py-3'
-          }
-        }).then((result) => {
-          if (result.isConfirmed) {
-            navigate('/login');
-          }
+        toast.success(
+          'Registrasi Berhasil!',
+          'Akun Anda telah berhasil dibuat. Silakan login untuk mulai mengajukan permohonan agenda.'
+        ).then(() => {
+          navigate('/login');
         });
       } else {
         setError(response.message || 'Registrasi gagal');

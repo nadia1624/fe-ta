@@ -1,6 +1,5 @@
-import { Bell, User, LogOut, Menu } from 'lucide-react';
+import { User, LogOut, Menu } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { Button } from '../ui/button';
 import { useLocation, useNavigate } from 'react-router';
 
 interface TopBarProps {
@@ -16,7 +15,7 @@ interface TopBarProps {
 }
 
 export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps) {
-  const [notificationCount] = useState(3);
+
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,14 +38,8 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
   // Get page title based on current route
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path.includes('/admin')) return 'Admin';
-    if (path.includes('/sespri')) return 'Sespri';
-    if (path.includes('/kasubag-protokol')) return 'Kasubag Protokol';
-    if (path.includes('/kasubag-media')) return 'Kasubag Media';
-    if (path.includes('/ajudan')) return 'Ajudan';
-    if (path.includes('/staf-protokol')) return 'Staf Protokol';
-    if (path.includes('/staf-media')) return 'Staf Media';
-    if (path.includes('/pemohon')) return 'Pemohon';
+    
+    // 1. Specific Feature Paths (Highest Priority)
     if (path.includes('/agenda-pimpinan')) return 'Agenda Pimpinan';
     if (path.includes('/surat-permohonan')) return 'Surat Permohonan';
     if (path.includes('/penugasan')) return 'Penugasan Staf';
@@ -62,12 +55,23 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
     if (path.includes('/konfirmasi-agenda')) return 'Konfirmasi Agenda';
     if (path.includes('/assign-staff')) return 'Assign Staf';
     if (path.includes('/review-draft')) return 'Review Draft Berita';
-    if (path.includes('/my-assignments')) return   'Tugas Saya';
+    if (path.includes('/tugas-saya')) return 'Tugas Saya';
     if (path.includes('/submit-report')) return 'Submit Laporan';
     if (path.includes('/riwayat-permohonan')) return 'Riwayat Permohonan';
     if (path.includes('/submit-request')) return 'Ajukan Permohonan';
     if (path.includes('/upload-draft-berita')) return 'Upload Draft Berita';
     if (path.includes('/profile')) return 'Profil Saya';
+
+    // 2. Generic Role Dashboard Paths (Lowest Priority)
+    if (path.includes('/admin')) return 'Admin';
+    if (path.includes('/sespri')) return 'Sespri';
+    if (path.includes('/kasubag-protokol')) return 'Kasubag Protokol';
+    if (path.includes('/kasubag-media')) return 'Kasubag Media';
+    if (path.includes('/ajudan')) return 'Ajudan';
+    if (path.includes('/staf-protokol')) return 'Staf Protokol';
+    if (path.includes('/staf-media')) return 'Staf Media';
+    if (path.includes('/pemohon')) return 'Pemohon';
+
     return 'Dashboard';
   };
 
@@ -94,14 +98,7 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-          <button className="relative p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-            <Bell className="w-5 h-5" />
-            {notificationCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {notificationCount}
-              </span>
-            )}
-          </button>
+
 
           <div className="relative" ref={dropdownRef}>
             <button

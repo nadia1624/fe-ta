@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Calendar, List, CalendarDays, Eye, X, Search, Filter, UserCheck, RefreshCw, Clock, Edit2, FileText, Download, MapPin, User, Phone, AlertCircle } from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function AgendaPimpinanPage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -100,17 +100,19 @@ export default function AgendaPimpinanPage() {
     if (!selectedAgenda || !selectedPimpinanItem) return;
 
     try {
-      const data = new FormData();
-      data.append('status_kehadiran', attendanceForm.status_kehadiran);
+      const data: any = {
+        status_kehadiran: attendanceForm.status_kehadiran,
+        keterangan: attendanceForm.keterangan
+      };
+      
       if (attendanceForm.status_kehadiran === 'diwakilkan') {
         if (attendanceForm.representative_type === 'pimpinan') {
-          data.append('id_jabatan_perwakilan', attendanceForm.id_jabatan_perwakilan);
-          data.append('id_periode_perwakilan', attendanceForm.id_periode_perwakilan);
+          data.id_jabatan_perwakilan = attendanceForm.id_jabatan_perwakilan;
+          data.id_periode_perwakilan = attendanceForm.id_periode_perwakilan;
         } else {
-          data.append('nama_perwakilan', attendanceForm.nama_perwakilan);
+          data.nama_perwakilan = attendanceForm.nama_perwakilan;
         }
       }
-      data.append('keterangan', attendanceForm.keterangan);
 
       const res = await agendaApi.updateLeaderAttendance(
         selectedAgenda.id_agenda,
@@ -120,7 +122,7 @@ export default function AgendaPimpinanPage() {
       );
 
       if (res.success) {
-        Swal.fire('Berhasil', 'Status kehadiran diperbarui', 'success');
+        toast.success('Berhasil', 'Status kehadiran diperbarui');
         setShowAttendanceForm(false);
         // Refresh
         const [assignRes, agendaRes] = await Promise.all([
@@ -148,21 +150,14 @@ export default function AgendaPimpinanPage() {
           if (updated) setSelectedAgenda(updated);
         }
       } else {
-        // Check if it's a schedule conflict (409)
         if (res.message?.toLowerCase().includes('bentrok')) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Jadwal Bentrok!',
-            html: `<p class="text-sm text-gray-600">${res.message}</p>`,
-            confirmButtonColor: '#f59e0b',
-            confirmButtonText: 'Mengerti'
-          });
+          toast.warning('Jadwal Bentrok!', res.message);
         } else {
-          Swal.fire('Gagal', res.message, 'error');
+          toast.error('Gagal', res.message);
         }
       }
     } catch (error) {
-      Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+      toast.error('Error', 'Terjadi kesalahan sistem');
     }
   };
 
@@ -231,7 +226,6 @@ export default function AgendaPimpinanPage() {
       const isActuallyRepresentative = sap.id_jabatan_diusulkan !== sap.id_jabatan_hadir;
 
       if (assignment && isActuallyRepresentative) {
-        // Find the invitation record for the leader being represented to get the disposisi letter
         const originalInvitation = agenda.agendaPimpinans?.find((ap: any) =>
           ap.id_jabatan === sap.id_jabatan_diusulkan && ap.id_periode === sap.id_periode_diusulkan
         );
@@ -641,7 +635,7 @@ export default function AgendaPimpinanPage() {
                         )}
                         {stat.type === 'representative' && (
                           <div className="space-y-1">
-                            <p className="text-[10px] text-indigo-500 italic">Disposisi oleh: {stat.representing}</p>
+                            <p className="text-[10px] text-indigo-500 italic">Mandat dari: {stat.representing}</p>
                           </div>
                         )}
                       </div>

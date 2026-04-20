@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { periodeApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function PeriodeManagementPage() {
   const [showModal, setShowModal] = useState(false);
@@ -33,11 +33,7 @@ export default function PeriodeManagementPage() {
         setPeriodeList(response.data);
       } else {
         setError(response.message);
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal Memuat Data',
-          text: response.message,
-        });
+        toast.error('Gagal Memuat Data', response.message);
       }
     } catch (err: any) {
       const errorMessage = err.message || 'Gagal memuat data periode';
@@ -79,12 +75,11 @@ export default function PeriodeManagementPage() {
   };
 
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Convert status to backend format if needed. 
-    // Backend expects 'aktif' or 'nonaktif' (lowercase).
     const payload = {
       nama_periode: formData.periode,
       tanggal_mulai: formData.tanggal_mulai,
@@ -102,36 +97,18 @@ export default function PeriodeManagementPage() {
       }
 
       if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: `Periode berhasil ${modalMode === 'add' ? 'ditambahkan' : 'diupdate'}!`,
-          timer: 2000,
-          showConfirmButton: false
-        });
+        toast.success('Berhasil!', `Periode berhasil ${modalMode === 'add' ? 'ditambahkan' : 'diupdate'}!`);
         setShowModal(false);
         fetchPeriode();
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal',
-          text: response.message,
-        });
+        toast.error('Gagal', response.message);
       }
     } catch (err: any) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Terjadi Kesalahan',
-        text: err.message,
-      });
+      toast.error('Terjadi Kesalahan', err.message);
     } finally {
       setIsLoading(false);
     }
   };
-
-
-  const totalPages = Math.ceil(periodeList.length / ITEMS_PER_PAGE);
-  const paginatedPeriode = periodeList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -139,6 +116,9 @@ export default function PeriodeManagementPage() {
       [e.target.name]: e.target.value
     });
   };
+
+  const totalPages = Math.ceil(periodeList.length / ITEMS_PER_PAGE);
+  const paginatedPeriode = periodeList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -178,7 +158,7 @@ export default function PeriodeManagementPage() {
                 <TableBody>
                   {periodeList.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-4">Tidak ada data periode</TableCell>
+                      <TableCell colSpan={7} className="text-center py-4">Tidak ada data periode</TableCell>
                     </TableRow>
                   ) : (
                     paginatedPeriode.map((periode, index) => (
@@ -215,6 +195,7 @@ export default function PeriodeManagementPage() {
                           >
                             <Edit2 className="w-4 h-4" />
                           </Button>
+
                         </div>
                       </TableCell>
                     </TableRow>
@@ -373,8 +354,6 @@ export default function PeriodeManagementPage() {
           </Card>
         </div>
       )}
-
-
     </div>
   );
 }

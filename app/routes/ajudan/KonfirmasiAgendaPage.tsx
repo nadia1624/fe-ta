@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/button';
 import { CheckCircle, XCircle, Eye, X, UserCheck, FileText, RefreshCw, Download, Calendar} from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function KonfirmasiAgendaPage() {
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ export default function KonfirmasiAgendaPage() {
       }
     } catch (error) {
       console.error('Failed to fetch data', error);
-      Swal.fire('Error', 'Gagal memuat data dari server', 'error');
+      toast.error('Gagal memuat data dari server');
     } finally {
       setLoading(false);
     }
@@ -118,19 +118,20 @@ export default function KonfirmasiAgendaPage() {
     if (!selectedAgenda || !selectedAp) return;
 
     try {
-      const data = new FormData();
       const finalStatus = konfirmasiData.kehadiran === 'wakilkan' ? 'diwakilkan' : (konfirmasiData.kehadiran === 'tolak' ? 'tidak_hadir' : 'hadir');
-      data.append('status_kehadiran', finalStatus);
+      const data: any = {
+        status_kehadiran: finalStatus,
+        keterangan: `${konfirmasiData.alasan ? konfirmasiData.alasan + '. ' : ''}${konfirmasiData.catatan}`
+      };
 
       if (finalStatus === 'diwakilkan') {
         if (konfirmasiData.perwakilan_tipe === 'pimpinan') {
-          data.append('id_jabatan_perwakilan', konfirmasiData.perwakilan_id_jabatan);
-          data.append('id_periode_perwakilan', konfirmasiData.perwakilan_id_periode);
+          data.id_jabatan_perwakilan = konfirmasiData.perwakilan_id_jabatan;
+          data.id_periode_perwakilan = konfirmasiData.perwakilan_id_periode;
         } else {
-          data.append('nama_perwakilan', konfirmasiData.perwakilan_nama);
+          data.nama_perwakilan = konfirmasiData.perwakilan_nama;
         }
       }
-      data.append('keterangan', `${konfirmasiData.alasan ? konfirmasiData.alasan + '. ' : ''}${konfirmasiData.catatan}`);
 
       const res = await agendaApi.updateLeaderAttendance(
         selectedAgenda.id_agenda,
@@ -140,24 +141,18 @@ export default function KonfirmasiAgendaPage() {
       );
 
       if (res.success) {
-        Swal.fire('Berhasil', 'Konfirmasi kehadiran berhasil disimpan', 'success');
+        toast.success('Berhasil', 'Konfirmasi kehadiran berhasil disimpan');
         setShowKonfirmasiModal(false);
         fetchData();
       } else {
         if (res.message?.toLowerCase().includes('bentrok')) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Jadwal Bentrok!',
-            html: `<p class="text-sm text-gray-600">${res.message}</p>`,
-            confirmButtonColor: '#f59e0b',
-            confirmButtonText: 'Mengerti'
-          });
+          toast.warning('Jadwal Bentrok!', undefined, `<p class="text-sm text-gray-600">${res.message}</p>`);
         } else {
-          Swal.fire('Gagal', res.message, 'error');
+          toast.error('Gagal', res.message);
         }
       }
     } catch (error) {
-      Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+      toast.error('Error', 'Terjadi kesalahan sistem');
     }
   };
 

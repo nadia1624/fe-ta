@@ -16,7 +16,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { beritaApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function ReviewDraftBeritaPage() {
   const { id } = useParams();
@@ -56,11 +56,7 @@ export default function ReviewDraftBeritaPage() {
 
   const handleReview = async (status: 'approved' | 'review') => {
     if (status === 'review' && !catatan.trim()) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Catatan Diperlukan',
-        text: 'Mohon berikan catatan revisi agar staf tahu apa yang perlu diperbaiki.',
-      });
+      toast.warning('Catatan Diperlukan', 'Mohon berikan catatan revisi agar staf tahu apa yang perlu diperbaiki.');
       return;
     }
 
@@ -68,41 +64,24 @@ export default function ReviewDraftBeritaPage() {
       ? 'Setujui draft berita ini untuk dipublikasikan?'
       : 'Kirim kembali draft ini untuk direvisi?';
 
-    const result = await Swal.fire({
-      title: 'Konfirmasi',
-      text: confirmText,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Ya, Lanjutkan',
-      cancelButtonText: 'Batal',
-      confirmButtonColor: status === 'approved' ? '#10b981' : '#f59e0b',
-    });
+    const { isConfirmed } = await toast.confirm(
+      'Konfirmasi',
+      confirmText
+    );
 
-    if (result.isConfirmed) {
+    if (isConfirmed) {
       try {
         setSubmitting(true);
         const res = await beritaApi.reviewDraft(id!, { status_draft: status, catatan });
         if (res.success) {
-          await Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: res.message,
-          });
+          toast.success('Berhasil', res.message);
           // Refetch to get updated status and history
           fetchDraftDetail();
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Gagal',
-            text: res.message,
-          });
+          toast.error('Gagal', res.message);
         }
       } catch (err) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Kesalahan',
-          text: 'Terjadi kesalahan saat memproses permintaan',
-        });
+        toast.error('Kesalahan', 'Terjadi kesalahan saat memproses permintaan');
       } finally {
         setSubmitting(false);
       }

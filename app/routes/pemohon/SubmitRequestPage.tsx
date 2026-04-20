@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/pop
 import { cn } from '../../components/ui/utils';
 import moment from 'moment';
 import 'moment/locale/id';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 moment.locale('id');
 
@@ -66,7 +66,7 @@ export default function SubmitRequestPage() {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       if (selectedFile.size > 5 * 1024 * 1024) {
-        Swal.fire('Error', 'Ukuran file surat permohonan maksimal 5 MB', 'error');
+        toast.error('Gagal', 'Ukuran file surat permohonan maksimal 5 MB');
         e.target.value = '';
         setFile(null);
       } else {
@@ -79,27 +79,27 @@ export default function SubmitRequestPage() {
     e.preventDefault();
 
     if (selectedPimpinan.length === 0) {
-      return Swal.fire('Error', 'Pilih minimal satu pimpinan yang ingin diundang', 'error');
+      return toast.error('Gagal', 'Pilih minimal satu pimpinan yang ingin diundang');
     }
 
     if (!formData.waktu_mulai || !formData.waktu_selesai) {
-      return Swal.fire('Error', 'Pilih waktu mulai dan selesai kegiatan', 'error');
+      return toast.error('Gagal', 'Pilih waktu mulai dan selesai kegiatan');
     }
 
     // Date validation: must be after today
     const today = moment().startOf('day');
     const selectedDate = moment(formData.tanggal_kegiatan);
     if (!selectedDate.isAfter(today)) {
-      return Swal.fire('Error', 'Tanggal kegiatan harus setelah hari ini (minimal besok)', 'error');
+      return toast.error('Gagal', 'Tanggal kegiatan harus setelah hari ini (minimal besok)');
     }
 
     // Time validation: end time > start time
     if (formData.waktu_selesai <= formData.waktu_mulai) {
-      return Swal.fire('Error', 'Waktu selesai tidak boleh lebih awal dari waktu mulai.', 'error');
+      return toast.error('Gagal', 'Waktu selesai tidak boleh lebih awal dari waktu mulai.');
     }
 
     if (file && file.size > 5 * 1024 * 1024) {
-      return Swal.fire('Error', 'Ukuran file surat permohonan maksimal 5 MB', 'error');
+      return toast.error('Gagal', 'Ukuran file surat permohonan maksimal 5 MB');
     }
 
     setIsLoading(true);
@@ -130,20 +130,15 @@ export default function SubmitRequestPage() {
       const response = await agendaApi.create(submitData);
 
       if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: 'Permohonan agenda berhasil diajukan.',
-          confirmButtonText: 'OK'
-        }).then(() => {
+        toast.success('Berhasil!', 'Permohonan agenda berhasil diajukan.').then(() => {
           // Reset form or redirect
           window.location.reload();
         });
       } else {
-        Swal.fire('Gagal', response.message, 'error');
+        toast.error('Gagal', response.message);
       }
     } catch (error: any) {
-      Swal.fire('Error', error.message, 'error');
+      toast.error('Error', error.message);
     } finally {
       setIsLoading(false);
     }

@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Button } from '../../components/ui/button';
-import { UserCheck, Eye, Search, FileText, X, Edit2, RefreshCw } from 'lucide-react';
+import { UserCheck, Eye, Search, FileText, X, Edit2, RefreshCw, User } from 'lucide-react';
 import { agendaApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function KonfirmasiPenggantiPage() {
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function KonfirmasiPenggantiPage() {
       }
     } catch (error) {
       console.error('Fetch error:', error);
-      Swal.fire('Error', 'Gagal mengambil data agenda', 'error');
+      toast.error('Gagal mengambil data');
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ export default function KonfirmasiPenggantiPage() {
       const res = await agendaApi.update(selectedAgenda.id_agenda, data);
 
       if (res.success) {
-        Swal.fire('Berhasil', 'Kontak Person dan Catatan berhasil diperbarui', 'success');
+        toast.success('Berhasil', 'Kontak Person dan Catatan berhasil diperbarui');
         setIsEditingNotes(false);
         fetchData();
 
@@ -82,10 +82,10 @@ export default function KonfirmasiPenggantiPage() {
           keterangan: editNotesForm.keterangan
         }));
       } else {
-        Swal.fire('Gagal', res.message, 'error');
+        toast.error('Gagal', res.message);
       }
     } catch (error) {
-      Swal.fire('Error', 'Terjadi kesalahan sistem saat menyimpan catatan', 'error');
+      toast.error('Error', 'Terjadi kesalahan sistem saat menyimpan catatan');
     }
   };
 
@@ -289,7 +289,7 @@ export default function KonfirmasiPenggantiPage() {
 
                         <div className="pt-2 border-t border-green-200 border-dashed">
                           <p className="text-xs text-blue-700 font-medium">Diwakilkan Kepada:</p>
-                          <p className="text-sm font-bold text-gray-900 mt-1">👤 {ap.nama_perwakilan}</p>
+                          <p className="text-sm font-bold text-gray-900 mt-1 flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-gray-400" /> {ap.nama_perwakilan}</p>
                           {ap.keterangan && (
                             <p className="text-xs text-gray-600 mt-1 italic">"{ap.keterangan}"</p>
                           )}

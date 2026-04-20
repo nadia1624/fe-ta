@@ -222,7 +222,7 @@ export default function TugasSayaPage() {
 
                   {/* Instruksi */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 md:p-3 mb-3">
-                    <p className="text-xs font-medium text-blue-900 mb-1">📋 Instruksi:</p>
+                    <p className="text-xs font-medium text-blue-900 mb-1 flex items-center gap-1.5"><ClipboardList className="w-3.5 h-3.5" /> Instruksi:</p>
                     <p className="text-xs text-blue-800">{tugas.instruksi}</p>
                   </div>
 

@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Calendar, Clock, ClipboardList } from 'lucide-react';
+import { Calendar, Clock, ClipboardList, MapPin, Camera } from 'lucide-react';
 
 interface AgendaHariIniListProps {
   agendas: any[];
@@ -104,7 +104,7 @@ export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
                 </p>
                 <p className="text-sm text-gray-500 flex items-center gap-3">
                   <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {agenda.waktu}</span>
-                  <span className="flex items-center gap-1">📍 {agenda.tempat}</span>
+                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {agenda.tempat}</span>
                 </p>
               </div>
             </div>
@@ -131,7 +131,7 @@ export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
                         <p className="text-sm text-gray-900 mb-2">{report.deskripsi}</p>
                         <div className="flex items-center gap-2 text-xs text-gray-600">
                           <span className="inline-flex items-center gap-1">
-                            📷 {report.foto} Foto
+                            <Camera className="w-3.5 h-3.5" /> {report.foto} Foto
                           </span>
                         </div>
                       </div>

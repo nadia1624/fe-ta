@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Plus, X, UserPlus, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function AssignStaffPage() {
   const [showModal, setShowModal] = useState(false);
@@ -41,12 +41,7 @@ export default function AssignStaffPage() {
 
   const handleAssign = (agenda: any) => {
     if (isPastAgenda(agenda.tanggal_kegiatan, agenda.waktu_selesai)) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Agenda Terlewat',
-        text: 'Maaf, agenda ini sudah melewati jadwal pimpinan dan tidak dapat ditugaskan lagi.',
-        confirmButtonColor: '#2563eb'
-      });
+      toast.info('Agenda Terlewat', 'Maaf, agenda ini sudah melewati jadwal pimpinan dan tidak dapat ditugaskan lagi.');
       return;
     }
     setSelectedSlot(agenda);
@@ -92,40 +87,19 @@ export default function AssignStaffPage() {
 
       if (res.success) {
         setShowModal(false);
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: 'Staf protokol berhasil ditugaskan untuk seluruh slot agenda ini',
-          confirmButtonColor: '#2563eb'
-        });
+        toast.success('Berhasil!', 'Staf protokol berhasil ditugaskan untuk seluruh slot agenda ini');
         fetchData();
       } else {
         // Check if it's a schedule conflict (409)
         if (res.message?.toLowerCase().includes('bentrok')) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Jadwal Staf Bentrok!',
-            html: `<p style="font-size: 14px; color: #4b5563;">${res.message}</p>`,
-            confirmButtonColor: '#f59e0b',
-            confirmButtonText: 'Mengerti'
-          });
+          toast.warning('Jadwal Staf Bentrok!', res.message);
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Gagal',
-            text: 'Gagal menugaskan staf: ' + res.message,
-            confirmButtonColor: '#2563eb'
-          });
+          toast.error('Gagal', 'Gagal menugaskan staf: ' + res.message);
         }
       }
     } catch (error) {
       console.error('Error submitting assignment:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Terjadi kesalahan sistem saat mencoba menugaskan staf',
-        confirmButtonColor: '#2563eb'
-      });
+      toast.error('Error', 'Terjadi kesalahan sistem saat mencoba menugaskan staf');
     } finally {
       setSubmitting(false);
     }

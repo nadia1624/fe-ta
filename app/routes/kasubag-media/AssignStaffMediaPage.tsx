@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Plus, X, UserPlus, Loader2, AlertCircle, Search } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function AssignStaffMediaPage() {
   const [showModal, setShowModal] = useState(false);
@@ -50,12 +50,7 @@ export default function AssignStaffMediaPage() {
 
   const handleAssign = (agenda: any) => {
     if (isPastAgenda(agenda.tanggal_kegiatan, agenda.waktu_selesai)) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Agenda Terlewat',
-        text: 'Maaf, agenda ini sudah melewati jadwal pimpinan dan tidak dapat ditugaskan lagi.',
-        confirmButtonColor: '#3b82f6'
-      });
+      toast.info('Agenda Terlewat', 'Maaf, agenda ini sudah melewati jadwal pimpinan dan tidak dapat ditugaskan lagi.');
       return;
     }
     setSelectedAgenda(agenda);
@@ -102,12 +97,7 @@ export default function AssignStaffMediaPage() {
       });
 
       if (res.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: 'Staf media berhasil ditugaskan.',
-          confirmButtonColor: '#3b82f6'
-        });
+        toast.success('Berhasil!', 'Staf media berhasil ditugaskan.');
 
         // Remove assigned agenda from list
         setAgendaList(prev => prev.filter(a => a.id_agenda !== selectedAgenda.id_agenda));
@@ -115,29 +105,13 @@ export default function AssignStaffMediaPage() {
       } else {
         // Check if it's a schedule conflict (409)
         if (res.message?.toLowerCase().includes('bentrok')) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Jadwal Staf Bentrok!',
-            html: `<p style="font-size: 14px; color: #4b5563;">${res.message}</p>`,
-            confirmButtonColor: '#f59e0b',
-            confirmButtonText: 'Mengerti'
-          });
+          toast.warning('Jadwal Staf Bentrok!', res.message);
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Gagal',
-            text: res.message || 'Gagal menugaskan staf',
-            confirmButtonColor: '#9333ea'
-          });
+          toast.error('Gagal', res.message || 'Gagal menugaskan staf');
         }
       }
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Terjadi kesalahan saat menghubungi server',
-        confirmButtonColor: '#9333ea'
-      });
+      toast.error('Error', 'Terjadi kesalahan saat menghubungi server');
     } finally {
       setSubmitting(false);
     }

@@ -49,7 +49,7 @@ export default function LaporanKegiatanStafMediaPage() {
     const matchesPimpinan = filterPimpinan === 'all' ||
       tugas.pimpinans.some((p: any) => p.nama_pimpinan === filterPimpinan);
 
-    const matchesStatus = filterStatus === 'all' || 
+    const matchesStatus = filterStatus === 'all' ||
       (filterStatus === 'selesai' && tugas.status === 'selesai') ||
       (filterStatus === 'proses' && (tugas.status === 'proses' || tugas.status === 'progress')) ||
       (filterStatus === 'belum' && (tugas.status === 'pending' || tugas.status === 'belum'));

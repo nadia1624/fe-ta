@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { ArrowRight, Search, Filter, TrendingUp, User, Clock, CheckCircle } from 'lucide-react';
+import { ArrowRight, Search, Filter, TrendingUp, User, Clock, CheckCircle, Calendar, MapPin } from 'lucide-react';
 import CustomSelect from '../../components/ui/CustomSelect';
 
 export default function LaporanKegiatanStafProtokolPage() {
@@ -192,8 +192,7 @@ export default function LaporanKegiatanStafProtokolPage() {
             </div>
           ) : (
             <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
@@ -223,11 +222,11 @@ export default function LaporanKegiatanStafProtokolPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium text-gray-900">{item.judul_kegiatan}</div>
+                          <div className="font-medium text-gray-900 text-sm">{item.judul_kegiatan}</div>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
                           <div className="text-sm">
-                            <div>{new Date(item.tanggal).toLocaleDateString('id-ID', {
+                            <div className="font-medium text-gray-900">{new Date(item.tanggal).toLocaleDateString('id-ID', {
                               day: '2-digit',
                               month: 'short',
                               year: 'numeric'
@@ -235,7 +234,9 @@ export default function LaporanKegiatanStafProtokolPage() {
                             <div className="text-gray-500">{item.waktu}</div>
                           </div>
                         </TableCell>
-                        <TableCell className="max-w-xs truncate">{item.tempat}</TableCell>
+                        <TableCell className="max-w-xs truncate">
+                          <span className="text-xs text-gray-600 font-medium">{item.tempat}</span>
+                        </TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-2">
                             <TrendingUp className="w-4 h-4 text-blue-600" />
@@ -256,46 +257,6 @@ export default function LaporanKegiatanStafProtokolPage() {
                     ))}
                   </TableBody>
                 </Table>
-              </div>
-
-              {/* Mobile Card View */}
-              <div className="md:hidden divide-y divide-gray-200">
-                {filteredData.map(item => (
-                  <div key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-sm text-gray-900 mb-1">{item.judul_kegiatan}</h4>
-                            <p className="text-xs text-gray-600">
-                              {item.pimpinans.map((p: any) => p.nama_pimpinan).join(', ')}
-                            </p>
-                          </div>
-                          {getStatusBadge(item.status_laporan)}
-                        </div>
-                        <div className="text-xs text-gray-500 space-y-1">
-                          <p>📅 {new Date(item.tanggal).toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                          })} · 🕒 {item.waktu}</p>
-                          <p>📍 {item.tempat}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-blue-600" />
-                          <span className="text-xs font-medium text-blue-600">{item.jumlah_progress} update</span>
-                        </div>
-                        <Link to={`/staff-protokol/tugas-detail/${item.id}`}>
-                          <Button variant="outline" size="sm">
-                            Lihat <ArrowRight className="w-3 h-3 ml-1" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
               </div>
 
               {filteredData.length === 0 && (

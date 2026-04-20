@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Search, Filter, Calendar, Clock, MapPin, User, Upload, X, FileText, Eye, Edit, Loader2, AlertCircle, TrendingUp, CheckCircle } from 'lucide-react';
+import { Search, Filter, Calendar, Clock, MapPin, User, Upload, X, FileText, Eye, Edit, Loader2, AlertCircle, TrendingUp, CheckCircle, ClipboardList, PencilLine } from 'lucide-react';
 import CustomSelect from '../../components/ui/CustomSelect';
 import MonthPicker from '../../components/ui/month-picker';
 import { penugasanApi, beritaApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function TugasSayaMediaPage() {
   const [tugasList, setTugasList] = useState<any[]>([]);
@@ -154,12 +154,12 @@ export default function TugasSayaMediaPage() {
     e.preventDefault();
 
     if (!uploadForm.judul_draft || !uploadForm.konten_draft) {
-      Swal.fire('Peringatan', 'Mohon lengkapi judul dan konten draft berita', 'warning');
+      toast.warning('Peringatan', 'Mohon lengkapi judul dan konten draft berita');
       return;
     }
 
     if (uploadForm.foto_dokumentasi.length + uploadForm.existing_dokumentasi.length < 3 && (!selectedTugas.draftBeritas || selectedTugas.draftBeritas.length === 0)) {
-      Swal.fire('Peringatan', 'Mohon upload minimal 3 foto dokumentasi', 'warning');
+      toast.warning('Peringatan', 'Mohon upload minimal 3 foto dokumentasi');
       return;
     }
 
@@ -180,14 +180,14 @@ export default function TugasSayaMediaPage() {
     try {
       const res = await beritaApi.submitDraft(formData);
       if (res.success) {
-        Swal.fire('Berhasil', 'Draft berita berhasil diserahkan untuk direview!', 'success');
+        toast.success('Berhasil', 'Draft berita berhasil diserahkan untuk direview!');
         setShowUploadModal(false);
         fetchTugas();
       } else {
-        Swal.fire('Gagal', res.message || 'Terjadi kesalahan saat mengunggah draft', 'error');
+        toast.error('Gagal', res.message || 'Terjadi kesalahan saat mengunggah draft');
       }
     } catch (err) {
-      Swal.fire('Error', 'Terjadi kesalahan jaringan', 'error');
+      toast.error('Error', 'Terjadi kesalahan jaringan');
     } finally {
       setIsSubmitting(false);
     }
@@ -388,18 +388,18 @@ export default function TugasSayaMediaPage() {
                         {/* Instruksi */}
                         {tugas.deskripsi_penugasan && (
                           <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1">📋 Instruksi Kasubag:</p>
+                            <p className="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1 flex items-center gap-1.5"><ClipboardList className="w-3.5 h-3.5" /> Instruksi Kasubag:</p>
                             <p className="text-xs text-blue-900/80 leading-relaxed">{tugas.deskripsi_penugasan}</p>
                           </div>
                         )}
-
+ 
                         {/* Feedback Revisi */}
                         {latestDraft?.status_draft === 'draft' && latestDraft.catatan && (
                           <div className="bg-red-50 border border-red-100 rounded-xl p-3">
-                            <p className="text-[10px] font-bold text-red-800 uppercase tracking-wider mb-1">📝 Catatan Revisi:</p>
+                            <p className="text-[10px] font-bold text-red-800 uppercase tracking-wider mb-1 flex items-center gap-1.5"><PencilLine className="w-3.5 h-3.5" /> Catatan Revisi:</p>
                             <p className="text-xs text-red-900/80 leading-relaxed">{latestDraft.catatan}</p>
                           </div>
-                        )}
+                        )}   
                       </div>
 
                       {/* Right Side - Actions */}

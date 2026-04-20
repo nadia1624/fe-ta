@@ -5,10 +5,10 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
   ArrowLeft, CheckCircle, ClipboardList, Calendar, MapPin, Clock, User,
-  Loader2, AlertCircle, Users, FileText, TrendingUp
+  Loader2, AlertCircle, Users, FileText, TrendingUp, Image
 } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 interface SlotStaff {
   tanggal: string;
@@ -101,46 +101,25 @@ export default function DetailPenugasanPage() {
   const handleUpdateStatus = async (newStatus: 'pending' | 'progress' | 'selesai') => {
     if (!id || !penugasan) return;
 
-    const result = await Swal.fire({
-      title: 'Konfirmasi',
-      text: `Apakah Anda yakin ingin menandai penugasan ini sebagai ${newStatus === 'selesai' ? 'Selesai' : 'Berlangsung'}?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#2563eb',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Ya, Lanjutkan',
-      cancelButtonText: 'Batal'
-    });
+    const { isConfirmed } = await toast.confirm(
+      'Konfirmasi',
+      `Apakah Anda yakin ingin menandai penugasan ini sebagai ${newStatus === 'selesai' ? 'Selesai' : 'Berlangsung'}?`
+    );
 
-    if (!result.isConfirmed) return;
+    if (!isConfirmed) return;
 
     setIsReviewing(true);
     try {
       const res = await penugasanApi.updateStatusPenugasan(id, newStatus);
       if (res.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: `Penugasan berhasil ditandai sebagai ${newStatus === 'selesai' ? 'Selesai' : 'Berlangsung'}.`,
-          confirmButtonColor: '#2563eb'
-        });
+        toast.success('Berhasil!', `Penugasan berhasil ditandai sebagai ${newStatus === 'selesai' ? 'Selesai' : 'Berlangsung'}.`);
         const statusLabel = newStatus === 'selesai' ? 'Selesai' : newStatus === 'progress' ? 'Berlangsung' : 'Belum Dimulai';
         setPenugasan(prev => prev ? { ...prev, status: newStatus, status_pelaksanaan: statusLabel } : prev);
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal',
-          text: res.message || 'Gagal memperbarui status',
-          confirmButtonColor: '#2563eb'
-        });
+        toast.error('Gagal', res.message || 'Gagal memperbarui status');
       }
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Terjadi kesalahan saat menghubungi server',
-        confirmButtonColor: '#2563eb'
-      });
+      toast.error('Error', 'Terjadi kesalahan saat menghubungi server');
     } finally {
       setIsReviewing(false);
     }
@@ -433,7 +412,7 @@ export default function DetailPenugasanPage() {
                       {report.dokumentasi_laporan && (
                         <div>
                           <p className="text-xs text-gray-500 mb-1.5 flex items-center gap-1">
-                            🖼 Dokumentasi
+                            <Image className="w-3.5 h-3.5" /> Dokumentasi
                           </p>
                           <div className="w-full rounded-lg bg-gray-50 border border-gray-200 overflow-hidden shadow-inner">
                             <img

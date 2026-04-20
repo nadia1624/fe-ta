@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { CheckCircle, Clock, XCircle, FileText, Eye, X, Search, Filter, Loader2, RefreshCw, Calendar, MapPin, Users, Edit3, RotateCcw, AlertTriangle, Upload, Check } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, FileText, Eye, X, Search, Filter, Loader2, RefreshCw, Calendar, MapPin, Users, Edit3, RotateCcw, AlertTriangle, Upload, Check, PencilLine } from 'lucide-react';
 import { agendaApi, pimpinanApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 type StatusType = 'pending' | 'revision' | 'rejected_sespri' | 'approved_sespri' | 'approved_ajudan' | 'delegated' | 'rejected_ajudan' | 'canceled' | 'completed';
 
@@ -107,7 +107,7 @@ export default function RiwayatPermohonanPage() {
     try {
       // 1. Validate File Size if new file is uploaded
       if (editFile && editFile.size > 5 * 1024 * 1024) {
-        Swal.fire('Peringatan', 'Ukuran file surat permohonan maksimal 5 MB', 'warning');
+        toast.warning('Peringatan', 'Ukuran file surat permohonan maksimal 5 MB');
         setEditLoading(false);
         return;
       }
@@ -120,7 +120,7 @@ export default function RiwayatPermohonanPage() {
       tomorrow.setHours(0, 0, 0, 0);
 
       if (selectedDate < tomorrow) {
-        Swal.fire('Peringatan', 'Tanggal kegiatan minimal harus besok', 'warning');
+        toast.warning('Peringatan', 'Tanggal kegiatan minimal harus besok');
         setEditLoading(false);
         return;
       }
@@ -128,7 +128,7 @@ export default function RiwayatPermohonanPage() {
       // 3. Validate Waktu (Mulai < Selesai)
       if (editForm.waktu_mulai && editForm.waktu_selesai) {
         if (editForm.waktu_mulai >= editForm.waktu_selesai) {
-          Swal.fire('Peringatan', 'Waktu mulai harus lebih dulu daripada waktu selesai', 'warning');
+          toast.warning('Peringatan', 'Waktu mulai harus lebih dulu daripada waktu selesai');
           setEditLoading(false);
           return;
         }
@@ -142,56 +142,39 @@ export default function RiwayatPermohonanPage() {
 
       const response = await agendaApi.update(selectedRequest.id_agenda, formData);
       if (response.success) {
-        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Permohonan berhasil direvisi dan dikirim ulang.', confirmButtonText: 'OK' });
+        toast.success('Berhasil!', 'Permohonan berhasil direvisi dan dikirim ulang.');
         setShowEditModal(false);
         fetchData();
       } else {
-        Swal.fire('Gagal', response.message || 'Gagal memperbarui', 'error');
+        toast.error('Gagal', response.message || 'Gagal memperbarui');
       }
     } catch (err) {
-      Swal.fire('Error', 'Gagal terhubung ke server', 'error');
+      toast.error('Error', 'Gagal terhubung ke server');
     } finally {
       setEditLoading(false);
     }
   };
 
   const handleCancel = async (request: any) => {
-    const result = await Swal.fire({
-      title: 'Apakah Anda yakin?',
-      text: "Permohonan yang dibatalkan tidak dapat diproses kembali.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Ya, Batalkan!',
-      cancelButtonText: 'Batal',
-      customClass: {
-        confirmButton: 'rounded-lg px-4 py-2',
-        cancelButton: 'rounded-lg px-4 py-2'
-      }
-    });
-
-    if (result.isConfirmed) {
+    const isConfirmed = await toast.confirm(
+      'Apakah Anda yakin?',
+      'Permohonan yang dibatalkan tidak dapat diproses kembali.',
+      'danger'
+    );
+ 
+    if (isConfirmed) {
       setLoading(true);
       try {
         const response = await agendaApi.cancel(request.id_agenda);
         if (response.success) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Dibatalkan!',
-            text: 'Permohonan Anda berhasil dibatalkan.',
-            confirmButtonText: 'OK',
-            customClass: {
-              confirmButton: 'rounded-lg px-4 py-2'
-            }
-          });
+          toast.success('Dibatalkan!', 'Permohonan Anda berhasil dibatalkan.');
           setShowDetailModal(false);
           fetchData();
         } else {
-          Swal.fire('Gagal', response.message || 'Gagal membatalkan permohonan', 'error');
+          toast.error('Gagal', response.message || 'Gagal membatalkan permohonan');
         }
       } catch (err) {
-        Swal.fire('Error', 'Terjadi kesalahan jaringan', 'error');
+        toast.error('Error', 'Terjadi kesalahan jaringan');
       } finally {
         setLoading(false);
       }
@@ -207,6 +190,7 @@ export default function RiwayatPermohonanPage() {
       status: (latest?.status_agenda || 'pending') as StatusType,
       catatan: latest?.catatan || null,
       tanggal: latest?.tanggal_status || null,
+      actor: latest?.sespri?.nama || null,
     };
   };
 
@@ -394,6 +378,11 @@ export default function RiwayatPermohonanPage() {
                       <div>
                         <strong className="block mb-0.5 uppercase tracking-wider text-[10px] opacity-70">Catatan Verifikasi</strong>
                         {statusInfo.catatan}
+                        {statusInfo.actor && (
+                          <span className="block mt-1 text-[10px] font-medium opacity-60">
+                            Diproses oleh: {statusInfo.actor}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -578,7 +567,7 @@ export default function RiwayatPermohonanPage() {
               {/* Catatan Revisi */}
               {getStatusInfo(selectedRequest).catatan && (
                 <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-xs font-semibold text-amber-800 mb-1">📝 Catatan dari Verifikator:</p>
+                  <p className="text-xs font-semibold text-amber-800 mb-1 flex items-center gap-1.5"><PencilLine className="w-3.5 h-3.5" /> Catatan dari Verifikator:</p>
                   <p className="text-sm text-amber-900">{getStatusInfo(selectedRequest).catatan}</p>
                 </div>
               )}

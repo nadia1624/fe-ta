@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Plus, Trash2, Search, X, UserCheck, ChevronLeft, ChevronRight, Filter, RefreshCw, AlertCircle } from 'lucide-react';
 import { userApi, pimpinanApi, periodeApi, ajudanAssignmentApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function AjudanAssignmentPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,7 +44,7 @@ export default function AjudanAssignmentPage() {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      Swal.fire('Error', 'Gagal memuat data penugasan', 'error');
+      toast.error('Gagal memuat data penugasan');
     } finally {
       setIsLoading(false);
     }
@@ -74,16 +74,12 @@ export default function AjudanAssignmentPage() {
   const handleToggleActive = async (item: any) => {
     if (item.status_aktif === 'aktif') return;
 
-    const result = await Swal.fire({
-      title: 'Aktifkan Penugasan?',
-      text: `Penugasan ajudan ${item.ajudan?.nama} untuk ${item.periodeJabatan?.pimpinan?.nama_pimpinan} akan menjadi aktif. Penugasan lainnya akan dinonaktifkan.`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Ya, Aktifkan!',
-      confirmButtonColor: '#2563eb'
-    });
+    const { isConfirmed } = await toast.confirm(
+      'Aktifkan Penugasan?',
+      `Penugasan ajudan ${item.ajudan?.nama} untuk ${item.periodeJabatan?.pimpinan?.nama_pimpinan} akan menjadi aktif. Penugasan lainnya akan dinonaktifkan.`
+    );
 
-    if (result.isConfirmed) {
+    if (isConfirmed) {
       try {
         const res = await ajudanAssignmentApi.setActive({
           id_user_ajudan: item.id_user_ajudan,
@@ -92,28 +88,25 @@ export default function AjudanAssignmentPage() {
         });
 
         if (res.success) {
-          Swal.fire('Berhasil!', 'Status penugasan telah diperbarui.', 'success');
+          toast.success('Berhasil!', 'Status penugasan telah diperbarui.');
           fetchData();
         } else {
-          Swal.fire('Gagal', res.message, 'error');
+          toast.error('Gagal', res.message);
         }
       } catch (error) {
-        Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+        toast.error('Error', 'Terjadi kesalahan sistem');
       }
     }
   };
 
   const handleDelete = async (item: any) => {
-    const result = await Swal.fire({
-      title: 'Hapus Penugasan?',
-      text: "Data penugasan akan dihapus permanen.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Ya, Hapus!',
-      confirmButtonColor: '#dc2626'
-    });
+    const { isConfirmed } = await toast.confirm(
+      'Hapus Penugasan?',
+      "Data penugasan akan dihapus permanen.",
+      'danger'
+    );
 
-    if (result.isConfirmed) {
+    if (isConfirmed) {
       try {
         const res = await ajudanAssignmentApi.delete({
           id_user_ajudan: item.id_user_ajudan,
@@ -122,13 +115,13 @@ export default function AjudanAssignmentPage() {
         });
 
         if (res.success) {
-          Swal.fire('Berhasil!', 'Penugasan telah dihapus.', 'success');
+          toast.success('Berhasil!', 'Penugasan telah dihapus.');
           fetchData();
         } else {
-          Swal.fire('Gagal', res.message, 'error');
+          toast.error('Gagal', res.message);
         }
       } catch (error) {
-        Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+        toast.error('Error', 'Terjadi kesalahan sistem');
       }
     }
   };
@@ -136,7 +129,7 @@ export default function AjudanAssignmentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.id_user_ajudan || !formData.id_pimpinan_jabatan) {
-      Swal.fire('Peringatan', 'Harap isi semua data yang wajib', 'warning');
+      toast.warning('Peringatan', 'Harap isi semua data yang wajib');
       return;
     }
 
@@ -151,14 +144,14 @@ export default function AjudanAssignmentPage() {
       });
 
       if (res.success) {
-        Swal.fire('Berhasil!', 'Penugasan baru telah ditambahkan.', 'success');
+        toast.success('Berhasil!', 'Penugasan baru telah ditambahkan.');
         setShowModal(false);
         fetchData();
       } else {
-        Swal.fire('Gagal', res.message, 'error');
+        toast.error('Gagal', res.message);
       }
     } catch (error: any) {
-      Swal.fire('Error', error.message || 'Terjadi kesalahan', 'error');
+      toast.error('Error', error.message || 'Terjadi kesalahan');
     } finally {
       setIsLoading(false);
     }

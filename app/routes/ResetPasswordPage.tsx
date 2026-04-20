@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Lock, Eye, EyeOff, Check, XCircle, ArrowRight } from 'lucide-react';
 import { authApi } from '../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../lib/swal';
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -34,12 +34,10 @@ export default function ResetPasswordPage() {
       const response = await authApi.resetPassword(token, password);
 
       if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: 'Kata sandi Anda telah diperbarui. Silakan masuk kembali.',
-          confirmButtonColor: '#2563eb'
-        }).then(() => {
+        toast.success(
+          'Berhasil!',
+          'Kata sandi Anda telah diperbarui. Silakan masuk kembali.'
+        ).then(() => {
           navigate('/login');
         });
       } else {

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { X, Camera, Upload, Loader2, SwitchCamera } from 'lucide-react';
 import { laporanKegiatanApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 interface TambahLaporanModalProps {
     isOpen: boolean;
@@ -175,30 +175,13 @@ export default function TambahLaporanModal({
             if (res.success) {
                 reset();
                 onClose();
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Progress laporan berhasil disimpan.',
-                    confirmButtonColor: '#3b82f6',
-                    timer: 2000,
-                    timerProgressBar: true,
-                });
+                toast.success('Berhasil!', 'Progress laporan berhasil disimpan.');
                 onSuccess();
             } else {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: res.message || 'Gagal menyimpan laporan. Silakan coba lagi.',
-                    confirmButtonColor: '#3b82f6',
-                });
+                toast.error('Gagal!', res.message || 'Gagal menyimpan laporan. Silakan coba lagi.');
             }
         } catch {
-            await Swal.fire({
-                icon: 'error',
-                title: 'Kesalahan Jaringan',
-                text: 'Terjadi kesalahan jaringan. Periksa koneksi internet Anda.',
-                confirmButtonColor: '#3b82f6',
-            });
+            toast.error('Kesalahan Jaringan', 'Terjadi kesalahan jaringan. Periksa koneksi internet Anda.');
         } finally {
             setSubmitting(false);
         }

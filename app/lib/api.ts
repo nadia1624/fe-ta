@@ -574,14 +574,15 @@ export const agendaApi = {
         return res.json();
     },
 
-    async updateLeaderAttendance(id_agenda: string, id_jabatan: string, id_periode: string, formData: FormData): Promise<ApiResponse> {
+    async updateLeaderAttendance(id_agenda: string, id_jabatan: string, id_periode: string, data: any): Promise<ApiResponse> {
         const token = getToken();
         const res = await fetch(`${API_BASE_URL}/agenda/pimpinan/${id_agenda}/${id_jabatan}/${id_periode}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
             },
-            body: formData,
+            body: JSON.stringify(data),
         });
         return res.json();
     },

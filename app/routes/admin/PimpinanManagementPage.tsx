@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Plus, Edit2, Search, UserPlus, Users, Mail, Calendar, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { pimpinanApi, periodeApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 export default function PimpinanManagementPage() {
   const [showModal, setShowModal] = useState(false);
@@ -59,7 +59,7 @@ export default function PimpinanManagementPage() {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      Swal.fire('Error', 'Gagal memuat data', 'error');
+      toast.error('Gagal memuat data');
     } finally {
       setIsLoading(false);
     }
@@ -128,20 +128,14 @@ export default function PimpinanManagementPage() {
     try {
       const response = await pimpinanApi.createOrUpdate(payload);
       if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: `Data pimpinan berhasil ${modalMode === 'add' ? 'ditambahkan' : 'diupdate'}!`,
-          timer: 2000,
-          showConfirmButton: false
-        });
+        toast.success('Berhasil!', `Data pimpinan berhasil ${modalMode === 'add' ? 'ditambahkan' : 'diupdate'}!`);
         setShowModal(false);
         fetchData();
       } else {
-        Swal.fire('Gagal', response.message, 'error');
+        toast.error('Gagal', response.message);
       }
     } catch (error: any) {
-      Swal.fire('Error', error.message, 'error');
+      toast.error('Error', error.message);
     } finally {
       setIsLoading(false);
     }
@@ -181,18 +175,12 @@ export default function PimpinanManagementPage() {
     try {
       const response = await pimpinanApi.resendSyncInvitation(id_pimpinan);
       if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: 'Undangan sinkronisasi telah dikirim ulang ke email pimpinan.',
-          timer: 2000,
-          showConfirmButton: false
-        });
+        toast.success('Berhasil!', 'Undangan sinkronisasi telah dikirim ulang ke email pimpinan.');
       } else {
-        Swal.fire('Gagal', response.message, 'error');
+        toast.error('Gagal', response.message);
       }
     } catch (error: any) {
-      Swal.fire('Error', error.message, 'error');
+      toast.error('Error', error.message);
     } finally {
       setIsLoading(false);
     }

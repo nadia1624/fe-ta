@@ -8,7 +8,7 @@ import {
     Loader2, AlertCircle, Users, FileText, TrendingUp, Newspaper, ExternalLink, RotateCcw
 } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 interface DokumentasiBerita {
     id_dokumentasi: string;
@@ -97,35 +97,24 @@ export default function DetailPenugasanMediaPage() {
     const handleTandaiSelesai = async () => {
         if (!id || !penugasan) return;
 
-        const result = await Swal.fire({
-            title: 'Konfirmasi',
-            text: 'Apakah Anda yakin ingin menandai penugasan ini sebagai Selesai?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#2563eb',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'Ya, Tandai Selesai',
-            cancelButtonText: 'Batal'
-        });
+        const { isConfirmed } = await toast.confirm(
+            'Konfirmasi',
+            'Apakah Anda yakin ingin menandai penugasan ini sebagai Selesai?'
+        );
 
-        if (!result.isConfirmed) return;
+        if (!isConfirmed) return;
 
         setIsUpdating(true);
         try {
             const res = await penugasanApi.updateStatusPenugasan(id, 'selesai');
             if (res.success) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Penugasan berhasil ditandai sebagai Selesai.',
-                    confirmButtonColor: '#2563eb'
-                });
+                toast.success('Berhasil!', 'Penugasan berhasil ditandai sebagai Selesai.');
                 setPenugasan(prev => prev ? { ...prev, status: 'selesai', status_pelaksanaan: 'Selesai' } : prev);
             } else {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Gagal memperbarui status', confirmButtonColor: '#2563eb' });
+                toast.error('Gagal', res.message || 'Gagal memperbarui status');
             }
         } catch {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat menghubungi server', confirmButtonColor: '#2563eb' });
+            toast.error('Error', 'Terjadi kesalahan saat menghubungi server');
         } finally {
             setIsUpdating(false);
         }

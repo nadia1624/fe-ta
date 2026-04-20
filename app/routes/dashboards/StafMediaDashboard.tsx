@@ -12,7 +12,9 @@ import {
   ArrowRight,
   Image,
   Loader2,
-  UserPlus
+  MapPin,
+  PencilLine,
+  CheckCircle2
 } from 'lucide-react';
 import { dashboardApi } from '../../lib/api';
 import { AgendaHariIniList } from '../../components/dashboard/AgendaHariIniList';
@@ -186,8 +188,8 @@ export default function StafMediaDashboard() {
                         <div className="space-y-1 mt-2">
                           <p className="text-xs text-gray-700"><span className="font-semibold text-blue-700">Pimpinan:</span> {task.pimpinan}</p>
                           <p className="text-[11px] text-gray-500 flex items-center gap-3">
-                            <span className="flex items-center gap-1">🕒 {task.waktu}</span>
-                            <span className="flex items-center gap-1">📍 {task.tempat}</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {task.waktu}</span>
+                            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {task.tempat}</span>
                           </p>
                         </div>
                       </div>
@@ -265,8 +267,12 @@ export default function StafMediaDashboard() {
                           : 'bg-green-50 text-green-700 border-green-200'
                           }`}>
                           <p className="flex items-start gap-1.5">
-                            <span className="font-bold shrink-0">
-                              {draft.status === 'revision' ? '📝 Revisi:' : '✅ Feedback:'}
+                            <span className="font-bold shrink-0 flex items-center gap-1">
+                              {draft.status === 'revision' ? (
+                                <><PencilLine className="w-3 h-3" /> Revisi:</>
+                              ) : (
+                                <><CheckCircle2 className="w-3 h-3" /> Feedback:</>
+                              )}
                             </span>
                             <span>{draft.feedback}</span>
                           </p>

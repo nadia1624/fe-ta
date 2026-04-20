@@ -18,7 +18,7 @@ import { TimePicker } from '../../components/ui/time-picker';
 import { cn } from '../../components/ui/utils';
 import moment from 'moment';
 import 'moment/locale/id';
-import Swal from 'sweetalert2';
+import { toast } from '../../lib/swal';
 
 moment.locale('id');
 
@@ -79,7 +79,7 @@ export default function AgendaPimpinanPage() {
       if (kaskpdRes.success) setKaskpdList(kaskpdRes.data);
     } catch (error) {
       console.error('Fetch error:', error);
-      Swal.fire('Error', 'Gagal mengambil data', 'error');
+      toast.error('Gagal mengambil data');
     } finally {
       setLoading(false);
     }
@@ -126,7 +126,7 @@ export default function AgendaPimpinanPage() {
       const res = await agendaApi.update(selectedAgenda.id_agenda, data);
 
       if (res.success) {
-        Swal.fire('Berhasil', 'Agenda berhasil diperbarui', 'success');
+        toast.success('Berhasil', 'Agenda berhasil diperbarui');
         setIsEditingNotes(false);
         fetchData(); // Refresh the main list
 
@@ -136,10 +136,10 @@ export default function AgendaPimpinanPage() {
           setSelectedAgenda(res.data);
         }
       } else {
-        Swal.fire('Gagal', res.message, 'error');
+        toast.error('Gagal', res.message);
       }
     } catch (error) {
-      Swal.fire('Error', 'Terjadi kesalahan sistem saat menyimpan catatan', 'error');
+      toast.error('Error', 'Terjadi kesalahan sistem saat menyimpan catatan');
     }
   };
 
@@ -173,24 +173,24 @@ export default function AgendaPimpinanPage() {
     // Date validation: must be after today
     const todayStr = moment().format('YYYY-MM-DD');
     if (formData.tanggal_kegiatan <= todayStr) {
-      return Swal.fire('Error', 'Tanggal kegiatan harus setelah hari ini (minimal besok)', 'error');
+      return toast.error('Error', 'Tanggal kegiatan harus setelah hari ini (minimal besok)');
     }
 
     // Time validation: end time > start time
     if (formData.waktu_selesai <= formData.waktu_mulai) {
-      return Swal.fire('Error', 'Waktu selesai tidak boleh lebih awal dari waktu mulai.', 'error');
+      return toast.error('Error', 'Waktu selesai tidak boleh lebih awal dari waktu mulai.');
     }
 
     // File validation
     if (!formData.file_surat) {
-      return Swal.fire('Peringatan', 'Surat permohonan wajib diupload', 'warning');
+      return toast.warning('Peringatan', 'Surat permohonan wajib diupload');
     }
     if (formData.file_surat.size > 5 * 1024 * 1024) {
-      return Swal.fire('Error', 'Ukuran file surat permohonan maksimal 5 MB', 'error');
+      return toast.error('Error', 'Ukuran file surat permohonan maksimal 5 MB');
     }
 
     if (selectedPimpinans.length === 0) {
-      return Swal.fire('Peringatan', 'Pilih minimal satu pimpinan', 'warning');
+      return toast.warning('Peringatan', 'Pilih minimal satu pimpinan');
     }
 
     try {
@@ -218,14 +218,14 @@ export default function AgendaPimpinanPage() {
 
       const res = await agendaApi.create(data);
       if (res.success) {
-        Swal.fire('Berhasil', 'Agenda berhasil ditambahkan (Langsung Disetujui)', 'success');
+        toast.success('Berhasil', 'Agenda berhasil ditambahkan (Langsung Disetujui)');
         setShowModal(false);
         fetchData();
       } else {
-        Swal.fire('Gagal', res.message, 'error');
+        toast.error('Gagal', res.message);
       }
     } catch (error) {
-      Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+      toast.error('Error', 'Terjadi kesalahan sistem');
     }
   };
 
@@ -806,7 +806,7 @@ export default function AgendaPimpinanPage() {
                           onChange={(e) => {
                             const file = e.target.files?.[0] || null;
                             if (file && file.size > 5 * 1024 * 1024) {
-                              Swal.fire('Error', 'Ukuran file surat permohonan maksimal 5 MB', 'error');
+                              toast.error('Error', 'Ukuran file surat permohonan maksimal 5 MB');
                               e.target.value = '';
                               setFormData(prev => ({ ...prev, file_surat: null }));
                             } else {

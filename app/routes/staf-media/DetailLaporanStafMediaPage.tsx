@@ -5,7 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
   ArrowLeft, ClipboardList, Calendar, MapPin, Clock, User,
-  Loader2, AlertCircle, Users, FileText, TrendingUp
+  Loader2, AlertCircle, Users, FileText, TrendingUp, Image
 } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
 
@@ -292,9 +292,9 @@ export default function DetailLaporanStafMediaPage() {
             <div>
               <div className="flex items-center gap-2">
                 <TrendingUp className={`w-5 h-5 ${themeText}`} />
-                <h3 className="text-base font-semibold text-gray-900">Timeline Progress Protokoler</h3>
+                <h3 className="text-base font-semibold text-gray-900">Timeline Progress Media</h3>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">Laporan kegiatan protokoler dari Tim Protokol</p>
+              <p className="text-xs text-gray-500 mt-0.5">Laporan kegiatan media dari Tim Media</p>
             </div>
             <Badge variant="info">{penugasan.laporanKegiatans?.length ?? 0} Update</Badge>
           </div>
@@ -343,7 +343,7 @@ export default function DetailLaporanStafMediaPage() {
                       {report.dokumentasi_laporan && (
                         <div>
                           <p className="text-xs text-gray-500 mb-1.5 flex items-center gap-1">
-                            🖼 Dokumentasi
+                            <Image className="w-3.5 h-3.5" /> Dokumentasi
                           </p>
                           <div className="w-full rounded-lg bg-gray-50 border border-gray-200 overflow-hidden shadow-inner">
                             <img

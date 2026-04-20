@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { User, Mail, Phone, Lock, Pencil, Trash2 } from 'lucide-react';
 import { authApi } from '../lib/api';
-import Swal from 'sweetalert2';
+import { toast } from '../lib/swal';
 import PhotoCropModal from '../components/ui/PhotoCropModal';
 
 interface UserProfile {
@@ -97,40 +97,35 @@ export default function ProfilePage() {
       const res = await authApi.uploadFoto(croppedFile);
       if (res.success && res.data?.foto_profil) {
         setProfileData(prev => ({ ...prev, foto_profil: res.data.foto_profil }));
-        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Foto profil berhasil diperbarui.', confirmButtonColor: '#2563eb' });
+        toast.success('Berhasil!', 'Foto profil berhasil diperbarui.');
       } else {
-        Swal.fire({ icon: 'error', title: 'Gagal!', text: res.message || 'Gagal mengupload foto.', confirmButtonColor: '#2563eb' });
+        toast.error('Gagal!', res.message || 'Gagal mengupload foto.');
       }
     } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat upload foto.', confirmButtonColor: '#2563eb' });
+      toast.error('Error', 'Terjadi kesalahan saat upload foto.');
     } finally {
       setUploadingPhoto(false);
     }
   };
 
   const handleDeleteFoto = async () => {
-    const confirm = await Swal.fire({
-      icon: 'warning',
-      title: 'Hapus Foto Profil?',
-      text: 'Foto profil Anda akan dihapus dan diganti dengan avatar default.',
-      showCancelButton: true,
-      confirmButtonText: 'Ya, Hapus',
-      cancelButtonText: 'Batal',
-      confirmButtonColor: '#dc2626',
-      cancelButtonColor: '#6b7280',
-    });
-    if (!confirm.isConfirmed) return;
-
+    const isConfirmed = await toast.confirm(
+      'Hapus Foto Profil?',
+      'Foto profil Anda akan dihapus dan diganti dengan avatar default.',
+      'danger'
+    );
+    if (!isConfirmed) return;
+ 
     try {
       const res = await authApi.deleteFoto();
       if (res.success) {
         setProfileData(prev => ({ ...prev, foto_profil: undefined }));
-        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Foto profil berhasil dihapus.', confirmButtonColor: '#2563eb' });
+        toast.success('Berhasil!', 'Foto profil berhasil dihapus.');
       } else {
-        Swal.fire({ icon: 'error', title: 'Gagal!', text: res.message || 'Gagal menghapus foto.', confirmButtonColor: '#2563eb' });
+        toast.error('Gagal!', res.message || 'Gagal menghapus foto.');
       }
     } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#2563eb' });
+      toast.error('Error', 'Terjadi kesalahan. Coba lagi.');
     }
   };
 
@@ -146,12 +141,12 @@ export default function ProfilePage() {
         setProfileData({ ...profileData, ...profileForm });
         localStorage.setItem('userName', profileForm.nama);
         setIsEditingProfile(false);
-        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Profil berhasil diperbarui.', confirmButtonColor: '#2563eb' });
+        toast.success('Berhasil!', 'Profil berhasil diperbarui.');
       } else {
-        Swal.fire({ icon: 'error', title: 'Gagal!', text: res.message || 'Gagal memperbarui profil.', confirmButtonColor: '#2563eb' });
+        toast.error('Gagal!', res.message || 'Gagal memperbarui profil.');
       }
     } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#2563eb' });
+      toast.error('Error', 'Terjadi kesalahan. Coba lagi.');
     }
   };
 
@@ -168,12 +163,12 @@ export default function ProfilePage() {
     e.preventDefault();
 
     if (passwordForm.new_password !== passwordForm.confirm_password) {
-      Swal.fire({ icon: 'warning', title: 'Tidak Cocok!', text: 'Password baru dan konfirmasi password tidak cocok.', confirmButtonColor: '#2563eb' });
+      toast.warning('Tidak Cocok!', 'Password baru dan konfirmasi password tidak cocok.');
       return;
     }
 
     if (passwordForm.new_password.length < 8) {
-      Swal.fire({ icon: 'warning', title: 'Terlalu Pendek!', text: 'Password baru minimal 8 karakter.', confirmButtonColor: '#2563eb' });
+      toast.warning('Terlalu Pendek!', 'Password baru minimal 8 karakter.');
       return;
     }
 
@@ -183,14 +178,14 @@ export default function ProfilePage() {
         new_password: passwordForm.new_password,
       });
       if (res.success) {
-        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Password berhasil diubah.', confirmButtonColor: '#2563eb' });
+        toast.success('Berhasil!', 'Password berhasil diubah.');
         setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
         setIsChangingPassword(false);
       } else {
-        Swal.fire({ icon: 'error', title: 'Gagal!', text: res.message || 'Gagal mengubah password.', confirmButtonColor: '#2563eb' });
+        toast.error('Gagal!', res.message || 'Gagal mengubah password.');
       }
     } catch {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#2563eb' });
+      toast.error('Error', 'Terjadi kesalahan. Coba lagi.');
     }
   };
 
