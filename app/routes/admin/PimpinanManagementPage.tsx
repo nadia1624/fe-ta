@@ -25,6 +25,7 @@ export default function PimpinanManagementPage() {
   const [inputMode, setInputMode] = useState<'new' | 'existing'>('new');
 
   const [formData, setFormData] = useState({
+    id_pimpinan: '',
     nama_pimpinan: '',
     jabatan: '',
     periode_id: '',
@@ -77,6 +78,7 @@ export default function PimpinanManagementPage() {
     setInputMode('new');
     setSelectedPimpinan(null);
     setFormData({
+      id_pimpinan: '',
       nama_pimpinan: '',
       jabatan: '',
       periode_id: '',
@@ -94,6 +96,7 @@ export default function PimpinanManagementPage() {
     setSelectedPimpinan(item);
 
     setFormData({
+      id_pimpinan: item.pimpinan?.id_pimpinan || '',
       nama_pimpinan: item.pimpinan?.nama_pimpinan || '',
       jabatan: item.jabatan?.id_jabatan || '',
       periode_id: item.periode?.id_periode || '',
@@ -111,11 +114,7 @@ export default function PimpinanManagementPage() {
     setIsLoading(true);
 
     const payload = {
-      // If mode is 'existing', we might just send ID, but current backend likely expects NIP/Data to find.
-      // Or we can send id_pimpinan if backend supports it.
-      // The current backend implementation of createOrUpdatePimpinan primarily looks up by NIP.
-      // So if 'existing', we must ensure NIP is populated from the selected pimpinan.
-
+      id_pimpinan: formData.id_pimpinan || undefined,
       nama_pimpinan: formData.nama_pimpinan,
       nip: formData.nip,
       email: formData.email,
@@ -159,6 +158,7 @@ export default function PimpinanManagementPage() {
     setIsDropdownOpen(false);
     setFormData({
       ...formData,
+      id_pimpinan: p.id_pimpinan,
       nama_pimpinan: p.nama_pimpinan,
       nip: p.nip,
       email: p.email,
@@ -436,10 +436,11 @@ export default function PimpinanManagementPage() {
                 )}
 
                 <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                  <label htmlFor="nama_pimpinan" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Nama Pimpinan <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="nama_pimpinan"
                     type="text"
                     name="nama_pimpinan"
                     value={formData.nama_pimpinan}
@@ -452,10 +453,11 @@ export default function PimpinanManagementPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="jabatan-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Jabatan <span className="text-red-500">*</span>
                     </label>
                     <select
+                      id="jabatan-select"
                       name="jabatan"
                       value={formData.jabatan}
                       onChange={handleChange}
@@ -471,10 +473,11 @@ export default function PimpinanManagementPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="periode-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Periode <span className="text-red-500">*</span>
                     </label>
                     <select
+                      id="periode-select"
                       name="periode_id"
                       value={formData.periode_id}
                       onChange={handleChange}
@@ -482,7 +485,9 @@ export default function PimpinanManagementPage() {
                       required
                     >
                       <option value="">Pilih Periode...</option>
-                      {periodeOptions.map((periode: any) => (
+                      {periodeOptions
+                        .filter((p: any) => modalMode === 'edit' || p.status_periode === 'aktif')
+                        .map((periode: any) => (
                         <option key={periode.id_periode} value={periode.id_periode}>
                           {periode.nama_periode}
                         </option>
@@ -492,10 +497,11 @@ export default function PimpinanManagementPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                  <label htmlFor="nip" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     NIP <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="nip"
                     type="text"
                     name="nip"
                     value={formData.nip}
@@ -508,10 +514,11 @@ export default function PimpinanManagementPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="email" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Email <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="email"
                       type="email"
                       name="email"
                       value={formData.email}
@@ -522,10 +529,11 @@ export default function PimpinanManagementPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="no_hp" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       No HP <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="no_hp"
                       type="tel"
                       name="no_hp"
                       value={formData.no_hp}
@@ -538,10 +546,11 @@ export default function PimpinanManagementPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                  <label htmlFor="status-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Status <span className="text-red-500">*</span>
                   </label>
                   <select
+                    id="status-select"
                     name="status"
                     value={formData.status}
                     onChange={handleChange}

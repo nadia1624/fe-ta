@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, Eye, X, UserCheck, FileText, RefreshCw, Download,
 import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 import { toast } from '../../lib/swal';
+import { isAgendaPast } from '../../lib/dateUtils';
 
 export default function KonfirmasiAgendaPage() {
   const [loading, setLoading] = useState(true);
@@ -279,7 +280,16 @@ export default function KonfirmasiAgendaPage() {
                       <Button variant="ghost" size="sm" onClick={() => handleDetail(task)} className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl">
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleKonfirmasi(task, task.targetedAp)} className="h-9 w-9 p-0 bg-green-50 text-green-600 hover:bg-green-100 rounded-xl">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleKonfirmasi(task, task.targetedAp)} 
+                        disabled={isAgendaPast(task.tanggal_kegiatan, task.waktu_selesai)}
+                        className={`h-9 w-9 p-0 rounded-xl ${isAgendaPast(task.tanggal_kegiatan, task.waktu_selesai) 
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                          : 'bg-green-50 text-green-600 hover:bg-green-100'}`}
+                        title={isAgendaPast(task.tanggal_kegiatan, task.waktu_selesai) ? "Agenda sudah selesai" : "Konfirmasi Kehadiran"}
+                      >
                         <UserCheck className="w-4 h-4" />
                       </Button>
                     </div>

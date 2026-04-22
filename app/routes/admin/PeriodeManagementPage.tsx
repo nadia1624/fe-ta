@@ -78,6 +78,12 @@ export default function PeriodeManagementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (new Date(formData.tanggal_mulai) > new Date(formData.tanggal_selesai)) {
+      toast.error('Gagal', 'Tanggal mulai tidak boleh lebih lama dari tanggal selesai');
+      return;
+    }
+
     setIsLoading(true);
 
     const payload = {
@@ -268,10 +274,11 @@ export default function PeriodeManagementPage() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                  <label htmlFor="nama_periode" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Nama Periode <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="nama_periode"
                     type="text"
                     name="periode"
                     value={formData.periode}
@@ -284,10 +291,11 @@ export default function PeriodeManagementPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="tanggal_mulai" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Tanggal Mulai <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="tanggal_mulai"
                       type="date"
                       name="tanggal_mulai"
                       value={formData.tanggal_mulai}
@@ -297,10 +305,11 @@ export default function PeriodeManagementPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="tanggal_selesai" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Tanggal Selesai <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="tanggal_selesai"
                       type="date"
                       name="tanggal_selesai"
                       value={formData.tanggal_selesai}

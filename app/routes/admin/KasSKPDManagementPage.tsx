@@ -275,10 +275,9 @@ export default function KasSKPDManagementPage() {
 
 
                 <div>
-                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
-                    Nama Instansi <span className="text-red-500">*</span>
-                  </label>
+                  <label htmlFor="nama_instansi" className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Nama Instansi</label>
                   <input
+                    id="nama_instansi"
                     type="text"
                     name="nama_instansi"
                     value={formData.nama_instansi}

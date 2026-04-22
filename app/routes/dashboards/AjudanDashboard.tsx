@@ -5,6 +5,7 @@ import { Badge } from '../../components/ui/badge';
 import { Link } from 'react-router';
 import { Button } from '../../components/ui/button';
 import { agendaApi, pimpinanApi } from '../../lib/api';
+import { isAgendaPast } from '../../lib/dateUtils';
 
 export default function AjudanDashboard() {
   const [loading, setLoading] = useState(true);
@@ -228,9 +229,13 @@ export default function AjudanDashboard() {
                         </p>
                         <p className="text-gray-500">{agenda.waktu_mulai.slice(0, 5)} - {agenda.waktu_selesai.slice(0, 5)} WIB</p>
                       </div>
-                      <Link to="/ajudan/agenda-pimpinan">
-                        <Button variant="ghost" size="sm" className="text-blue-600 h-8">Tentukan Kehadiran</Button>
-                      </Link>
+                      {isAgendaPast(agenda.tanggal_kegiatan, agenda.waktu_selesai) ? (
+                        <p className="text-[10px] font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded">Agenda Selesai</p>
+                      ) : (
+                        <Link to="/ajudan/konfirmasi-agenda">
+                          <Button variant="ghost" size="sm" className="text-blue-600 h-8">Tentukan Kehadiran</Button>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 );

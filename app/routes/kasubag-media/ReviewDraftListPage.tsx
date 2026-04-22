@@ -67,6 +67,8 @@ export default function ReviewDraftListPage() {
     const handleApprove = async (draft: any) => {
         const { isConfirmed } = await toast.confirm(
             'Setujui Draft Berita?',
+            '',
+            'warning',
             `Draft <strong>"${draft.judul_berita}"</strong> akan ditandai sebagai disetujui.`
         );
         if (!isConfirmed) return;

@@ -7,6 +7,7 @@ import { Calendar, List, CalendarDays, Eye, X, Search, Filter, UserCheck, Refres
 import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 import { toast } from '../../lib/swal';
+import { isAgendaPast } from '../../lib/dateUtils';
 
 export default function AgendaPimpinanPage() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -619,7 +620,14 @@ export default function AgendaPimpinanPage() {
                             </p>
                           </div>
                           {stat.type === 'invited' && (
-                            <Button variant="ghost" size="sm" className="h-7 text-[10px] text-blue-600 hover:text-blue-700 p-1" onClick={() => handleOpenAttendance(stat.raw_ap)}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className={`h-7 text-[10px] p-1 ${isAgendaPast(selectedAgenda.tanggal_kegiatan, selectedAgenda.waktu_selesai) ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700'}`} 
+                              disabled={isAgendaPast(selectedAgenda.tanggal_kegiatan, selectedAgenda.waktu_selesai)}
+                              onClick={() => handleOpenAttendance(stat.raw_ap)}
+                              title={isAgendaPast(selectedAgenda.tanggal_kegiatan, selectedAgenda.waktu_selesai) ? "Agenda sudah selesai, kehadiran tidak dapat diedit" : "Ubah status kehadiran"}
+                            >
                               <span className="mr-1">Edit Kehadiran</span> <Edit2 className="w-3 h-3" />
                             </Button>
                           )}

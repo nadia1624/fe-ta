@@ -36,9 +36,9 @@ export default function Sidebar({ currentRole, isOpen, onClose }: SidebarProps) 
     'Admin': [
       { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/admin/users', label: 'User Management', icon: Users },
-      { path: '/admin/ajudan-assignments', label: 'Penugasan Ajudan', icon: ClipboardList },
       { path: '/admin/periode', label: 'Periode Management', icon: Calendar },
       { path: '/admin/pimpinan', label: 'Pimpinan Management', icon: UserCheck },
+      { path: '/admin/ajudan-assignments', label: 'Penugasan Ajudan', icon: ClipboardList },
       { path: '/admin/kaskpd', label: 'KaSKPD Management', icon: Building2 },
     ],
     'Sespri': [

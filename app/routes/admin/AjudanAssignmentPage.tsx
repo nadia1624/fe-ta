@@ -352,8 +352,9 @@ export default function AjudanAssignmentPage() {
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Pilih Ajudan</label>
+                    <label htmlFor="ajudan-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Pilih Ajudan</label>
                     <select
+                        id="ajudan-select"
                         value={formData.id_user_ajudan}
                         onChange={(e) => setFormData({...formData, id_user_ajudan: e.target.value})}
                         className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
@@ -367,8 +368,9 @@ export default function AjudanAssignmentPage() {
                 </div>
 
                 <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Pilih Pimpinan & Periode</label>
+                    <label htmlFor="pimpinan-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Pilih Pimpinan & Periode</label>
                     <select
+                        id="pimpinan-select"
                         value={formData.id_pimpinan_jabatan}
                         onChange={(e) => setFormData({...formData, id_pimpinan_jabatan: e.target.value})}
                         className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
