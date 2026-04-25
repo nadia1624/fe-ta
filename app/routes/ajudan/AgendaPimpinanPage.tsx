@@ -76,8 +76,9 @@ export default function AgendaPimpinanPage() {
           setAgendaList(myAgendas);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch data', error);
+      toast.error('Gagal memuat data', error.message);
     } finally {
       setLoading(false);
     }
@@ -99,6 +100,16 @@ export default function AgendaPimpinanPage() {
   const handleUpdateAttendance = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAgenda || !selectedPimpinanItem) return;
+
+    // Manual Validation
+    if (attendanceForm.status_kehadiran === 'diwakilkan') {
+      if (attendanceForm.representative_type === 'pimpinan' && !attendanceForm.id_jabatan_perwakilan) {
+        return toast.warning('Validasi Gagal', 'Harap pilih pimpinan perwakilan');
+      }
+      if (attendanceForm.representative_type === 'manual' && !attendanceForm.nama_perwakilan) {
+        return toast.warning('Validasi Gagal', 'Harap isi nama perwakilan');
+      }
+    }
 
     try {
       const data: any = {
@@ -670,9 +681,10 @@ export default function AgendaPimpinanPage() {
                         <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Status Kehadiran</label>
                         <div className="grid grid-cols-3 gap-2">
                           {['hadir', 'tidak_hadir', 'diwakilkan'].map((s) => (
-                            <button
+                             <button
                               key={s}
                               type="button"
+                              data-testid={`btn-status-${s}`}
                               onClick={() => setAttendanceForm(prev => ({ ...prev, status_kehadiran: s }))}
                               className={`py-2 px-1 rounded-lg border text-[10px] font-bold uppercase transition-all ${attendanceForm.status_kehadiran === s
                                 ? 'bg-blue-600 border-blue-600 text-white'
@@ -751,7 +763,6 @@ export default function AgendaPimpinanPage() {
                                 value={attendanceForm.nama_perwakilan}
                                 onChange={(e) => setAttendanceForm(prev => ({ ...prev, nama_perwakilan: e.target.value }))}
                                 className="w-full px-4 py-2 border rounded-lg text-sm"
-                                required
                               />
                             </div>
                           )}

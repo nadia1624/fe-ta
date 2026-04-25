@@ -210,7 +210,6 @@ export default function AssignStaffMediaPage() {
                       size="sm" 
                       onClick={() => handleAssign(agenda)} 
                       className={`w-full ${passed ? 'bg-gray-300 cursor-not-allowed hover:bg-gray-300 text-gray-500' : 'bg-blue-600 hover:bg-blue-700'}`}
-                      disabled={passed}
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Tugaskan Staf

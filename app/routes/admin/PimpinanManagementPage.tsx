@@ -11,7 +11,7 @@ export default function PimpinanManagementPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedPimpinan, setSelectedPimpinan] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [pimpinanList, setPimpinanList] = useState<any[]>([]);
   const [periodeOptions, setPeriodeOptions] = useState<any[]>([]);
   const [jabatanOptions, setJabatanOptions] = useState<any[]>([]);
@@ -48,19 +48,30 @@ export default function PimpinanManagementPage() {
 
       if (pimpinanRes.success) {
         setPimpinanList(pimpinanRes.data);
+      } else {
+        toast.error('Gagal', pimpinanRes.message || 'Gagal memuat data pimpinan');
       }
+
       if (periodeRes.success) {
         setPeriodeOptions(periodeRes.data);
+      } else {
+        toast.error('Gagal', periodeRes.message || 'Gagal memuat data periode');
       }
+
       if (jabatanRes.success) {
         setJabatanOptions(jabatanRes.data);
+      } else {
+        toast.error('Gagal', jabatanRes.message || 'Gagal memuat data jabatan');
       }
+
       if (listRes.success) {
         setExistingPimpinanList(listRes.data);
+      } else {
+        toast.error('Gagal', listRes.message || 'Gagal memuat data daftar pimpinan');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching data:", error);
-      toast.error('Gagal memuat data');
+      toast.error('Gagal memuat data', error.message);
     } finally {
       setIsLoading(false);
     }
@@ -219,7 +230,15 @@ export default function PimpinanManagementPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-              {pimpinanList.length === 0 ? (
+              {isLoading && pimpinanList.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-12">
+                    <div className="flex flex-col items-center gap-2 text-gray-500">
+                      <span className="font-medium italic text-sm">Memuat data pimpinan...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : pimpinanList.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-4">Tidak ada data pimpinan</TableCell>
                 </TableRow>
@@ -296,6 +315,7 @@ export default function PimpinanManagementPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  data-testid="pagination-prev"
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
                   className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
@@ -323,6 +343,7 @@ export default function PimpinanManagementPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  data-testid="pagination-next"
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
                   className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
@@ -338,7 +359,7 @@ export default function PimpinanManagementPage() {
 
       {/* Modal Add/Edit */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div data-testid="modal-container" className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <h3 className="text-lg font-semibold text-gray-900">
@@ -380,7 +401,7 @@ export default function PimpinanManagementPage() {
                         <Users className="w-6 h-6" />
                       </div>
                       <div>
-                        <p className={`font-semibold ${inputMode === 'existing' ? 'text-blue-700' : 'text-gray-700'}`}>Pilih Lama</p>
+                        <p className={`font-semibold ${inputMode === 'existing' ? 'text-blue-700' : 'text-gray-700'}`}>Pilih Pimpinan Lama</p>
                         <p className="text-xs text-gray-500 mt-1">Pilih dari database pimpinan</p>
                       </div>
                     </div>
@@ -447,7 +468,6 @@ export default function PimpinanManagementPage() {
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     placeholder="Nama Walikota"
-                    required
                   />
                 </div>
 
@@ -462,7 +482,6 @@ export default function PimpinanManagementPage() {
                       value={formData.jabatan}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
                     >
                       <option value="">Pilih Jabatan...</option>
                       {jabatanOptions.map((jabatan: any) => (
@@ -482,7 +501,6 @@ export default function PimpinanManagementPage() {
                       value={formData.periode_id}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
                     >
                       <option value="">Pilih Periode...</option>
                       {periodeOptions
@@ -508,7 +526,6 @@ export default function PimpinanManagementPage() {
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     placeholder="196512251990031001"
-                    required
                   />
                 </div>
 
@@ -525,7 +542,6 @@ export default function PimpinanManagementPage() {
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="walikota@kota.go.id"
-                      required
                     />
                   </div>
                   <div>
@@ -540,7 +556,6 @@ export default function PimpinanManagementPage() {
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="081234567890"
-                      required
                     />
                   </div>
                 </div>
@@ -555,7 +570,6 @@ export default function PimpinanManagementPage() {
                     value={formData.status}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    required
                   >
                     <option value="Aktif">Aktif</option>
                     <option value="Nonaktif">Nonaktif</option>

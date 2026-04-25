@@ -118,6 +118,19 @@ export default function KonfirmasiAgendaPage() {
     e.preventDefault();
     if (!selectedAgenda || !selectedAp) return;
 
+    // Manual Validation
+    if (konfirmasiData.kehadiran === 'wakilkan') {
+      if (konfirmasiData.perwakilan_tipe === 'pimpinan' && !konfirmasiData.perwakilan_id_jabatan) {
+        return toast.warning('Validasi Gagal', 'Harap pilih pimpinan perwakilan');
+      }
+      if (konfirmasiData.perwakilan_tipe === 'manual' && !konfirmasiData.perwakilan_nama) {
+        return toast.warning('Validasi Gagal', 'Harap isi nama perwakilan');
+      }
+    }
+    if (konfirmasiData.kehadiran === 'tolak' && !konfirmasiData.alasan) {
+      return toast.warning('Validasi Gagal', 'Harap isi alasan penolakan');
+    }
+
     try {
       const finalStatus = konfirmasiData.kehadiran === 'wakilkan' ? 'diwakilkan' : (konfirmasiData.kehadiran === 'tolak' ? 'tidak_hadir' : 'hadir');
       const data: any = {
@@ -500,7 +513,6 @@ export default function KonfirmasiAgendaPage() {
                           onChange={handleChange}
                           className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
                           placeholder="Contoh: Budi - Staf Protokol"
-                          required
                         />
                       </div>
                     )}
@@ -518,7 +530,6 @@ export default function KonfirmasiAgendaPage() {
                     rows={3}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-gray-400"
                     placeholder={konfirmasiData.kehadiran === 'tolak' ? "Berikan alasan..." : "Ketik catatan (opsional)..."}
-                    required={konfirmasiData.kehadiran === 'tolak'}
                   />
                 </div>
 

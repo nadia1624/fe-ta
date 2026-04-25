@@ -12,7 +12,7 @@ export default function PeriodeManagementPage() {
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedPeriode, setSelectedPeriode] = useState<any>(null);
   const [periodeList, setPeriodeList] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +38,7 @@ export default function PeriodeManagementPage() {
     } catch (err: any) {
       const errorMessage = err.message || 'Gagal memuat data periode';
       setError(errorMessage);
+      toast.error('Gagal Memuat Data', errorMessage);
       console.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -162,7 +163,13 @@ export default function PeriodeManagementPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {periodeList.length === 0 ? (
+                  {isLoading && periodeList.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-4 text-gray-500 font-medium italic">
+                        Memuat data...
+                      </TableCell>
+                    </TableRow>
+                  ) : periodeList.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-4">Tidak ada data periode</TableCell>
                     </TableRow>
@@ -220,6 +227,7 @@ export default function PeriodeManagementPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      data-testid="pagination-prev"
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
                       className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
@@ -247,6 +255,7 @@ export default function PeriodeManagementPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      data-testid="pagination-next"
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages}
                       className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
@@ -264,7 +273,7 @@ export default function PeriodeManagementPage() {
 
       {/* Modal Add/Edit */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div data-testid="modal-container" className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="max-w-2xl w-full">
             <CardHeader>
               <h3 className="text-lg font-semibold text-gray-900">
@@ -285,7 +294,6 @@ export default function PeriodeManagementPage() {
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     placeholder="Contoh: Periode 2020-2025"
-                    required
                   />
                 </div>
 
@@ -301,7 +309,6 @@ export default function PeriodeManagementPage() {
                       value={formData.tanggal_mulai}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
                     />
                   </div>
                   <div>
@@ -315,7 +322,6 @@ export default function PeriodeManagementPage() {
                       value={formData.tanggal_selesai}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
                     />
                   </div>
                 </div>
@@ -329,7 +335,6 @@ export default function PeriodeManagementPage() {
                     value={formData.status}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    required
                   >
                     <option value="Aktif">Aktif</option>
                     <option value="Nonaktif">Nonaktif</option>

@@ -44,7 +44,6 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
     if (path.includes('/surat-permohonan')) return 'Surat Permohonan';
     if (path.includes('/penugasan')) return 'Penugasan Staf';
     if (path.includes('/draft-berita')) return 'Draft Berita';
-    if (path.includes('/laporan')) return 'Laporan & Dokumentasi';
     if (path.includes('/users')) return 'User Management';
     if (path.includes('/periode')) return 'Periode Management';
     if (path.includes('/pimpinan')) return 'Pimpinan Management';
@@ -52,6 +51,7 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
     if (path.includes('/konfirmasi-pengganti')) return 'Konfirmasi Pengganti';
     if (path.includes('/laporan-kegiatan-jadwal')) return 'Laporan Kegiatan per Jadwal';
     if (path.includes('/laporan-kegiatan-detail')) return 'Detail Laporan Kegiatan';
+    if (path.includes('/laporan')) return 'Laporan & Dokumentasi';
     if (path.includes('/konfirmasi-agenda')) return 'Konfirmasi Agenda';
     if (path.includes('/assign-staff')) return 'Assign Staf';
     if (path.includes('/review-draft')) return 'Review Draft Berita';

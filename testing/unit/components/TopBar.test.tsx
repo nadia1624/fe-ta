@@ -59,6 +59,35 @@ describe('TopBar Component', () => {
       renderTopBar({}, '/unknown');
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
     });
+
+    it.each([
+      ['/surat-permohonan', 'Surat Permohonan'],
+      ['/admin/periode', 'Periode Management'],
+      ['/admin/pimpinan', 'Pimpinan Management'],
+      ['/sespri/verifikasi-permohonan', 'Verifikasi Permohonan'],
+      ['/sespri/konfirmasi-pengganti', 'Konfirmasi Pengganti'],
+      ['/sespri/laporan-kegiatan-jadwal', 'Laporan Kegiatan per Jadwal'],
+      ['/sespri/laporan-kegiatan-detail/1', 'Detail Laporan Kegiatan'],
+      ['/ajudan/konfirmasi-agenda', 'Konfirmasi Agenda'],
+      ['/kasubag-media/assign-staff', 'Assign Staf'],
+      ['/kasubag-media/review-draft', 'Review Draft Berita'],
+      ['/staff-media/tugas-saya', 'Tugas Saya'],
+      ['/submit-report', 'Submit Laporan'],
+      ['/pemohon/riwayat-permohonan', 'Riwayat Permohonan'],
+      ['/pemohon/submit-request', 'Ajukan Permohonan'],
+      ['/staff-media/upload-draft-berita', 'Upload Draft Berita'],
+      ['/admin/profile', 'Profil Saya'],
+      ['/sespri/dashboard', 'Sespri'],
+      ['/kasubag-protokol/dashboard', 'Kasubag Protokol'],
+      ['/kasubag-media/dashboard', 'Kasubag Media'],
+      ['/ajudan/dashboard', 'Ajudan'],
+      ['/staf-protokol/dashboard', 'Staf Protokol'],
+      ['/staf-media/dashboard', 'Staf Media'],
+      ['/pemohon/dashboard', 'Pemohon'],
+    ])('should map %s to page title %s', (route, title) => {
+      renderTopBar({}, route);
+      expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
+    });
   });
 
   describe('User Info', () => {
@@ -75,6 +104,11 @@ describe('TopBar Component', () => {
       renderTopBar({ user: { ...defaultUser, foto_profil: 'test.jpg' } });
       const img = screen.getByAltText('Foto Profil');
       expect(img).toHaveAttribute('src', 'test.jpg');
+    });
+
+    it('should display default user icon when photo is not provided', () => {
+      renderTopBar();
+      expect(screen.getByTestId('user-icon')).toBeInTheDocument();
     });
   });
 
@@ -149,6 +183,16 @@ describe('TopBar Component', () => {
       fireEvent.click(profileLink);
       
       expect(mockNavigate).toHaveBeenCalledWith('/sespri/profile');
+    });
+
+    it('should fallback to admin profile path for unknown role', () => {
+      renderTopBar({ user: { ...defaultUser, role: 'Unknown' } });
+
+      const profileBtn = screen.queryAllByText('John Doe')[0].closest('button')!;
+      fireEvent.click(profileBtn);
+      fireEvent.click(screen.getByText('Profil Saya').closest('button')!);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/admin/profile');
     });
   });
 });

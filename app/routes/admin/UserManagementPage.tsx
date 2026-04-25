@@ -40,7 +40,7 @@ export default function UserManagementPage() {
 
   const [users, setUsers] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
@@ -66,8 +66,17 @@ export default function UserManagementPage() {
         userApi.getRoles()
       ]);
 
-      if (usersRes.success) setUsers(usersRes.data);
-      if (rolesRes.success) setRoles(rolesRes.data);
+      if (usersRes.success) {
+        setUsers(usersRes.data);
+      } else {
+        toast.error('Gagal', usersRes.message || 'Gagal memuat data user');
+      }
+
+      if (rolesRes.success) {
+        setRoles(rolesRes.data);
+      } else {
+        toast.error('Gagal', rolesRes.message || 'Gagal memuat data role');
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error('Gagal memuat data');
@@ -192,6 +201,13 @@ export default function UserManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+ 
+    // Validation
+    if (!formData.nama || !formData.email || !formData.nip || !formData.role_id || !formData.instansi) {
+      toast.warning('Peringatan', 'Harap lengkapi semua data');
+      setIsLoading(false);
+      return;
+    }
 
     // Password Validation
     if (modalMode === 'add' || (modalMode === 'edit' && formData.password)) {
@@ -264,6 +280,7 @@ export default function UserManagementPage() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
+            data-testid="search-input"
             placeholder="Cari nama, email, jabatan, atau NIP..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -272,6 +289,7 @@ export default function UserManagementPage() {
         </div>
         <select
           value={filterRole}
+          data-testid="role-filter"
           onChange={(e) => setFilterRole(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
         >
@@ -376,6 +394,7 @@ export default function UserManagementPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  data-testid="pagination-prev"
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
                   className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
@@ -403,6 +422,7 @@ export default function UserManagementPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  data-testid="pagination-next"
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
                   className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
@@ -418,7 +438,7 @@ export default function UserManagementPage() {
 
       {/* Modal Add/Edit User */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div data-testid="modal-container" className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-inter">
           <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -437,70 +457,71 @@ export default function UserManagementPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="user_nama" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Nama Lengkap <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="user_nama"
                       type="text"
                       name="nama"
                       value={formData.nama}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="Budi Santoso"
-                      required
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="user_nip" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       NIP <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="user_nip"
                       type="text"
                       name="nip"
                       value={formData.nip}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="198501012010011001"
-                      required
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="user_email" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Email <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="user_email"
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="user@protokol.go.id"
-                      required
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="user_no_hp" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       No HP <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="user_no_hp"
                       type="tel"
                       name="no_hp"
                       value={formData.no_hp}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="081234567890"
-                      required
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="user_password" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Password {modalMode === 'add' ? <span className="text-red-500">*</span> : <span className="text-gray-500 text-[10px] lowercase tracking-normal">(Kosongkan jika tidak ingin mengubah)</span>}
                     </label>
                     <input
+                      id="user_password"
                       type="password"
                       name="password"
                       value={formData.password}
@@ -508,15 +529,15 @@ export default function UserManagementPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder={modalMode === 'add' ? "Minimal 8 karakter" : "Biarkan kosong untuk password lama"}
                       minLength={8}
-                      required={modalMode === 'add'}
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="user_confirm_password" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Konfirmasi Password {modalMode === 'add' ? <span className="text-red-500">*</span> : <span className="text-gray-500 text-[10px] lowercase tracking-normal">(Opsional)</span>}
                     </label>
                     <input
+                      id="user_confirm_password"
                       type="password"
                       name="confirm_password"
                       value={formData.confirm_password}
@@ -524,20 +545,19 @@ export default function UserManagementPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder={modalMode === 'add' ? "Minimal 8 karakter" : "Konfirmasi password baru"}
                       minLength={8}
-                      required={modalMode === 'add' ? true : formData.password.length > 0}
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="user_role" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Role <span className="text-red-500">*</span>
                     </label>
                     <select
+                      id="user_role"
                       name="role_id"
                       value={formData.role_id}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
                     >
                       <option value="">Pilih Role...</option>
                       {roles.map(role => (
@@ -547,10 +567,11 @@ export default function UserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                    <label htmlFor="user_jabatan" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                       Jabatan <span className="text-red-500">*</span>
                     </label>
                     <input
+                      id="user_jabatan"
                       type="text"
                       name="jabatan"
                       value={formData.jabatan}
@@ -565,17 +586,17 @@ export default function UserManagementPage() {
                 {/* Ajudan Assignment removed - now managed in Penugasan Ajudan menu */}
 
                 <div className="md:col-span-2">
-                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
+                  <label htmlFor="user_instansi" className="text-xs font-bold text-gray-400 ml-1 mb-2 block">
                     Instansi <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="user_instansi"
                     type="text"
                     name="instansi"
                     value={formData.instansi}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     placeholder="Bagian Protokol dan Komunikasi Pimpinan"
-                    required
                   />
                 </div>
 

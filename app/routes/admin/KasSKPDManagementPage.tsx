@@ -11,7 +11,7 @@ export default function KasSKPDManagementPage() {
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [itemList, setItemList] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
@@ -33,6 +33,7 @@ export default function KasSKPDManagementPage() {
     } catch (err: any) {
       const errorMessage = err.message || 'Gagal memuat data KaSKPD';
       setError(errorMessage);
+      toast.error('Gagal Memuat Data', errorMessage);
       console.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -149,28 +150,35 @@ export default function KasSKPDManagementPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {isLoading && !itemList.length && <div className="p-4 text-center">Loading...</div>}
-          {error && <div className="p-4 text-center text-red-500">{error}</div>}
-
-          {!isLoading && !error && (
-            <>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
-                      <TableHead className="text-sm font-bold text-gray-900 text-center w-12 px-4 py-4">No.</TableHead>
-                      <TableHead className="text-sm font-bold text-gray-900 px-4 py-4">Nama Instansi</TableHead>
-                      <TableHead className="text-sm font-bold text-gray-900 text-center w-[150px] px-4 py-4">Aksi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedItemList.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-center py-8 text-gray-500 font-medium italic">
-                          Tidak ada data KaSKPD ditemukan
-                        </TableCell>
-                      </TableRow>
-                    ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                  <TableHead className="text-sm font-bold text-gray-900 text-center w-12 px-4 py-4">No.</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 px-4 py-4">Nama Instansi</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 text-center w-[150px] px-4 py-4">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading && itemList.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8 text-gray-500 font-medium italic">
+                      Memuat data...
+                    </TableCell>
+                  </TableRow>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8 text-red-500 font-medium">
+                      {error}
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedItemList.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-8 text-gray-500 font-medium italic">
+                      Tidak ada data KaSKPD ditemukan
+                    </TableCell>
+                  </TableRow>
+                ) : (
                       paginatedItemList.map((item, index) => (
                         <TableRow key={item.id_ka_skpd} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
                           <TableCell className="text-center font-bold text-gray-400 text-xs px-4 py-3">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
@@ -211,6 +219,7 @@ export default function KasSKPDManagementPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      data-testid="pagination-prev"
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
                       className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
@@ -238,6 +247,7 @@ export default function KasSKPDManagementPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      data-testid="pagination-next"
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages}
                       className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
@@ -248,14 +258,12 @@ export default function KasSKPDManagementPage() {
                   </div>
                 </div>
               )}
-            </>
-          )}
         </CardContent>
       </Card>
 
       {/* Modal Add/Edit */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-inter">
+        <div data-testid="modal-container" className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-inter">
           <Card className="max-w-md w-full shadow-2xl border-none">
             <CardHeader className="border-b border-gray-100 pb-4">
               <div className="flex items-center justify-between">

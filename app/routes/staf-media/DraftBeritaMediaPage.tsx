@@ -371,7 +371,7 @@ export default function DraftBeritaMediaPage() {
                                   Feedback Kasubag {isLatest && '• TERBARU'}
                                 </span>
                                 <span className="text-[10px] text-gray-400">
-                                  {new Date(revLog.tanggal_revisi).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  {new Date(revLog.tanggal_revisi).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               </div>
                               <p className="text-xs text-gray-700 leading-relaxed font-medium italic">

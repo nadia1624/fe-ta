@@ -42,6 +42,7 @@ export default function ReviewDraftListPage() {
     const fetchReviewDrafts = async () => {
         try {
             setLoading(true);
+            setError(null);
             const res = await beritaApi.getDraftsReview();
             if (res.success) setDrafts(res.data || []);
             else setError(res.message || 'Gagal mengambil data');
@@ -400,7 +401,7 @@ export default function ReviewDraftListPage() {
                                                                         Feedback Kasubag {isLatest && '(Terbaru)'}
                                                                     </span>
                                                                     <span className="text-[10px] text-gray-400 font-medium">
-                                                                        {new Date(revLog.tanggal_revisi).toLocaleDateString('id-ID', {
+                                                                        {new Date(revLog.tanggal_revisi).toLocaleString('id-ID', {
                                                                             day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                                                                         })}
                                                                     </span>

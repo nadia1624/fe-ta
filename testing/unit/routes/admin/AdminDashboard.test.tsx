@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import AdminDashboard from '../../../../app/routes/dashboards/AdminDashboard';
 import { dashboardApi } from '../../../../app/lib/api';
 
@@ -58,5 +58,36 @@ describe('AdminDashboard Page', () => {
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('25')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
+  });
+
+  it('renders API error state and retries successfully', async () => {
+    (dashboardApi.getAdminStats as jest.Mock)
+      .mockResolvedValueOnce({ success: false, message: 'Data gagal dimuat' })
+      .mockResolvedValueOnce(mockStats);
+
+    render(<AdminDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Terjadi Kesalahan/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Data gagal dimuat/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Coba Lagi/i));
+
+    await waitFor(() => {
+      expect(screen.getByText('150')).toBeInTheDocument();
+    });
+  });
+
+  it('renders generic error message when request throws', async () => {
+    (dashboardApi.getAdminStats as jest.Mock).mockRejectedValue(new Error('network'));
+
+    render(<AdminDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Terjadi Kesalahan/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Gagal memuat data dashboard/i)).toBeInTheDocument();
   });
 });

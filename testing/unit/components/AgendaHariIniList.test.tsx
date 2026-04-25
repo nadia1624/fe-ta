@@ -133,6 +133,44 @@ describe('AgendaHariIniList Component', () => {
       // Based on logic: pimpinan fallback to attendeeNames.join(', ') which is '-'
       expect(screen.getByText('-')).toBeInTheDocument();
     });
+
+    it('should label wakil attendance and deduplicate attendee positions', () => {
+      const delegatedAgenda = [{
+        ...mockAgendas[0],
+        slotAgendaPimpinans: [
+          {
+            id_jabatan_hadir: 1,
+            id_periode_hadir: 1,
+            id_jabatan_diusulkan: 2,
+            periodeJabatanHadir: {
+              pimpinan: { nama_pimpinan: 'Wakil A' },
+              jabatan: { nama_jabatan: 'Wakil Walikota' },
+            },
+          },
+          {
+            id_jabatan_hadir: 1,
+            id_periode_hadir: 1,
+            periodeJabatanHadir: {
+              pimpinan: { nama_pimpinan: 'Wakil A' },
+              jabatan: { nama_jabatan: 'Wakil Walikota' },
+            },
+          },
+        ],
+        agendaPimpinans: [
+          {
+            id_jabatan: 2,
+            periodeJabatan: {
+              pimpinan: { nama_pimpinan: 'Walikota Asli' },
+            },
+          },
+        ],
+      }];
+
+      renderWithRouter(<AgendaHariIniList agendas={delegatedAgenda} role="kasubag_media" />);
+
+      expect(screen.getByText(/Wakil A \(Wakil Walikota Asli\)/)).toBeInTheDocument();
+      expect(screen.getAllByText(/Wakil Walikota/).length).toBeGreaterThan(0);
+    });
   });
 
   describe('Conditional Rendering (Status)', () => {
@@ -150,6 +188,12 @@ describe('AgendaHariIniList Component', () => {
       renderWithRouter(<AgendaHariIniList agendas={[mockAgendas[2]]} role="kasubag_media" />);
       expect(screen.getByText('Diwakilkan')).toBeInTheDocument();
     });
+
+    it('should fallback to "Berlangsung" when status is missing', () => {
+      const noStatusAgenda = [{ ...mockAgendas[0], statusAgendas: [] }];
+      renderWithRouter(<AgendaHariIniList agendas={noStatusAgenda} role="kasubag_media" />);
+      expect(screen.getByText('Berlangsung')).toBeInTheDocument();
+    });
   });
 
   describe('Progress Reports', () => {
@@ -164,6 +208,28 @@ describe('AgendaHariIniList Component', () => {
     it('should show "Belum ada update laporan..." when no reports available', () => {
       renderWithRouter(<AgendaHariIniList agendas={[mockAgendas[1]]} role="kasubag_media" />);
       expect(screen.getByText('Belum ada update laporan untuk kegiatan ini')).toBeInTheDocument();
+    });
+
+    it('should treat missing documentation as zero photos', () => {
+      const agendaWithoutDocs = [{
+        ...mockAgendas[0],
+        penugasans: [
+          {
+            laporanKegiatans: [
+              {
+                id_laporan: 99,
+                deskripsi_laporan: 'Update',
+                catatan_laporan: 'Tanpa foto',
+                dokumentasi_laporan: '',
+                createdAt: '2026-04-21T08:00:00Z',
+              },
+            ],
+          },
+        ],
+      }];
+
+      renderWithRouter(<AgendaHariIniList agendas={agendaWithoutDocs} role="kasubag_media" />);
+      expect(screen.getByText(/0 Foto/)).toBeInTheDocument();
     });
   });
 

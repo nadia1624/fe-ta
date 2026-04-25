@@ -98,6 +98,49 @@ describe('DashboardLayout Component', () => {
                 expect(screen.getByTestId('sidebar')).toHaveAttribute('data-role', 'Sespri');
             });
         });
+
+        it('should keep cached state when backend returns unsuccessful response', async () => {
+            localStorage.setItem('userName', 'Cached User');
+            localStorage.setItem('userRole', 'Admin');
+            // @ts-ignore
+            authApi.getMe.mockResolvedValue({ success: false });
+
+            renderLayout();
+
+            await waitFor(() => {
+                expect(screen.getByText(/User: Cached User/)).toBeInTheDocument();
+                expect(screen.getByTestId('sidebar')).toHaveAttribute('data-role', 'Admin');
+            });
+        });
+
+        it('should keep cached role when backend user role is missing', async () => {
+            localStorage.setItem('userRole', 'Pemohon');
+            // @ts-ignore
+            authApi.getMe.mockResolvedValue({
+                success: true,
+                data: { nama: 'Jane Doe', email: 'jane@example.com', foto_profil: '' },
+            });
+
+            renderLayout();
+
+            await waitFor(() => {
+                expect(screen.getByTestId('sidebar')).toHaveAttribute('data-role', 'Pemohon');
+            });
+        });
+
+        it('should ignore getMe failure and continue rendering', async () => {
+            const errorSpy = jest.spyOn(console, 'error').mockImplementation();
+            // @ts-ignore
+            authApi.getMe.mockRejectedValue(new Error('network'));
+
+            renderLayout();
+
+            await waitFor(() => {
+                expect(screen.getByTestId('outlet')).toBeInTheDocument();
+            });
+
+            errorSpy.mockRestore();
+        });
     });
 
     describe('Sidebar Interaction', () => {
@@ -166,6 +209,13 @@ describe('DashboardLayout Component', () => {
             renderLayout();
             expect(setupPushNotifications).not.toHaveBeenCalled();
             // Wait for async update
+            await waitFor(() => expect(screen.getByText(/User: Jane Doe/)).toBeInTheDocument());
+        });
+
+        it('should not setup push notifications if token is missing', async () => {
+            (getToken as jest.Mock).mockReturnValue(null);
+            renderLayout();
+            expect(setupPushNotifications).not.toHaveBeenCalled();
             await waitFor(() => expect(screen.getByText(/User: Jane Doe/)).toBeInTheDocument());
         });
     });

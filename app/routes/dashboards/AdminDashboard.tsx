@@ -23,6 +23,7 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
+      setError('');
       const response = await dashboardApi.getAdminStats();
       if (response.success) {
         setData(response.data);

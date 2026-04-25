@@ -11,8 +11,8 @@ export default function AjudanAssignmentPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'aktif' | 'nonaktif'>('all');
   const [showModal, setShowModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(true);
+
   const [assignments, setAssignments] = useState<any[]>([]);
   const [ajudans, setAjudans] = useState<any[]>([]);
   const [allPimpinan, setAllPimpinan] = useState<any[]>([]); // These are actually PeriodeJabatan records
@@ -34,15 +34,25 @@ export default function AjudanAssignmentPage() {
         pimpinanApi.getAll()
       ]);
 
-      if (assignRes.success) setAssignments(assignRes.data);
+      if (assignRes.success) {
+        setAssignments(assignRes.data);
+      } else {
+        toast.error('Gagal', assignRes.message || 'Gagal memuat data penugasan');
+      }
+
       if (userRes.success) {
         setAjudans(userRes.data.filter((u: any) => u.role?.nama_role?.toLowerCase() === 'ajudan'));
+      } else {
+        toast.error('Gagal', userRes.message || 'Gagal memuat data ajudan');
       }
+
       if (pimpinanRes.success) {
         // filter active pimpinan assignments
         setAllPimpinan(pimpinanRes.data.filter((p: any) => p.status_aktif === 'aktif'));
+      } else {
+        toast.error('Gagal', pimpinanRes.message || 'Gagal memuat data pimpinan');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error('Gagal memuat data penugasan');
     } finally {
@@ -57,8 +67,8 @@ export default function AjudanAssignmentPage() {
   const filteredAssignments = assignments.filter(item => {
     const ajudanName = item.ajudan?.nama?.toLowerCase() || '';
     const pimpinanName = item.periodeJabatan?.pimpinan?.nama_pimpinan?.toLowerCase() || '';
-    const matchesSearch = ajudanName.includes(searchTerm.toLowerCase()) || 
-                         pimpinanName.includes(searchTerm.toLowerCase());
+    const matchesSearch = ajudanName.includes(searchTerm.toLowerCase()) ||
+      pimpinanName.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || item.status_aktif === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -172,31 +182,31 @@ export default function AjudanAssignmentPage() {
 
       <Card className="border-none shadow-sm bg-blue-50/30">
         <CardContent className="p-4 flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Cari ajudan atau pimpinan..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white shadow-sm"
-              />
-            </div>
-            <div className="flex items-center gap-2 w-full md:w-auto">
-                <Filter className="w-4 h-4 text-gray-400" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
-                  className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white shadow-sm flex-1 md:flex-none"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="aktif">Aktif</option>
-                  <option value="nonaktif">Nonaktif</option>
-                </select>
-                <Button variant="outline" size="icon" onClick={fetchData} className="rounded-xl border-gray-200">
-                    <RefreshCw className={`w-4 h-4 text-gray-400 ${isLoading ? 'animate-spin' : ''}`} />
-                </Button>
-            </div>
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Cari ajudan atau pimpinan..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white shadow-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white shadow-sm flex-1 md:flex-none"
+            >
+              <option value="all">Semua Status</option>
+              <option value="aktif">Aktif</option>
+              <option value="nonaktif">Nonaktif</option>
+            </select>
+            <Button variant="outline" size="icon" onClick={fetchData} className="rounded-xl border-gray-200">
+              <RefreshCw className={`w-4 h-4 text-gray-400 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -218,8 +228,8 @@ export default function AjudanAssignmentPage() {
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2 text-gray-500">
-                        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
-                        <span className="font-medium italic">Memuat data penugasan...</span>
+                      <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
+                      <span className="font-medium italic">Memuat data penugasan...</span>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -256,21 +266,30 @@ export default function AjudanAssignmentPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                         <div className="flex justify-center">
-                            <Badge 
-                                variant={item.status_aktif === 'aktif' ? 'success' : 'secondary'}
-                                className="text-[10px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
-                                onClick={() => handleToggleActive(item)}
-                            >
-                                {item.status_aktif === 'aktif' ? 'Aktif' : 'Nonaktif'}
-                            </Badge>
-                         </div>
+                      <div className="flex justify-center">
+                        <Badge
+                          data-testid="status-badge"
+                          variant={item.status_aktif === 'aktif' ? 'success' : 'secondary'}
+                          className="text-[10px] font-bold cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => handleToggleActive(item)}
+                        >
+                          {item.status_aktif === 'aktif' ? 'Aktif' : 'Nonaktif'}
+                        </Badge>
+                        <input
+                          type="checkbox"
+                          data-testid="status-checkbox"
+                          className="hidden"
+                          checked={item.status_aktif === 'aktif'}
+                          readOnly
+                        />
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-testid="edit-button"
                           onClick={() => handleToggleActive(item)}
                           disabled={item.status_aktif === 'aktif'}
                           title="Set as Active"
@@ -278,9 +297,10 @@ export default function AjudanAssignmentPage() {
                         >
                           <UserCheck className="w-4 h-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-testid="delete-button"
                           onClick={() => handleDelete(item)}
                           title="Hapus Penugasan"
                           className="h-9 w-9 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl"
@@ -301,26 +321,28 @@ export default function AjudanAssignmentPage() {
                 Menampilkan <span className="text-gray-600">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="text-gray-600">{Math.min(currentPage * ITEMS_PER_PAGE, filteredAssignments.length)}</span> dari <span className="text-gray-600">{filteredAssignments.length}</span> data
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="h-8 px-2 text-xs font-bold rounded-lg"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Prev
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="h-8 px-2 text-xs font-bold rounded-lg"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="pagination-prev"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="h-8 px-2 text-xs font-bold rounded-lg"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Prev
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="pagination-next"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="h-8 px-2 text-xs font-bold rounded-lg"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
               </div>
             </div>
           )}
@@ -331,12 +353,12 @@ export default function AjudanAssignmentPage() {
       <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-100 rounded-xl">
         <AlertCircle className="w-5 h-5 text-amber-500" />
         <p className="text-xs text-amber-900 font-medium">
-            <strong>Catatan:</strong> Hanya ada satu status <b>Aktif</b> untuk setiap ajudan. Penugasan yang aktif akan menentukan pimpinan mana yang dikelola agendanya oleh ajudan tersebut.
+          <strong>Catatan:</strong> Hanya ada satu status <b>Aktif</b> untuk setiap ajudan. Penugasan yang aktif akan menentukan pimpinan mana yang dikelola agendanya oleh ajudan tersebut.
         </p>
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div data-testid="modal-container" className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-inter">
           <Card className="max-w-md w-full shadow-2xl border-none">
             <CardHeader className="border-b">
               <div className="flex items-center justify-between">
@@ -352,65 +374,65 @@ export default function AjudanAssignmentPage() {
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label htmlFor="ajudan-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Pilih Ajudan</label>
-                    <select
-                        id="ajudan-select"
-                        value={formData.id_user_ajudan}
-                        onChange={(e) => setFormData({...formData, id_user_ajudan: e.target.value})}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                        required
-                    >
-                        <option value="">-- Pilih Ajudan --</option>
-                        {ajudans.map(user => (
-                            <option key={user.id_user} value={user.id_user}>{user.nama} ({user.nip || 'Non-PNS'})</option>
-                        ))}
-                    </select>
+                  <label htmlFor="ajudan-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Pilih Ajudan</label>
+                  <select
+                    id="ajudan-select"
+                    data-testid="select-ajudan"
+                    value={formData.id_user_ajudan}
+                    onChange={(e) => setFormData({ ...formData, id_user_ajudan: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  >
+                    <option value="">-- Pilih Ajudan --</option>
+                    {ajudans.map(user => (
+                      <option key={user.id_user} value={user.id_user}>{user.nama} ({user.nip || 'Non-PNS'})</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                    <label htmlFor="pimpinan-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Pilih Pimpinan & Periode</label>
-                    <select
-                        id="pimpinan-select"
-                        value={formData.id_pimpinan_jabatan}
-                        onChange={(e) => setFormData({...formData, id_pimpinan_jabatan: e.target.value})}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                        required
-                    >
-                        <option value="">-- Pilih Pimpinan (Aktif) --</option>
-                        {allPimpinan.map(p => (
-                            <option key={`${p.id_jabatan}|${p.id_periode}`} value={`${p.id_jabatan}|${p.id_periode}`}>
-                                {p.pimpinan?.nama_pimpinan} - {p.jabatan?.nama_jabatan} ({p.periode?.nama_periode})
-                            </option>
-                        ))}
-                    </select>
+                  <label htmlFor="pimpinan-select" className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Pilih Pimpinan & Periode</label>
+                  <select
+                    id="pimpinan-select"
+                    data-testid="select-pimpinan"
+                    value={formData.id_pimpinan_jabatan}
+                    onChange={(e) => setFormData({ ...formData, id_pimpinan_jabatan: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  >
+                    <option value="">-- Pilih Pimpinan (Aktif) --</option>
+                    {allPimpinan.map(p => (
+                      <option key={`${p.id_jabatan}|${p.id_periode}`} value={`${p.id_jabatan}|${p.id_periode}`}>
+                        {p.pimpinan?.nama_pimpinan} - {p.jabatan?.nama_jabatan} ({p.periode?.nama_periode})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                    <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Keterangan (Opsional)</label>
-                    <textarea
-                        value={formData.keterangan}
-                        onChange={(e) => setFormData({...formData, keterangan: e.target.value})}
-                        placeholder="Contoh: Pendamping Utama"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm h-24 resize-none"
-                    />
+                  <label className="text-xs font-bold text-gray-400 ml-1 mb-2 block uppercase tracking-wider">Keterangan (Opsional)</label>
+                  <textarea
+                    value={formData.keterangan}
+                    onChange={(e) => setFormData({ ...formData, keterangan: e.target.value })}
+                    placeholder="Contoh: Pendamping Utama"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm h-24 resize-none"
+                  />
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setShowModal(false)}
-                        className="flex-1 rounded-xl text-gray-500"
-                    >
-                        Batal
-                    </Button>
-                    <Button
-                        type="submit"
-                        disabled={isLoading}
-                        className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100"
-                    >
-                        {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Simpan Penugasan'}
-                    </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 rounded-xl text-gray-500"
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100"
+                  >
+                    {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Simpan Penugasan'}
+                  </Button>
                 </div>
               </form>
             </CardContent>

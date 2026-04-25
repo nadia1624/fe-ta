@@ -68,6 +68,12 @@ describe('Sidebar Component', () => {
       expect(screen.getByText('Ajukan Permohonan')).toBeInTheDocument();
       expect(screen.getByText('Riwayat Permohonan')).toBeInTheDocument();
     });
+
+    it('should not render role-specific menu items for unknown role', () => {
+      renderSidebar({ currentRole: 'Unknown Role' });
+      expect(screen.queryByText('User Management')).not.toBeInTheDocument();
+      expect(screen.getByText('Profil Saya')).toBeInTheDocument();
+    });
   });
 
   describe('Responsive States (isOpen)', () => {
@@ -107,6 +113,12 @@ describe('Sidebar Component', () => {
       expect(inactiveLink).toHaveClass('text-gray-700');
       expect(inactiveLink).not.toHaveClass('bg-blue-50');
     });
+
+    it('should highlight profile link when current route is profile page', () => {
+      renderSidebar({ currentRole: 'Admin' }, '/admin/profile');
+      const profileLink = screen.getByText('Profil Saya').closest('a');
+      expect(profileLink).toHaveClass('bg-blue-50', 'text-blue-700');
+    });
   });
 
   describe('Interactions', () => {
@@ -139,5 +151,19 @@ describe('Sidebar Component', () => {
       
       expect(onCloseMock).toHaveBeenCalledTimes(1);
     });
+
+    it('should call onClose when profile link is clicked', () => {
+      const onCloseMock = jest.fn();
+      renderSidebar({ currentRole: 'Admin', onClose: onCloseMock });
+
+      fireEvent.click(screen.getByText('Profil Saya'));
+
+      expect(onCloseMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('should hide the role label when currentRole is empty', () => {
+    renderSidebar({ currentRole: '' });
+    expect(screen.queryByText(/^Admin$|^Sespri$|^Pemohon$/)).not.toBeInTheDocument();
   });
 });

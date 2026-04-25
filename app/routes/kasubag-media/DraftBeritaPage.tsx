@@ -134,6 +134,23 @@ export default function DraftBeritaPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full border-red-100 bg-red-50">
+          <CardContent className="pt-6 text-center">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-red-900 mb-2">Terjadi Kesalahan</h3>
+            <p className="text-red-700 text-sm mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()} className="bg-red-600 hover:bg-red-700">
+              Coba Lagi
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
