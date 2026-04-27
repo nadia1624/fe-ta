@@ -100,8 +100,8 @@ export default function KonfirmasiPenggantiPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Daftar Perwakilan Pimpinan</h1>
-        <p className="text-sm text-gray-600 mt-1">Lihat daftar agenda yang diwakilkan dan kelola catatan tambahan</p>
+        <h1 className="text-2xl font-semibold text-gray-900">Agenda Diwakilkan</h1>
+        <p className="text-sm text-gray-600 mt-1">Lihat daftar agenda yang pimpinannya diwakilkan oleh perwakilan lain</p>
       </div>
 
       <Card>
@@ -142,6 +142,7 @@ export default function KonfirmasiPenggantiPage() {
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Pimpinan & Perwakilan</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Alasan Perwakilan</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                 </TableRow>
             </TableHeader>
@@ -174,6 +175,19 @@ export default function KonfirmasiPenggantiPage() {
                           <div className="flex flex-col gap-1 mt-0.5">
                             <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 w-fit">Diwakili oleh: {ap.nama_perwakilan}</span>
                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-2">
+                      {agenda.agendaPimpinans?.filter((ap: any) => ap.status_kehadiran === 'diwakilkan').map((ap: any, i: number) => (
+                        <div key={i}>
+                          {ap.keterangan ? (
+                            <p className="text-sm text-gray-700">{ap.keterangan}</p>
+                          ) : (
+                            <p className="text-xs text-gray-400 italic">Tidak ada keterangan perwakilan</p>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -280,21 +294,26 @@ export default function KonfirmasiPenggantiPage() {
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Perwakilan Pimpinan</label>
                   <div className="space-y-3">
                     {selectedAgenda.agendaPimpinans?.filter((ap: any) => ap.status_kehadiran === 'diwakilkan').map((ap: any, i: number) => (
-                      <div key={i} className="p-4 border rounded-lg bg-green-50 border-green-200 space-y-3">
-                        <div>
-                          <p className="text-xs text-green-700 font-medium">Pimpinan Asli:</p>
-                          <p className="text-sm font-bold text-gray-900">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
-                          <p className="text-[10px] text-gray-600">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                      <div key={i} className="space-y-4">
+                        <div className="p-4 border rounded-lg bg-green-50 border-green-200">
+                          <div>
+                            <p className="text-xs text-green-700 font-medium">Pimpinan Asli:</p>
+                            <p className="text-sm font-bold text-gray-900">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
+                            <p className="text-[10px] text-gray-600">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                          </div>
+
+                          <div className="pt-2 border-t border-green-200 border-dashed mt-2">
+                            <p className="text-xs text-blue-700 font-medium">Diwakilkan Kepada:</p>
+                            <p className="text-sm font-bold text-gray-900 mt-1 flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-gray-400" /> {ap.nama_perwakilan}</p>
+                          </div>
                         </div>
 
-                        <div className="pt-2 border-t border-green-200 border-dashed">
-                          <p className="text-xs text-blue-700 font-medium">Diwakilkan Kepada:</p>
-                          <p className="text-sm font-bold text-gray-900 mt-1 flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-gray-400" /> {ap.nama_perwakilan}</p>
-                          {ap.keterangan && (
-                            <p className="text-xs text-gray-600 mt-1 italic">"{ap.keterangan}"</p>
-                          )}
-
-                        </div>
+                        {ap.keterangan && (
+                          <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Alasan Perwakilan</label>
+                            <p className="text-sm text-gray-900">{ap.keterangan}</p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

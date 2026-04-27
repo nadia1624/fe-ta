@@ -178,7 +178,9 @@ export default function AssignStaffMediaPage() {
           <CardContent className="p-0">
             <div className="divide-y divide-gray-200">
               {filteredAgenda.map((agenda) => {
-                const pimpinans = (agenda.agendaPimpinans || []).map((ap: any) => ap.periodeJabatan?.pimpinan?.nama_pimpinan || '-').join(', ');
+                const pimpinanNames = (agenda.pimpinans || []).map((p: any) => 
+                  p.is_representative ? `${p.nama_perwakilan} (Wakil ${p.nama_pimpinan})` : p.nama_pimpinan
+                ).join(', ');
                 const passed = isPastAgenda(agenda.tanggal_kegiatan, agenda.waktu_selesai);
                 
                 return (
@@ -190,7 +192,7 @@ export default function AssignStaffMediaPage() {
                       </Badge>
                     </div>
                     <div className={`space-y-1 text-[13px] mb-3 ${passed ? 'text-gray-400' : 'text-gray-600'}`}>
-                      <p><strong>Pimpinan:</strong> <span className={passed ? 'text-gray-400' : 'font-medium text-gray-900'}>{pimpinans}</span></p>
+                      <p><strong>Pimpinan:</strong> <span className={passed ? 'text-gray-400' : 'font-medium text-gray-900'}>{pimpinanNames}</span></p>
                       <p><strong>Lokasi:</strong> {agenda.lokasi_kegiatan || '-'}</p>
                       <p><strong>Tanggal:</strong> {new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
                         day: '2-digit',
@@ -283,7 +285,9 @@ export default function AssignStaffMediaPage() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h4 className="text-sm font-semibold text-gray-900 mb-2 text-blue-800">Detail Agenda</h4>
                   <div className="space-y-1 text-sm text-gray-700">
-                    <p><strong>Pimpinan:</strong> {(selectedAgenda.agendaPimpinans || []).map((ap: any) => ap.periodeJabatan?.pimpinan?.nama_pimpinan || '-').join(', ')}</p>
+                    <p><strong>Pimpinan:</strong> {(selectedAgenda.pimpinans || []).map((p: any) => 
+                      p.is_representative ? `${p.nama_perwakilan} (Wakil ${p.nama_pimpinan})` : p.nama_pimpinan
+                    ).join(', ')}</p>
                     <p><strong>Tanggal:</strong> {new Date(selectedAgenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
                       weekday: 'long',
                       day: '2-digit',

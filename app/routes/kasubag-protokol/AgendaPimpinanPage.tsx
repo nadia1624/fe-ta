@@ -438,10 +438,14 @@ export default function AgendaPimpinanPage() {
                         {agenda.agendaPimpinans?.map((ap: any, i: number) => (
                           <div key={i} className="flex flex-col border rounded-lg px-2 py-1 bg-gray-50 w-fit">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
+                              {ap.status_kehadiran === 'diwakilkan' ? (
+                                <span className="text-[10px] font-medium">{ap.nama_perwakilan} <span className="font-normal text-gray-400">(Wakil {ap.periodeJabatan?.pimpinan?.nama_pimpinan})</span></span>
+                              ) : (
+                                <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
+                              )}
                               {getStatusBadge(ap.status_kehadiran)}
                             </div>
-                            </div>
+                          </div>
                         ))}
                       </div>
                     </TableCell>
@@ -524,8 +528,17 @@ export default function AgendaPimpinanPage() {
                         <div key={i} className="p-3 border rounded-lg bg-gray-50 space-y-2">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-sm font-bold">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
-                              <p className="text-[10px] text-gray-500">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                            {ap.status_kehadiran === 'diwakilkan' ? (
+                              <>
+                                <p className="text-sm font-bold">{ap.nama_perwakilan}</p>
+                                <p className="text-[10px] text-gray-500">(Wakil {ap.periodeJabatan?.pimpinan?.nama_pimpinan})</p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-sm font-bold">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</p>
+                                <p className="text-[10px] text-gray-500">{ap.periodeJabatan?.jabatan?.nama_jabatan}</p>
+                              </>
+                            )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -534,9 +547,9 @@ export default function AgendaPimpinanPage() {
                           </div>
                           {ap.status_kehadiran === 'diwakilkan' && (
                             <div className="space-y-1">
-                              <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                Diwakili oleh: {ap.nama_perwakilan}
-                              </p>
+                            <p className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                              Menghadiri sebagai wakil pimpinan
+                            </p>
                             </div>
                           )}
                         </div>

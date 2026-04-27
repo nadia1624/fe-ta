@@ -631,25 +631,25 @@ export default function AgendaPimpinanPage() {
                               <span className="text-[10px] font-medium">{ap.periodeJabatan?.pimpinan?.nama_pimpinan}</span>
                               {getStatusBadge(ap.status_kehadiran)}
                             </div>
-                            </div>
+                          </div>
                         ))}
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
                         onClick={() => {
-                        setSelectedAgenda(agenda);
-                        setEditNotesForm({ 
-                          contact_person: agenda.contact_person || '', 
-                          keterangan: agenda.keterangan || '',
-                          kaskpd_pendamping: agenda.kaskpdPendampings?.map((kp: any) => kp.id_ka_skpd) || []
-                        });
-                        setIsEditingNotes(false);
-                        setShowDetailModal(true);
-                      }}>
+                          setSelectedAgenda(agenda);
+                          setEditNotesForm({
+                            contact_person: agenda.contact_person || '',
+                            keterangan: agenda.keterangan || '',
+                            kaskpd_pendamping: agenda.kaskpdPendampings?.map((kp: any) => kp.id_ka_skpd) || []
+                          });
+                          setIsEditingNotes(false);
+                          setShowDetailModal(true);
+                        }}>
                         <Eye className="w-4 h-4" />
                       </Button>
                     </TableCell>
@@ -699,7 +699,7 @@ export default function AgendaPimpinanPage() {
                           </label>
                         );
                       })}
-                  </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -801,23 +801,23 @@ export default function AgendaPimpinanPage() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Upload Surat <span className="text-red-500">*</span></label>
                         <div className="flex flex-col gap-2">
-                        <input
-                          type="file"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            if (file && file.size > 5 * 1024 * 1024) {
-                              toast.error('Error', 'Ukuran file surat permohonan maksimal 5 MB');
-                              e.target.value = '';
-                              setFormData(prev => ({ ...prev, file_surat: null }));
-                            } else {
-                              setFormData(prev => ({ ...prev, file_surat: file }));
-                            }
-                          }}
-                          className="w-full text-sm border p-2 rounded-lg bg-white"
-                          accept=".pdf"
-                          required
-                        />
-                        <p className="text-[10px] text-gray-500">PDF maksimal 5 MB</p>
+                          <input
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              if (file && file.size > 5 * 1024 * 1024) {
+                                toast.error('Error', 'Ukuran file surat permohonan maksimal 5 MB');
+                                e.target.value = '';
+                                setFormData(prev => ({ ...prev, file_surat: null }));
+                              } else {
+                                setFormData(prev => ({ ...prev, file_surat: file }));
+                              }
+                            }}
+                            className="w-full text-sm border p-2 rounded-lg bg-white"
+                            accept=".pdf"
+                            required
+                          />
+                          <p className="text-[10px] text-gray-500">PDF maksimal 5 MB</p>
                         </div>
                       </div>
                     </div>
@@ -916,10 +916,10 @@ export default function AgendaPimpinanPage() {
                           </div>
 
                           <div className="flex gap-2 justify-end pt-2 border-t border-blue-100/50">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 text-xs font-medium text-gray-500 hover:bg-gray-100" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-xs font-medium text-gray-500 hover:bg-gray-100"
                               onClick={() => {
                                 setIsEditingNotes(false);
                                 setEditNotesForm({
@@ -931,9 +931,9 @@ export default function AgendaPimpinanPage() {
                             >
                               Batal
                             </Button>
-                            <Button 
-                              size="sm" 
-                              className="h-8 text-xs font-semibold bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 px-4" 
+                            <Button
+                              size="sm"
+                              className="h-8 text-xs font-semibold bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 px-4"
                               onClick={handleSaveNotes}
                             >
                               Simpan Perubahan
@@ -977,9 +977,9 @@ export default function AgendaPimpinanPage() {
                                 <div className="flex flex-wrap gap-1.5">
                                   {selectedAgenda.kaskpdPendampings && selectedAgenda.kaskpdPendampings.length > 0 ? (
                                     selectedAgenda.kaskpdPendampings.map((kp: any) => (
-                                      <Badge 
-                                        key={kp.id_ka_skpd} 
-                                        variant="secondary" 
+                                      <Badge
+                                        key={kp.id_ka_skpd}
+                                        variant="secondary"
                                         className="bg-white text-gray-700 border-gray-200 hover:border-amber-300 hover:text-amber-700 transition-all font-medium py-1 px-2.5 rounded-full shadow-sm"
                                       >
                                         {kp.kaskpd?.nama_instansi}

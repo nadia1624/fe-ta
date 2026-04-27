@@ -36,7 +36,7 @@ export default [
       route("sespri/dashboard", "routes/dashboards/SespriDashboard.tsx"),
       route("sespri/verifikasi-permohonan", "routes/sespri/VerifikasiPermohonanPage.tsx"),
       route("sespri/agenda-pimpinan", "routes/sespri/AgendaPimpinanPage.tsx"),
-      route("sespri/konfirmasi-pengganti", "routes/sespri/KonfirmasiPenggantiPage.tsx"),
+      route("sespri/agenda-diwakilkan", "routes/sespri/AgendaDiwakilkanPage.tsx"),
       route("sespri/laporan-kegiatan-jadwal", "routes/sespri/LaporanKegiatanJadwalPage.tsx"),
       route("sespri/laporan-kegiatan-jadwal/:id", "routes/sespri/LaporanKegiatanJadwalDetailPage.tsx"),
       route("sespri/profile", "routes/ProfilePage.tsx", { id: "sespri-profile" }),

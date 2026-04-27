@@ -65,7 +65,7 @@ describe('TopBar Component', () => {
       ['/admin/periode', 'Periode Management'],
       ['/admin/pimpinan', 'Pimpinan Management'],
       ['/sespri/verifikasi-permohonan', 'Verifikasi Permohonan'],
-      ['/sespri/konfirmasi-pengganti', 'Konfirmasi Pengganti'],
+      ['/sespri/agenda-diwakilkan', 'Agenda Diwakilkan'],
       ['/sespri/laporan-kegiatan-jadwal', 'Laporan Kegiatan per Jadwal'],
       ['/sespri/laporan-kegiatan-detail/1', 'Detail Laporan Kegiatan'],
       ['/ajudan/konfirmasi-agenda', 'Konfirmasi Agenda'],

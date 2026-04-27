@@ -39,7 +39,8 @@ export default function TugasDetailPage() {
           progress_reports: p.laporanKegiatans || [],
           contact_person: p.agenda?.contact_person || '-',
           catatan_agenda: p.agenda?.keterangan || '-',
-          kaskpd_pendamping: p.agenda?.kaskpdPendampings?.map((k: any) => k.kaskpd?.nama_instansi).filter(Boolean) || []
+          kaskpd_pendamping: p.agenda?.kaskpdPendampings?.map((k: any) => k.kaskpd?.nama_instansi).filter(Boolean) || [],
+          is_assigned: p.is_assigned
         });
       }
     } catch (error) {
@@ -101,7 +102,7 @@ export default function TugasDetailPage() {
             <p className="text-xs md:text-sm text-gray-500 mt-0.5">{tugas.judul_kegiatan}</p>
           </div>
         </div>
-        {tugas.status_laporan !== 'Selesai' && (
+        {tugas.status_laporan !== 'Selesai' && tugas.is_assigned && (
           <Button 
             variant="default" 
             size="sm" 
@@ -133,8 +134,17 @@ export default function TugasDetailPage() {
               <div className="space-y-2">
                 {tugas.pimpinans.map((p: any, idx: number) => (
                   <div key={idx}>
-                    <p className="text-sm font-medium text-gray-900">{p.nama_pimpinan}</p>
-                    <p className="text-[11px] text-gray-500 uppercase">{p.nama_jabatan}</p>
+                    {p.is_representative ? (
+                      <>
+                        <p className="text-sm font-medium text-gray-900">{p.nama_perwakilan}</p>
+                        <p className="text-[11px] text-gray-500 uppercase">(Wakil {p.nama_pimpinan})</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-gray-900">{p.nama_pimpinan}</p>
+                        <p className="text-[11px] text-gray-500 uppercase">{p.nama_jabatan}</p>
+                      </>
+                    )}
                   </div>
                 ))}
                 {tugas.pimpinans.length === 0 && <p className="text-sm text-gray-900">-</p>}
@@ -321,16 +331,18 @@ export default function TugasDetailPage() {
             <div className="text-center py-10">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 text-gray-300" />
               <p className="text-sm text-gray-500 mb-4">Belum ada progress yang dilaporkan</p>
-              <Button 
-                variant="default" 
-                size="sm" 
-                onClick={() => setModalOpen(true)}
-                disabled={new Date(tugas.tanggal).setHours(0,0,0,0) > new Date().setHours(0,0,0,0)}
-                title={new Date(tugas.tanggal).setHours(0,0,0,0) > new Date().setHours(0,0,0,0) ? "Laporan hanya dapat ditambahkan pada hari H atau setelahnya" : ""}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Mulai Laporan
-              </Button>
+              {tugas.is_assigned && (
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={() => setModalOpen(true)}
+                  disabled={new Date(tugas.tanggal).setHours(0,0,0,0) > new Date().setHours(0,0,0,0)}
+                  title={new Date(tugas.tanggal).setHours(0,0,0,0) > new Date().setHours(0,0,0,0) ? "Laporan hanya dapat ditambahkan pada hari H atau setelahnya" : ""}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Mulai Laporan
+                </Button>
+              )}
             </div>
           )}
         </CardContent>

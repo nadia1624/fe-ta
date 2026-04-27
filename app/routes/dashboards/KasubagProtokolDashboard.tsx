@@ -109,22 +109,29 @@ export default function KasubagProtokolDashboard() {
         })}
       </div>
 
-      {/* Agenda Pimpinan Hari Ini */}
-      <Card>
-        <CardHeader className="border-b border-gray-100 pb-4">
+      {/* Agenda Pimpinan Hari Ini - Harmonized Design */}
+      <Card className="border-none shadow-sm">
+        <CardHeader className="border-b border-gray-100 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-blue-100 rounded-lg">
                 <Calendar className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-bold text-gray-900">
+              </div>
+              <div>
+                <h3 className="text-base md:text-lg font-bold text-gray-900">
                   Agenda Pimpinan Hari Ini
                 </h3>
+                <p className="text-[11px] md:text-xs text-gray-500 font-medium">
+                  {new Date().toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </p>
               </div>
-              <p className="text-sm text-gray-600 mt-1">
-                {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
-              </p>
             </div>
-            <Badge variant="info">
+            <Badge variant="outline" className="text-blue-700 bg-blue-50 border-blue-200">
               {agendaHariIni.length} Agenda
             </Badge>
           </div>

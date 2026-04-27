@@ -3,7 +3,6 @@ import { getActorSlug } from '../../lib/api';
 import {
   LayoutDashboard,
   Calendar,
-  CalendarCheck,
   FileText,
   ClipboardList,
   Newspaper,
@@ -44,9 +43,9 @@ export default function Sidebar({ currentRole, isOpen, onClose }: SidebarProps) 
     'Sespri': [
       { path: '/sespri/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/sespri/verifikasi-permohonan', label: 'Verifikasi Permohonan', icon: CheckSquare },
-      { path: '/sespri/agenda-pimpinan', label: 'Mengelola Agenda Pimpinan', icon: CalendarCheck },
-      { path: '/sespri/konfirmasi-pengganti', label: 'Konfirmasi Pengganti', icon: UserCheck },
-      { path: '/sespri/laporan-kegiatan-jadwal', label: 'Laporan Kegiatan', icon: ClipboardList },
+      { path: '/sespri/agenda-pimpinan', label: 'Mengelola Agenda Pimpinan', icon: Calendar },
+      { path: '/sespri/agenda-diwakilkan', label: 'Agenda Diwakilkan', icon: UserCheck },
+      { path: '/sespri/laporan-kegiatan-jadwal', label: 'Laporan Kegiatan', icon: FileBarChart },
     ],
     'Kasubag Protokol': [
       { path: '/kasubag-protokol/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -66,19 +65,19 @@ export default function Sidebar({ currentRole, isOpen, onClose }: SidebarProps) 
     'Ajudan': [
       { path: '/ajudan/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/ajudan/konfirmasi-agenda', label: 'Konfirmasi Agenda', icon: CheckSquare },
-      { path: '/ajudan/agenda-pimpinan', label: 'Agenda Pimpinan', icon: CalendarCheck },
+      { path: '/ajudan/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
     ],
     'Staff Protokol': [
       { path: '/staff-protokol/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/staff-protokol/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
       { path: '/staff-protokol/tugas-saya', label: 'Tugas Saya', icon: ClipboardList },
+      { path: '/staff-protokol/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
       { path: '/staff-protokol/laporan-kegiatan-staf', label: 'Laporan Kegiatan', icon: FileBarChart },
     ],
     'Staff Media': [
       { path: '/staff-media/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/staff-media/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
       { path: '/staff-media/tugas-saya', label: 'Tugas Saya', icon: ClipboardList },
       { path: '/staff-media/draft-berita', label: 'Draft Berita', icon: Newspaper },
+      { path: '/staff-media/agenda-pimpinan', label: 'Agenda Pimpinan', icon: Calendar },
       { path: '/staff-media/laporan-kegiatan', label: 'Laporan Kegiatan', icon: FileBarChart },
     ],
 

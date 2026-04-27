@@ -174,10 +174,19 @@ export default function DetailLaporanStafMediaPage() {
                   Pimpinan
                 </label>
                 <div className="mt-1 space-y-2">
-                  {penugasan.pimpinans.map((p, idx) => (
+                  {penugasan.pimpinans.map((p: any, idx) => (
                     <div key={idx}>
-                      <p className="text-sm text-gray-900 font-semibold">{p.nama_pimpinan}</p>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</p>
+                      {p.is_representative ? (
+                        <>
+                          <p className="text-sm text-gray-900 font-semibold">{p.nama_perwakilan}</p>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wider">(Wakil {p.nama_pimpinan})</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-gray-900 font-semibold">{p.nama_pimpinan}</p>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</p>
+                        </>
+                      )}
                     </div>
                   ))}
                   {penugasan.pimpinans.length === 0 && <p className="text-sm text-gray-900">-</p>}

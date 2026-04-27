@@ -414,7 +414,8 @@ describe('AgendaPimpinanPage', () => {
     const targetRow = rows.find(r => within(r).queryByText('Seminar Nasional'));
     await user.click(within(targetRow!).getByRole('button'));
 
-    expect(await screen.findByText(/diwakili oleh: budi staf/i)).toBeInTheDocument();
+    expect((await screen.findAllByText(/budi staf/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/wakil pimpinan b/i)).length).toBeGreaterThan(0);
   });
 
   // ── 10. Detail modal — calendar view ──────────────────────────────────────

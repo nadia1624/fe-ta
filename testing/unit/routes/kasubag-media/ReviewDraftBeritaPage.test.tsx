@@ -129,21 +129,21 @@ describe('ReviewDraftBeritaPage', () => {
     await waitForLoadingFinished();
 
     // Empty catatan warning
-    fireEvent.click(screen.getByText('Revisi'));
+    fireEvent.click(screen.getByText('Kirim Permintaan Revisi'));
     expect(toast.warning).toHaveBeenCalled();
 
     (toast.confirm as jest.Mock).mockResolvedValue({ isConfirmed: true });
     
     // Fill catatan and reject
-    fireEvent.change(screen.getByPlaceholderText(/Berikan masukan/i), { target: { value: 'Fix this' } });
+    fireEvent.change(screen.getByPlaceholderText(/Apa yang perlu diperbaiki/i), { target: { value: 'Fix this' } });
     (beritaApi.reviewDraft as jest.Mock).mockResolvedValueOnce({ success: false, message: 'API Failed' });
     
-    fireEvent.click(screen.getByText('Revisi'));
+    fireEvent.click(screen.getByText('Kirim Permintaan Revisi'));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Gagal', 'API Failed'));
 
     // Exception case
     (beritaApi.reviewDraft as jest.Mock).mockRejectedValueOnce(new Error('Fail'));
-    fireEvent.click(screen.getByText('Revisi'));
+    fireEvent.click(screen.getByText('Kirim Permintaan Revisi'));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Kesalahan', expect.any(String)));
   });
 

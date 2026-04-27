@@ -171,9 +171,9 @@ export default function ReviewDraftBeritaPage() {
             <CardHeader className="bg-gray-50/50 border-b border-gray-100">
               <h3 className="font-bold text-gray-900">Isi Berita</h3>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="prose prose-blue max-w-none">
-                <p className="text-gray-800 leading-relaxed whitespace-pre-wrap text-sm md:text-base"
+            <CardContent className="pt-8">
+              <div className="prose prose-blue max-w-none max-h-[750px] overflow-y-auto pr-4 custom-scrollbar">
+                <div className="text-gray-900 leading-relaxed whitespace-pre-wrap text-sm md:text-base text-justify font-serif"
                   dangerouslySetInnerHTML={{ __html: draft.isi_draft }}
                 />
               </div>
@@ -195,7 +195,7 @@ export default function ReviewDraftBeritaPage() {
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Catatan Review</p>
                       <span className="text-[10px] text-gray-400">
-                        {new Date(revLog.tanggal_revisi).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {new Date(revLog.tanggal_revisi).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                     <p className="text-sm text-gray-700 italic">"{revLog.catatan_revisi}"</p>
@@ -361,53 +361,66 @@ export default function ReviewDraftBeritaPage() {
 
           {/* Review Panel — conditional based on status */}
           {isReviewable ? (
-            <Card className="border-none shadow-sm ring-1 ring-blue-100 bg-blue-50/30">
-              <CardHeader>
-                <h3 className="font-bold text-blue-900 flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4" />
-                  Review &amp; Catatan
+            <Card className="border-none shadow-md ring-1 ring-amber-200 bg-amber-50/20 overflow-hidden">
+              <CardHeader className="bg-amber-100/50 border-b border-amber-100 py-4">
+                <h3 className="font-bold text-amber-900 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-amber-600" />
+                  Review & Panel Feedback
                 </h3>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5 pt-6">
                 <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-amber-800 uppercase tracking-wider ml-1">Catatan Revisi untuk Staf</label>
                   <textarea
-                    className="w-full min-h-[120px] p-3 text-sm border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white outline-none transition-all placeholder:text-gray-400 shadow-inner"
-                    placeholder="Berikan masukan atau catatan revisi di sini..."
+                    className="w-full min-h-[150px] p-4 text-sm border-2 border-amber-100 rounded-2xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-400 bg-white outline-none transition-all placeholder:text-gray-400 shadow-sm"
+                    placeholder="Apa yang perlu diperbaiki? Berikan instruksi yang jelas kepada staf media..."
                     value={catatan}
                     onChange={(e) => setCatatan(e.target.value)}
                   />
-                  <p className="text-[10px] text-gray-500 italic">
-                    * Catatan wajib diisi jika Anda mengirimkan permintaan revisi.
-                  </p>
+                  <div className="flex items-center gap-1.5 px-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                    <p className="text-[10px] text-amber-700 font-medium italic">
+                      Catatan wajib diisi jika Anda menekan tombol "Kirim Permintaan Revisi".
+                    </p>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-2 pt-2">
+                <div className="flex flex-col gap-3 pt-2">
+                  <Button
+                    onClick={() => handleReview('review')}
+                    disabled={submitting}
+                    className="bg-amber-500 hover:bg-amber-500/90 text-white font-bold h-12 shadow-md transition-all rounded-2xl gap-2 text-base"
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                    {submitting ? 'Memproses...' : 'Kirim Permintaan Revisi'}
+                  </Button>
+                  
+                  <div className="relative py-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-gray-200"></span>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-gray-400 font-medium">Atau jika sudah oke</span>
+                    </div>
+                  </div>
+
                   <Button
                     onClick={() => handleReview('approved')}
                     disabled={submitting}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold h-11 shadow-md hover:shadow-lg transition-all rounded-xl gap-2"
+                    variant="outline"
+                    className="border-green-200 text-green-700 hover:bg-green-50/50 hover:border-green-300 font-bold h-11 rounded-2xl gap-2"
                   >
                     <CheckCircle className="w-4 h-4" />
                     {submitting ? 'Memproses...' : 'Setujui & Terbitkan'}
                   </Button>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      onClick={() => handleReview('review')}
-                      disabled={submitting}
-                      variant="outline"
-                      className="border-amber-200 text-amber-700 hover:bg-amber-100 hover:border-amber-300 font-semibold h-11 rounded-xl bg-white gap-2"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      Revisi
-                    </Button>
-                    <Button
-                      onClick={() => navigate(-1)}
-                      variant="ghost"
-                      className="text-gray-500 h-11 rounded-xl hover:bg-gray-100"
-                    >
-                      Batal
-                    </Button>
-                  </div>
+
+                  <Button
+                    onClick={() => navigate(-1)}
+                    variant="ghost"
+                    className="text-gray-400 h-10 rounded-2xl hover:bg-gray-100 text-xs font-medium"
+                  >
+                    Batal & Kembali
+                  </Button>
                 </div>
               </CardContent>
             </Card>

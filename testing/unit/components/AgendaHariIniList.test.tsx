@@ -83,6 +83,16 @@ const mockAgendas = [
 ];
 
 describe('AgendaHariIniList Component', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+    // Use local time for 09:00 AM (Year, MonthIndex 0-11, Day, Hour, Min, Sec)
+    jest.setSystemTime(new Date(2026, 3, 21, 9, 0, 0)); 
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   const renderWithRouter = (ui: React.ReactElement) => {
     return render(<MemoryRouter>{ui}</MemoryRouter>);
   };

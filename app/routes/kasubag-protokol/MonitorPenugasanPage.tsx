@@ -11,6 +11,9 @@ import CustomSelect from '../../components/ui/CustomSelect';
 interface Pimpinan {
   nama_pimpinan: string;
   nama_jabatan: string;
+  nama_perwakilan?: string;
+  is_representative?: boolean;
+  representing?: string;
 }
 
 interface Penugasan {
@@ -247,8 +250,17 @@ export default function MonitorPenugasanPage() {
                       {penugasan.pimpinans?.length > 0
                         ? penugasan.pimpinans.map((p, idx) => (
                           <div key={idx}>
-                            <div className="font-medium text-gray-900">{p.nama_pimpinan}</div>
-                            <div className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</div>
+                            {p.is_representative ? (
+                              <>
+                                <div className="font-medium text-gray-900">{p.nama_perwakilan}</div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider">(Wakil {p.nama_pimpinan})</div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="font-medium text-gray-900">{p.nama_pimpinan}</div>
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</div>
+                              </>
+                            )}
                           </div>
                         ))
                         : <div className="text-gray-400 italic">-</div>}

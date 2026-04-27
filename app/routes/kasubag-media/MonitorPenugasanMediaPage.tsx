@@ -25,6 +25,9 @@ import CustomSelect from '../../components/ui/CustomSelect';
 interface Pimpinan {
     nama_pimpinan: string;
     nama_jabatan: string;
+    nama_perwakilan?: string;
+    is_representative?: boolean;
+    representing?: string;
 }
 
 interface Revisi {
@@ -305,8 +308,17 @@ export default function MonitorPenugasanMediaPage() {
                                                 {(item.pimpinans || []).length > 0
                                                     ? item.pimpinans.map((p, idx) => (
                                                         <div key={idx} className="flex flex-col">
-                                                            <span className="text-xs font-semibold text-gray-900">{p.nama_pimpinan}</span>
-                                                            <span className="text-[10px] text-gray-500">{p.nama_jabatan}</span>
+                                                            {p.is_representative ? (
+                                                                <>
+                                                                    <span className="text-xs font-semibold text-gray-900">{p.nama_perwakilan}</span>
+                                                                    <span className="text-[10px] text-gray-500">(Wakil {p.nama_pimpinan})</span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <span className="text-xs font-semibold text-gray-900">{p.nama_pimpinan}</span>
+                                                                    <span className="text-[10px] text-gray-500">{p.nama_jabatan}</span>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     ))
                                                     : <span className="text-xs text-gray-400 italic">Tidak ada pimpinan</span>

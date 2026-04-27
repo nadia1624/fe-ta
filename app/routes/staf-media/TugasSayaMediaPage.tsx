@@ -120,11 +120,31 @@ export default function TugasSayaMediaPage() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const newPreviews = files.map(file => URL.createObjectURL(file));
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'mp4', 'mov', 'webm'];
+
+    const validFiles: File[] = [];
+    const invalidFiles: string[] = [];
+
+    files.forEach(file => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (ext && allowedExtensions.includes(ext)) {
+        validFiles.push(file);
+      } else {
+        invalidFiles.push(file.name);
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+      toast.warning('File Diabaikan', `Format file tidak didukung: ${invalidFiles.join(', ')}. Hanya JPG, PNG, dan Video yang diizinkan.`);
+    }
+
+    if (validFiles.length === 0) return;
+
+    const newPreviews = validFiles.map(file => URL.createObjectURL(file));
 
     setUploadForm({
       ...uploadForm,
-      foto_dokumentasi: [...uploadForm.foto_dokumentasi, ...files],
+      foto_dokumentasi: [...uploadForm.foto_dokumentasi, ...validFiles],
       foto_previews: [...uploadForm.foto_previews, ...newPreviews]
     });
   };
@@ -345,7 +365,13 @@ export default function TugasSayaMediaPage() {
                                 {tugas.pimpinans.map((p: any, idx: number) => (
                                   <span key={idx} className="text-xs text-gray-500 flex items-center gap-1">
                                     <User className="w-3 h-3" />
-                                    {p.nama_pimpinan} ({p.nama_jabatan})
+                                    {p.is_representative ? (
+                                      <span className="font-medium text-gray-900">
+                                        {p.nama_perwakilan} <span className="font-normal text-gray-500">(Wakil {p.nama_pimpinan})</span>
+                                      </span>
+                                    ) : (
+                                      <span>{p.nama_pimpinan} ({p.nama_jabatan})</span>
+                                    )}
                                   </span>
                                 ))}
                               </div>
@@ -392,20 +418,20 @@ export default function TugasSayaMediaPage() {
                             <p className="text-xs text-blue-900/80 leading-relaxed">{tugas.deskripsi_penugasan}</p>
                           </div>
                         )}
- 
+
                         {/* Feedback Revisi */}
                         {latestDraft?.status_draft === 'draft' && latestDraft.catatan && (
                           <div className="bg-red-50 border border-red-100 rounded-xl p-3">
                             <p className="text-[10px] font-bold text-red-800 uppercase tracking-wider mb-1 flex items-center gap-1.5"><PencilLine className="w-3.5 h-3.5" /> Catatan Revisi:</p>
                             <p className="text-xs text-red-900/80 leading-relaxed">{latestDraft.catatan}</p>
                           </div>
-                        )}   
+                        )}
                       </div>
 
                       {/* Right Side - Actions */}
                       <div className="flex flex-col gap-2 md:w-48">
                         {(() => {
-                          const isFuture = new Date(tugas.agenda.tanggal_kegiatan).setHours(0,0,0,0) > new Date().setHours(0,0,0,0);
+                          const isFuture = new Date(tugas.agenda.tanggal_kegiatan).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
                           const disabledTitle = isFuture ? "Draft berita hanya dapat diserahkan pada hari H atau setelahnya" : "";
 
                           if (!latestDraft) {
@@ -538,7 +564,7 @@ export default function TugasSayaMediaPage() {
                   <label className="text-sm font-bold text-gray-700 flex items-center justify-between">
                     Dokumentasi
                     {(!selectedTugas.draftBeritas || selectedTugas.draftBeritas.length === 0) && (
-                      <span className="text-[10px] text-red-500 font-normal">Minimal upload 3 file</span>
+                      <span className="text-[10px] text-red-500 font-normal"></span>
                     )}
                   </label>
 
@@ -563,40 +589,69 @@ export default function TugasSayaMediaPage() {
                   {(uploadForm.foto_previews.length > 0 || uploadForm.existing_dokumentasi.length > 0) && (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                       {/* Existing Dokumentasi */}
-                      {uploadForm.existing_dokumentasi.map((doc: any, index: number) => (
-                        <div key={`existing-${doc.id_dokumentasi}`} className="relative aspect-square group">
-                          <img src={`/api/uploads/berita/${doc.file_path}`} alt={`Existing ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-gray-100 shadow-sm opacity-90" />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
-                            <span className="text-white text-[10px] font-bold">Lama</span>
+                      {uploadForm.existing_dokumentasi.map((doc: any, index: number) => {
+                        const isVideo = doc.file_path.toLowerCase().match(/\.(mp4|mov|webm)$/);
+                        return (
+                          <div key={`existing-${doc.id_dokumentasi}`} className="relative aspect-square group">
+                            {isVideo ? (
+                              <div className="w-full h-full bg-gray-900 rounded-xl flex items-center justify-center border border-gray-100 shadow-sm opacity-90 overflow-hidden">
+                                <video src={`/api/uploads/berita/${doc.file_path}`} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="bg-black/40 rounded-full p-2">
+                                    <Clock className="w-4 h-4 text-white" />
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <img src={`/api/uploads/berita/${doc.file_path}`} alt={`Existing ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-gray-100 shadow-sm opacity-90" />
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                              <span className="text-white text-[10px] font-bold">Lama</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); removeExistingFoto(doc.id_dokumentasi); }}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                              title="Hapus foto ini"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); removeExistingFoto(doc.id_dokumentasi); }}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 z-10"
-                            title="Hapus foto ini"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
 
                       {/* New Upload Previews */}
-                      {uploadForm.foto_previews.map((preview, index) => (
-                        <div key={`new-${index}`} className="relative aspect-square group">
-                          <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-blue-200 shadow-sm" />
-                          <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center pointer-events-none">
-                            <span className="text-white bg-blue-600 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Baru</span>
+                      {uploadForm.foto_previews.map((preview, index) => {
+                        const file = uploadForm.foto_dokumentasi[index];
+                        const isVideo = file?.type.startsWith('video/') || file?.name.toLowerCase().match(/\.(mp4|mov|webm)$/);
+                        return (
+                          <div key={`new-${index}`} className="relative aspect-square group">
+                            {isVideo ? (
+                              <div className="w-full h-full bg-gray-900 rounded-xl flex items-center justify-center border border-blue-200 shadow-sm overflow-hidden">
+                                <video src={preview} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="bg-blue-600/60 rounded-full p-2">
+                                    <Upload className="w-4 h-4 text-white" />
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-blue-200 shadow-sm" />
+                            )}
+                            <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center pointer-events-none">
+                              <span className="text-white bg-blue-600 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Baru</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); removeFoto(index); }}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                              title="Batal upload"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); removeFoto(index); }}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 z-10"
-                            title="Batal upload"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -660,7 +715,7 @@ export default function TugasSayaMediaPage() {
 
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Isi Berita</label>
-                        <div className="bg-white border border-gray-100 rounded-2xl p-5 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap shadow-sm">
+                        <div className="bg-white border border-gray-100 rounded-2xl p-5 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap shadow-sm text-justify">
                           {draft.isi_draft}
                         </div>
                       </div>
@@ -669,19 +724,33 @@ export default function TugasSayaMediaPage() {
                         <div className="space-y-3">
                           <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Dokumentasi Terlampir ({draft.dokumentasis.length})</label>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {draft.dokumentasis.map((item: any, idx: number) => (
-                              <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
-                                onClick={() => window.open(`/api/uploads/berita/${item.file_path}`, '_blank')}>
-                                <img
-                                  src={`/api/uploads/berita/${item.file_path}`}
-                                  alt={`Documentation ${idx + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=Attachment';
-                                  }}
-                                />
-                              </div>
-                            ))}
+                            {draft.dokumentasis.map((item: any, idx: number) => {
+                              const isVideo = item.file_path.toLowerCase().match(/\.(mp4|mov|webm)$/);
+                              return (
+                                <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all bg-gray-900"
+                                  onClick={() => window.open(`/api/uploads/berita/${item.file_path}`, '_blank')}>
+                                  {isVideo ? (
+                                    <div className="w-full h-full flex items-center justify-center relative">
+                                      <video src={`/api/uploads/berita/${item.file_path}`} className="w-full h-full object-cover" />
+                                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                        <div className="bg-white/90 rounded-full p-2 shadow-lg">
+                                          <Clock className="w-5 h-5 text-blue-600" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <img
+                                      src={`/api/uploads/berita/${item.file_path}`}
+                                      alt={`Documentation ${idx + 1}`}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=Attachment';
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -697,7 +766,7 @@ export default function TugasSayaMediaPage() {
                                     <FileText className="w-3.5 h-3.5" />
                                   </div>
                                   <label className="text-xs font-bold text-amber-900 uppercase">
-                                    {new Date(revLog.tanggal_revisi).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(revLog.tanggal_revisi).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                   </label>
                                 </div>
                                 <p className="text-sm text-amber-900 leading-relaxed font-medium italic">"{revLog.catatan_revisi}"</p>

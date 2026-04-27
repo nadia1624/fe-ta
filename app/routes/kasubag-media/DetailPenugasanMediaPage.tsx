@@ -49,7 +49,13 @@ interface PenugasanDetail {
     status: 'pending' | 'progress' | 'selesai' | null;
     status_pelaksanaan: string;
     nama_staf: string[];
-    pimpinans: { nama_pimpinan: string; nama_jabatan: string }[];
+    pimpinans: { 
+        nama_pimpinan: string; 
+        nama_jabatan: string;
+        nama_perwakilan?: string;
+        is_representative?: boolean;
+        representing?: string;
+    }[];
     agenda: {
         id_agenda: string;
         nama_kegiatan: string;
@@ -231,10 +237,19 @@ export default function DetailPenugasanMediaPage() {
                                 </label>
                                 <div className="space-y-2.5">
                                     {penugasan.pimpinans.length > 0
-                                        ? penugasan.pimpinans.map((p, idx) => (
+                                        ? penugasan.pimpinans.map((p: any, idx) => (
                                             <div key={idx} className="flex flex-col">
-                                                <p className="text-sm text-gray-900 font-semibold leading-none">{p.nama_pimpinan}</p>
-                                                <p className="text-[10px] text-gray-500 font-medium mt-1 leading-none">{p.nama_jabatan}</p>
+                                                {p.is_representative ? (
+                                                    <>
+                                                        <p className="text-sm text-gray-900 font-semibold leading-none">{p.nama_perwakilan}</p>
+                                                        <p className="text-[10px] text-gray-500 font-medium mt-1 leading-none">(Wakil {p.nama_pimpinan})</p>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <p className="text-sm text-gray-900 font-semibold leading-none">{p.nama_pimpinan}</p>
+                                                        <p className="text-[10px] text-gray-500 font-medium mt-1 leading-none">{p.nama_jabatan}</p>
+                                                    </>
+                                                )}
                                             </div>
                                         ))
                                         : <p className="text-sm text-gray-400 italic">-</p>

@@ -345,7 +345,7 @@ export default function DraftBeritaMediaPage() {
                 {/* News Content */}
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Konten Berita</h3>
-                  <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed text-sm md:text-base whitespace-pre-wrap font-serif bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                  <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed text-sm md:text-base whitespace-pre-wrap font-serif bg-gray-50/50 p-6 rounded-2xl border border-gray-100 text-justify">
                     {selectedDraft.isi_draft}
                   </div>
                 </div>

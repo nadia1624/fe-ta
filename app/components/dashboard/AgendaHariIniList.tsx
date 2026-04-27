@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -9,11 +10,20 @@ interface AgendaHariIniListProps {
 }
 
 export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
+
   const processedAgendas = (agendas || []).map((a: any) => {
     const attendeeNames: string[] = [];
     const attendeePositions: string[] = [];
     const seenAttendees = new Set<string>();
-    
+
     // 1. Process attendance names and positions
     a.slotAgendaPimpinans?.forEach((sap: any) => {
       const attendeeId = `${sap.id_jabatan_hadir}-${sap.id_periode_hadir}`;
@@ -21,7 +31,7 @@ export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
         seenAttendees.add(attendeeId);
         const name = sap.periodeJabatanHadir?.pimpinan?.nama_pimpinan || '-';
         const position = sap.periodeJabatanHadir?.jabatan?.nama_jabatan || '-';
-        
+
         if (sap.id_jabatan_diusulkan && sap.id_jabatan_hadir !== sap.id_jabatan_diusulkan) {
           const originalPimpinan = a.agendaPimpinans?.find((ap: any) => ap.id_jabatan === sap.id_jabatan_diusulkan);
           const originalName = originalPimpinan?.periodeJabatan?.pimpinan?.nama_pimpinan || 'Pimpinan';
@@ -29,7 +39,7 @@ export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
         } else {
           attendeeNames.push(name);
         }
-        
+
         if (position && !attendeePositions.includes(position)) {
           attendeePositions.push(position);
         }
@@ -57,6 +67,32 @@ export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
       waktu: new Date(l.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
     }))) || [];
 
+    // Determine status based on TIME & Status
+    const h = String(now.getHours()).padStart(2, '0');
+    const mi = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const currentTimeStr = `${h}:${mi}:${s}`;
+    const startTime = a.waktu_mulai || "00:00:00";
+    const endTime = a.waktu_selesai || "23:59:59";
+    const latestStatus = a.statusAgendas?.[0]?.status_agenda;
+
+    let displayStatus = 'Belum Dimulai';
+    if (latestStatus === 'completed') {
+      displayStatus = 'Selesai';
+    } else if (latestStatus === 'delegated') {
+      displayStatus = 'Diwakilkan';
+    } else if (latestStatus?.includes('rejected')) {
+      displayStatus = 'Ditolak';
+    } else {
+      if (currentTimeStr < startTime) {
+        displayStatus = 'Belum Dimulai';
+      } else if (currentTimeStr <= endTime) {
+        displayStatus = 'Berlangsung';
+      } else {
+        displayStatus = 'Selesai';
+      }
+    }
+
     return {
       id: a.id_agenda,
       kegiatan: a.nama_kegiatan,
@@ -64,8 +100,7 @@ export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
       jabatan: attendeePositions.length > 0 ? [...new Set(attendeePositions)].join(' & ') : '-',
       waktu: `${a.waktu_mulai?.slice(0, 5)} - ${a.waktu_selesai?.slice(0, 5)}`,
       tempat: a.lokasi_kegiatan,
-      status: a.statusAgendas?.[0]?.status_agenda === 'completed' ? 'Selesai' :
-        a.statusAgendas?.[0]?.status_agenda === 'delegated' ? 'Diwakilkan' : 'Berlangsung',
+      status: displayStatus,
       progress_reports: progressReports
     };
   });
@@ -90,9 +125,10 @@ export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
                 <Badge
                   variant={
                     agenda.status === 'Berlangsung' ? 'info' :
-                    agenda.status === 'Selesai' ? 'success' :
-                    agenda.status === 'Diwakilkan' ? 'secondary' :
-                    'warning'
+                      agenda.status === 'Selesai' ? 'success' :
+                        agenda.status === 'Diwakilkan' ? 'secondary' :
+                          agenda.status === 'Ditolak' ? 'danger' :
+                            'warning'
                   }
                 >
                   {agenda.status}
@@ -137,11 +173,11 @@ export function AgendaHariIniList({ agendas, role }: AgendaHariIniListProps) {
                       </div>
                     ))}
                     <Link to={
-                      role === 'sespri' ? '/sespri/laporan-kegiatan-jadwal' : 
-                      role === 'kasubag_protokol' ? `/kasubag-protokol/laporan-kegiatan/${agenda.id}` :
-                      role === 'staf_media' ? `/staff-media/tugas-saya` : 
-                      role === 'staf_protokol' ? `/staff-protokol/tugas-saya` :
-                      `/kasubag-media/laporan-kegiatan/${agenda.id}`
+                      role === 'sespri' ? '/sespri/laporan-kegiatan-jadwal' :
+                        role === 'kasubag_protokol' ? `/kasubag-protokol/laporan-kegiatan/${agenda.id}` :
+                          role === 'staf_media' ? `/staff-media/tugas-saya` :
+                            role === 'staf_protokol' ? `/staff-protokol/tugas-saya` :
+                              `/kasubag-media/laporan-kegiatan/${agenda.id}`
                     }>
                       <Button variant="outline" size="sm" className="w-full mt-2">
                         Lihat Semua Progress ({agenda.progress_reports.length})

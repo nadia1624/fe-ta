@@ -19,7 +19,7 @@ export default function LaporanKegiatanStafProtokolPage() {
     const fetchLaporan = async () => {
       setLoading(true);
       try {
-        const res = await penugasanApi.getMyPenugasan();
+        const res = await penugasanApi.getProtokolAssignments();
         if (res.success && res.data) {
           const mappedData = res.data.map((p: any) => ({
             id: p.id_penugasan,
@@ -29,7 +29,8 @@ export default function LaporanKegiatanStafProtokolPage() {
             waktu: p.agenda ? `${p.agenda.waktu_mulai?.slice(0, 5)} - ${p.agenda.waktu_selesai?.slice(0, 5)}` : '-',
             tempat: p.agenda?.lokasi_kegiatan || '-',
             status_laporan: p.status_pelaksanaan,
-            jumlah_progress: p.laporanKegiatans?.length || 0
+            jumlah_progress: p.laporanKegiatans?.length || 0,
+            is_assigned: p.is_assigned
           }));
           setLaporanList(mappedData);
         }
@@ -46,7 +47,10 @@ export default function LaporanKegiatanStafProtokolPage() {
   const filteredData = laporanList.filter(item => {
     const matchSearch =
       item.judul_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.pimpinans.some((p: any) => p.nama_pimpinan.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      item.pimpinans.some((p: any) => 
+        p.nama_pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (p.is_representative && p.nama_perwakilan?.toLowerCase().includes(searchTerm.toLowerCase()))
+      ) ||
       item.tempat.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchPimpinan = filterPimpinan === 'all' || item.pimpinans.some((p: any) => p.nama_pimpinan === filterPimpinan);
@@ -214,8 +218,17 @@ export default function LaporanKegiatanStafProtokolPage() {
                           <div className="text-sm space-y-1">
                             {item.pimpinans.map((p: any, idx: number) => (
                               <div key={idx}>
-                                <div className="font-medium text-gray-900">{p.nama_pimpinan}</div>
-                                <div className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</div>
+                                {p.is_representative ? (
+                                  <>
+                                    <div className="font-medium text-gray-900">{p.nama_perwakilan}</div>
+                                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">(Wakil {p.nama_pimpinan})</div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="font-medium text-gray-900">{p.nama_pimpinan}</div>
+                                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</div>
+                                  </>
+                                )}
                               </div>
                             ))}
                             {item.pimpinans.length === 0 && <div className="text-gray-400 italic">-</div>}
@@ -247,11 +260,13 @@ export default function LaporanKegiatanStafProtokolPage() {
                           {getStatusBadge(item.status_laporan)}
                         </TableCell>
                         <TableCell className="text-center">
-                          <Link to={`/staff-protokol/tugas-detail/${item.id}`}>
-                            <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm">
-                              <ArrowRight className="w-4 h-4" />
-                            </Button>
-                          </Link>
+                          <div className="flex flex-col items-center gap-1">
+                            <Link to={`/staff-protokol/tugas-detail/${item.id}`}>
+                              <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm">
+                                <ArrowRight className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

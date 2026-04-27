@@ -43,7 +43,10 @@ export default function LaporanKegiatanPage() {
   const filteredTugas = tugasProtokol.filter(tugas => {
     const matchesSearch =
       tugas.agenda.nama_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tugas.pimpinans.some((p: any) => p.nama_pimpinan.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      tugas.pimpinans.some((p: any) => 
+        p.nama_pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (p.is_representative && p.nama_perwakilan?.toLowerCase().includes(searchTerm.toLowerCase()))
+      ) ||
       tugas.agenda.lokasi_kegiatan.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesPimpinan = filterPimpinan === 'all' ||
@@ -203,8 +206,17 @@ export default function LaporanKegiatanPage() {
                         <div className="flex flex-col">
                           {tugas.pimpinans.map((p: any, idx: number) => (
                             <div key={idx} className="mb-1 last:mb-0">
-                              <span className="text-[13px] font-semibold text-gray-900 leading-tight block">{p.nama_pimpinan}</span>
-                              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">{p.nama_jabatan}</span>
+                              {p.is_representative ? (
+                                <>
+                                  <span className="text-[13px] font-semibold text-gray-900 leading-tight block">{p.nama_perwakilan}</span>
+                                  <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">(Wakil {p.nama_pimpinan})</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-[13px] font-semibold text-gray-900 leading-tight block">{p.nama_pimpinan}</span>
+                                  <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">{p.nama_jabatan}</span>
+                                </>
+                              )}
                             </div>
                           ))}
                         </div>

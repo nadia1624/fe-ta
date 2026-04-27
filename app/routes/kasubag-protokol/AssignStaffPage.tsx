@@ -150,9 +150,8 @@ export default function AssignStaffPage() {
               <div className="divide-y divide-gray-200">
                     {filteredAgenda.map((agenda) => {
                       const pimpinans = agenda.agendaPimpinans || [];
-                      const pimpinanNames = pimpinans
-                        .map((ap: any) => ap.periodeJabatan?.pimpinan?.nama_pimpinan)
-                        .filter(Boolean)
+                      const pimpinanNames = (agenda.pimpinans || [])
+                        .map((p: any) => p.is_representative ? `${p.nama_perwakilan} (Wakil ${p.nama_pimpinan})` : p.nama_pimpinan)
                         .join(', ');
                       
                       const passed = isPastAgenda(agenda.tanggal_kegiatan, agenda.waktu_selesai);
@@ -261,9 +260,8 @@ export default function AssignStaffPage() {
                     {/* Access first slot for summary info */}
                     {(() => {
                       const pimpinans = selectedSlot.agendaPimpinans || [];
-                      const pimpinanNames = pimpinans
-                        .map((ap: any) => `${ap.periodeJabatan?.pimpinan?.nama_pimpinan}${ap.status_kehadiran === 'diwakilkan' ? ` (diwakili: ${ap.nama_perwakilan || '-'})` : ''}`)
-                        .filter(Boolean)
+                      const pimpinanNames = (selectedSlot.pimpinans || [])
+                        .map((p: any) => p.is_representative ? `${p.nama_perwakilan} (Wakil ${p.nama_pimpinan})` : p.nama_pimpinan)
                         .join(' | ');
 
                       return (

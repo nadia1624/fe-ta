@@ -180,9 +180,9 @@ export default function ReviewDraftListPage() {
                                         </div>
 
                                         {/* Content Snippet */}
-                                        <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-4 bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
+                                        <div className="text-sm text-gray-600 leading-relaxed mb-4 bg-gray-50 rounded-xl px-4 py-3 border border-gray-100 max-h-48 overflow-y-auto custom-scrollbar text-justify whitespace-pre-wrap">
                                             {draft.isi_draft?.replace(/<[^>]*>/g, '') || '-'}
-                                        </p>
+                                        </div>
 
                                         {/* Images */}
                                         {draft.dokumentasis?.length > 0 && (
@@ -229,16 +229,15 @@ export default function ReviewDraftListPage() {
                                             </Button>
                                             <Link to={`/kasubag-media/review-draft/${draft.id_draft_berita}`}>
                                                 <Button
-                                                    variant="outline"
                                                     size="sm"
-                                                    className="rounded-xl h-9 text-xs border-blue-200 text-blue-700 hover:bg-blue-50 font-medium gap-1.5"
+                                                    className="rounded-xl h-9 text-xs bg-amber-500 hover:bg-amber-500/90 text-white font-bold gap-1.5 shadow-sm transition-all"
                                                 >
                                                     <MessageSquare className="w-3.5 h-3.5" /> Berikan Revisi
                                                 </Button>
                                             </Link>
                                             <Button
                                                 size="sm"
-                                                className="rounded-xl h-9 text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 gap-1.5 ml-auto"
+                                                className="rounded-xl h-9 text-xs bg-blue-600 hover:bg-blue-600/90 text-white font-semibold px-5 gap-1.5 ml-auto transition-all"
                                                 onClick={() => handleApprove(draft)}
                                             >
                                                 <CheckCircle2 className="w-3.5 h-3.5" /> Setujui Draft
@@ -373,8 +372,10 @@ export default function ReviewDraftListPage() {
                                 {/* News Content */}
                                 <div className="space-y-4">
                                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Isi Berita</h3>
-                                    <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed text-sm md:text-base whitespace-pre-wrap font-serif bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
-                                        {selectedDraft.isi_draft?.replace(/<[^>]*>/g, '') || '-'}
+                                    <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                        <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed text-sm md:text-base whitespace-pre-wrap font-serif bg-gray-50/50 p-6 rounded-2xl border border-gray-100 text-justify">
+                                            {selectedDraft.isi_draft?.replace(/<[^>]*>/g, '') || '-'}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -426,7 +427,7 @@ export default function ReviewDraftListPage() {
                                     </Button>
                                     <div className="flex gap-2">
                                         <Link to={`/kasubag-media/review-draft/${selectedDraft.id_draft_berita}`}>
-                                            <Button variant="outline" className="h-11 rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 font-semibold gap-2">
+                                            <Button className="h-11 rounded-xl bg-amber-500 hover:bg-amber-500/90 text-white font-semibold gap-2 shadow-sm transition-all">
                                                 <MessageSquare className="w-4 h-4" /> Berikan Revisi
                                             </Button>
                                         </Link>

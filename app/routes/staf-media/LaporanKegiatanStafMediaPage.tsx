@@ -43,7 +43,10 @@ export default function LaporanKegiatanStafMediaPage() {
   const filteredTugas = tugasProtokol.filter(tugas => {
     const matchesSearch =
       tugas.agenda.nama_kegiatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tugas.pimpinans.some((p: any) => p.nama_pimpinan.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      tugas.pimpinans.some((p: any) => 
+        p.nama_pimpinan.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (p.is_representative && p.nama_perwakilan?.toLowerCase().includes(searchTerm.toLowerCase()))
+      ) ||
       tugas.agenda.lokasi_kegiatan.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesPimpinan = filterPimpinan === 'all' ||
@@ -218,8 +221,17 @@ export default function LaporanKegiatanStafMediaPage() {
                         <div className="flex flex-col">
                           {tugas.pimpinans.map((p: any, idx: number) => (
                             <div key={idx} className="mb-1 last:mb-0">
-                              <div className="font-medium text-gray-900 text-sm">{p.nama_pimpinan}</div>
-                              <div className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</div>
+                              {p.is_representative ? (
+                                <>
+                                  <div className="font-medium text-gray-900 text-sm">{p.nama_perwakilan}</div>
+                                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">(Wakil {p.nama_pimpinan})</div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="font-medium text-gray-900 text-sm">{p.nama_pimpinan}</div>
+                                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">{p.nama_jabatan}</div>
+                                </>
+                              )}
                             </div>
                           ))}
                         </div>

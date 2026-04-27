@@ -48,7 +48,7 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
     if (path.includes('/periode')) return 'Periode Management';
     if (path.includes('/pimpinan')) return 'Pimpinan Management';
     if (path.includes('/verifikasi-permohonan')) return 'Verifikasi Permohonan';
-    if (path.includes('/konfirmasi-pengganti')) return 'Konfirmasi Pengganti';
+    if (path.includes('/agenda-diwakilkan')) return 'Agenda Diwakilkan';
     if (path.includes('/laporan-kegiatan-jadwal')) return 'Laporan Kegiatan per Jadwal';
     if (path.includes('/laporan-kegiatan-detail')) return 'Detail Laporan Kegiatan';
     if (path.includes('/laporan')) return 'Laporan & Dokumentasi';
