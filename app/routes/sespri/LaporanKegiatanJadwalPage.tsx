@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import CustomSelect from '../../components/ui/CustomSelect';
+import MonthPicker from '../../components/ui/month-picker';
 import { penugasanApi } from '../../lib/api';
 
 export default function LaporanKegiatanJadwalPage() {
@@ -18,6 +19,7 @@ export default function LaporanKegiatanJadwalPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPimpinan, setFilterPimpinan] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterBulan, setFilterBulan] = useState(''); // format: YYYY-MM
 
   const fetchTugas = async () => {
     try {
@@ -60,7 +62,12 @@ export default function LaporanKegiatanJadwalPage() {
       (filterStatus === 'progress' && (tugas.status === 'progress' || (tugas.status === 'pending' && tugas.laporanKegiatans?.length > 0))) ||
       (filterStatus === 'pending' && tugas.status === 'pending' && (!tugas.laporanKegiatans || tugas.laporanKegiatans.length === 0));
 
-    return matchesSearch && matchesPimpinan && matchesStatus;
+    const matchesMonth = !filterBulan || (
+      tugas.agenda?.tanggal_kegiatan && 
+      tugas.agenda.tanggal_kegiatan.startsWith(filterBulan)
+    );
+
+    return matchesSearch && matchesPimpinan && matchesStatus && matchesMonth;
   });
 
   const pimpinanOptions = [
@@ -179,6 +186,11 @@ export default function LaporanKegiatanJadwalPage() {
                 ]}
                 icon={<Filter className="w-4 h-4" />}
                 className="w-full md:w-36 text-xs"
+              />
+              <MonthPicker
+                value={filterBulan}
+                onChange={setFilterBulan}
+                className="w-full md:w-56"
               />
             </div>
           </div>

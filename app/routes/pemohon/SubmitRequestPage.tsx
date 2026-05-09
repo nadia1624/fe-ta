@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Upload, X, Check, Calendar as CalendarIcon, Clock } from 'lucide-react';
@@ -14,6 +15,7 @@ import { toast } from '../../lib/swal';
 moment.locale('id');
 
 export default function SubmitRequestPage() {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [pimpinanOptions, setPimpinanOptions] = useState<any[]>([]);
 
@@ -86,11 +88,23 @@ export default function SubmitRequestPage() {
       return toast.error('Gagal', 'Pilih waktu mulai dan selesai kegiatan');
     }
 
+    if (!formData.tanggal_kegiatan) {
+      return toast.error('Gagal', 'Pilih tanggal kegiatan');
+    }
+
     // Date validation: must be after today
     const today = moment().startOf('day');
     const selectedDate = moment(formData.tanggal_kegiatan);
     if (!selectedDate.isAfter(today)) {
       return toast.error('Gagal', 'Tanggal kegiatan harus setelah hari ini (minimal besok)');
+    }
+
+    // Date validation for tanggal_surat: must be today or before today
+    if (formData.tanggal_surat) {
+      const letterDate = moment(formData.tanggal_surat).startOf('day');
+      if (letterDate.isAfter(today)) {
+        return toast.error('Gagal', 'Tanggal surat maksimal adalah hari ini');
+      }
     }
 
     // Time validation: end time > start time
@@ -131,8 +145,7 @@ export default function SubmitRequestPage() {
 
       if (response.success) {
         toast.success('Berhasil!', 'Permohonan agenda berhasil diajukan.').then(() => {
-          // Reset form or redirect
-          window.location.reload();
+          navigate('/pemohon/riwayat-permohonan');
         });
       } else {
         toast.error('Gagal', response.message);
@@ -197,6 +210,11 @@ export default function SubmitRequestPage() {
                       selected={formData.tanggal_surat ? new Date(formData.tanggal_surat) : undefined}
                       onSelect={(date: Date | undefined) => handleDateSelect('tanggal_surat', date)}
                       initialFocus
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date > today;
+                      }}
                     />
                   </PopoverContent>
                 </Popover>

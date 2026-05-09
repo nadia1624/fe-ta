@@ -371,20 +371,24 @@ export default function AgendaPimpinanPage() {
               <div className="grid grid-cols-7 gap-1 md:gap-2">
                 {calendarDays().map((day, i) => {
                   const dateStr = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
-                  const agendasToday = dateStr ? agendaList.filter(a => a.tanggal_kegiatan === dateStr) : [];
+                  const agendasToday = dateStr
+                    ? agendaList
+                        .filter(a => a.tanggal_kegiatan === dateStr)
+                        .sort((a, b) => (a.waktu_mulai || '00:00').localeCompare(b.waktu_mulai || '00:00'))
+                    : [];
                   const isToday = day && new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
 
                   return (
                     <div
                       key={i}
-                      className={`min-h-[100px] border rounded-lg p-2 ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'} ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
+                      className={`h-[140px] border rounded-lg p-2 flex flex-col ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'} ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
                     >
                       {day && (
                         <>
-                          <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                          <div className={`text-sm font-medium mb-1 shrink-0 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
                             {day}
                           </div>
-                          <div className="space-y-1">
+                          <div className="space-y-1 overflow-y-auto flex-1 pr-0.5 scrollbar-thin">
                             {agendasToday.map((agenda, idx) => {
                               const myParticipation = getMyParticipationStatus(agenda);
 
@@ -481,7 +485,7 @@ export default function AgendaPimpinanPage() {
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Kegiatan</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Tanggal & Waktu</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Pimpinan & Status</TableHead>
-                  <TableHead className="text-sm font-bold text-gray-900 py-4">Status Rekap</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4">Status</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -541,13 +545,6 @@ export default function AgendaPimpinanPage() {
                     </TableRow>
                   );
                 })}
-                {filteredData.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10 text-gray-500">
-                      Tidak ada agenda ditemukan
-                    </TableCell>
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
           </CardContent>

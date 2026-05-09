@@ -15,7 +15,8 @@ import {
   History,
   CheckCircle2,
   Clock,
-  Newspaper
+  Newspaper,
+  RotateCcw
 } from 'lucide-react';
 import { beritaApi } from '../../lib/api';
 
@@ -161,14 +162,14 @@ export default function DraftBeritaMediaPage() {
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Judul Berita</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Agenda</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4">Terakhir Dikirim</TableHead>
-                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Versi</TableHead>
+                  <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Revisi</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Status</TableHead>
                   <TableHead className="text-sm font-bold text-gray-900 py-4 text-center">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredDraft.map((draft, index) => {
-                  const revisiCount = draft.revisions?.length || 1;
+                  const revisiCount = draft.revisies?.length || 0;
 
                   return (
                     <TableRow key={draft.id_draft_berita} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
@@ -195,7 +196,10 @@ export default function DraftBeritaMediaPage() {
                         </p>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge variant="secondary" className="font-bold text-[10px]">v{revisiCount}</Badge>
+                        <div className="flex items-center justify-center gap-1.5 text-gray-700">
+                          <RotateCcw className="w-4 h-4 text-blue-500" />
+                          <span className="text-sm font-medium">{revisiCount} revisi</span>
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         {getStatusBadge(draft.status_draft)}

@@ -1,13 +1,48 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
-import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Twitter, Link as LinkIcon, Newspaper, ChevronRight, ChevronLeft, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Clock, Share2, Link as LinkIcon, Newspaper, ChevronRight, ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import Footer from '../components/layout/Footer';
+
+const XIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+    <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.294 19.497h2.039L6.482 3.239H4.293L17.607 20.65z"/>
+  </svg>
+);
+
+const WhatsAppIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+  </svg>
+);
 
 export default function NewsDetailPage() {
   const { id } = useParams();
   const [berita, setBerita] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
+  const [showCopyAlert, setShowCopyAlert] = useState(false);
+
+  const handleShare = (platform: string) => {
+    const url = window.location.href;
+    const text = berita?.judul_berita || 'Berita SIMAP';
+    
+    const shareText = `${text}\n\nBaca selengkapnya di: ${url}`;
+    
+    switch (platform) {
+      case 'x':
+        window.open(`https://x.com/intent/post?text=${encodeURIComponent(shareText)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(url);
+        setShowCopyAlert(true);
+        setTimeout(() => setShowCopyAlert(false), 3000);
+        break;
+    }
+  };
+
 
   useEffect(() => {
     fetchBeritaDetail();
@@ -91,7 +126,10 @@ export default function NewsDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="p-2.5 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-blue-600 transition-colors hidden sm:block">
+            <button 
+              onClick={() => handleShare('copy')}
+              className="p-2.5 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-blue-600 transition-colors hidden sm:block"
+            >
               <Share2 className="w-5 h-5" />
             </button>
           </div>
@@ -107,7 +145,7 @@ export default function NewsDetailPage() {
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
                 <span>
-                  {berita.tanggal_kirim ? new Date(berita.tanggal_kirim).toLocaleDateString('id-ID', {
+                  {berita.updatedAt ? new Date(berita.updatedAt).toLocaleDateString('id-ID', {
                     day: '2-digit',
                     month: 'long',
                     year: 'numeric'
@@ -127,15 +165,34 @@ export default function NewsDetailPage() {
             {/* Social Share Buttons */}
             <div className="flex items-center gap-4">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2">Bagikan:</p>
-              <button className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-blue-600 hover:text-white transition-all transform hover:-translate-y-1">
-                <Facebook className="w-4 h-4" />
+              <button 
+                onClick={() => handleShare('whatsapp')}
+                className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all transform hover:-translate-y-1 shadow-sm"
+                title="WhatsApp"
+              >
+                <WhatsAppIcon />
               </button>
-              <button className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-sky-500 hover:text-white transition-all transform hover:-translate-y-1">
-                <Twitter className="w-4 h-4" />
+              <button 
+                onClick={() => handleShare('x')}
+                className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-black hover:bg-black hover:text-white transition-all transform hover:-translate-y-1 shadow-sm"
+                title="X"
+              >
+                <XIcon />
               </button>
-              <button className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-slate-900 hover:text-white transition-all transform hover:-translate-y-1">
+
+              <button 
+                onClick={() => handleShare('copy')}
+                className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-all transform hover:-translate-y-1 shadow-sm"
+                title="Salin Link"
+              >
                 <LinkIcon className="w-4 h-4" />
               </button>
+              
+              {showCopyAlert && (
+                <div className="bg-slate-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg animate-in fade-in zoom-in duration-300">
+                  Link disalin!
+                </div>
+              )}
             </div>
           </header>
 
@@ -193,7 +250,7 @@ export default function NewsDetailPage() {
 
           {/* Article Content */}
           <div className="prose prose-slate prose-lg lg:prose-xl max-w-none">
-             <div className="text-slate-700 leading-relaxed font-medium whitespace-pre-wrap text-lg sm:text-xl">
+             <div className="text-slate-700 leading-relaxed font-medium whitespace-pre-wrap text-lg sm:text-xl text-justify">
                {berita.isi_draft}
              </div>
           </div>

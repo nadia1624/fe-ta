@@ -7,12 +7,15 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { ArrowRight, Search, Filter, TrendingUp, User, Clock, CheckCircle, Calendar, MapPin } from 'lucide-react';
 import CustomSelect from '../../components/ui/CustomSelect';
+import MonthPicker from '../../components/ui/month-picker';
 
 export default function LaporanKegiatanStafProtokolPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPimpinan, setFilterPimpinan] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterBulan, setFilterBulan] = useState(''); // format: YYYY-MM
   const [laporanList, setLaporanList] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,8 +58,9 @@ export default function LaporanKegiatanStafProtokolPage() {
 
     const matchPimpinan = filterPimpinan === 'all' || item.pimpinans.some((p: any) => p.nama_pimpinan === filterPimpinan);
     const matchStatus = filterStatus === 'all' || item.status_laporan === filterStatus;
+    const matchMonth = !filterBulan || (item.tanggal && item.tanggal.startsWith(filterBulan));
 
-    return matchSearch && matchPimpinan && matchStatus;
+    return matchSearch && matchPimpinan && matchStatus && matchMonth;
   });
 
   const pimpinanList = Array.from(new Set(laporanList.flatMap(l => l.pimpinans.map((p: any) => p.nama_pimpinan))));
@@ -184,6 +188,11 @@ export default function LaporanKegiatanStafProtokolPage() {
                   icon={<Filter className="w-4 h-4" />}
                   className="w-full md:w-48 text-sm"
                   placeholder="Filter Status"
+                />
+                <MonthPicker
+                  value={filterBulan}
+                  onChange={setFilterBulan}
+                  className="w-full md:w-56"
                 />
               </div>
             </div>

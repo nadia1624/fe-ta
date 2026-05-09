@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Eye, CheckCircle, XCircle, FileText, Search, Filter, X, RefreshCw, Clock, RotateCcw, AlertTriangle, ChevronDown, Download } from 'lucide-react';
 import { agendaApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
+import { toast } from '../../lib/swal';
 
 type StatusType = 'pending' | 'revision' | 'rejected_sespri' | 'approved_sespri' | 'approved_ajudan' | 'delegated' | 'rejected_ajudan' | 'canceled' | 'completed';
 
@@ -91,6 +92,14 @@ export default function VerifikasiPermohonanPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 15;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus]);
+
   const fetchAgendas = async () => {
     setLoading(true);
     setError('');
@@ -127,6 +136,11 @@ export default function VerifikasiPermohonanPage() {
     e.preventDefault();
     if (!selectedPermohonan) return;
 
+    if ((verifikasiData.status === 'revision' || verifikasiData.status === 'rejected_sespri') && !verifikasiData.catatan.trim()) {
+      toast.error('Gagal', 'Catatan atau alasan wajib diisi untuk status Revisi atau Ditolak!');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const response = await agendaApi.verify(selectedPermohonan.id_agenda, {
@@ -136,12 +150,13 @@ export default function VerifikasiPermohonanPage() {
 
       if (response.success) {
         setShowVerifikasiModal(false);
+        toast.success('Berhasil', 'Status permohonan berhasil diperbarui');
         fetchAgendas(); // Refresh data
       } else {
-        alert(response.message || 'Gagal memverifikasi');
+        toast.error('Gagal', response.message || 'Gagal memverifikasi');
       }
     } catch (err) {
-      alert('Gagal terhubung ke server');
+      toast.error('Error', 'Gagal terhubung ke server');
     } finally {
       setSubmitting(false);
     }
@@ -165,6 +180,13 @@ export default function VerifikasiPermohonanPage() {
 
     return matchSearch && matchStatus;
   });
+
+  // Paginated Data Calculation
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedData = filteredData.slice(startIndex, endIndex);
 
   // Count by status
   const statusCounts = agendaList.reduce((acc, item) => {
@@ -266,84 +288,133 @@ export default function VerifikasiPermohonanPage() {
               <p className="text-gray-500">Tidak ada permohonan ditemukan</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table className="min-w-[800px]">
-                <TableHeader>
-                  <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
-                    <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
-                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[140px]">Nomor Surat</TableHead>
-                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[160px]">Pemohon</TableHead>
-                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[200px]">Perihal</TableHead>
-                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[120px]">Tanggal Kegiatan</TableHead>
-                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[100px]">Waktu</TableHead>
-                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[100px]">Status</TableHead>
-                    <TableHead className="text-sm font-bold text-gray-900 py-4 w-[80px] text-center">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredData.map((agenda, index) => {
-                    const latestStatus = getLatestStatus(agenda);
-                    const config = STATUS_CONFIG[latestStatus];
-                    return (
-                      <TableRow key={agenda.id_agenda} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                        <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
-                        <TableCell className="font-medium truncate max-w-[140px]" title={agenda.nomor_surat}>{agenda.nomor_surat}</TableCell>
-                        <TableCell>
-                          <div className="max-w-[160px]">
-                            <p className="font-medium text-sm truncate" title={agenda.pemohon?.nama}>{agenda.pemohon?.nama || '-'}</p>
-                            <p className="text-xs text-gray-500 truncate" title={agenda.pemohon?.instansi}>{agenda.pemohon?.instansi || '-'}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm max-w-[200px]">
-                          <p className="truncate" title={agenda.perihal}>{agenda.perihal}</p>
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {agenda.tanggal_kegiatan
-                            ? new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
-                              day: '2-digit', month: 'short', year: 'numeric'
-                            })
-                            : '-'
-                          }
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {agenda.waktu_mulai && agenda.waktu_selesai
-                            ? `${agenda.waktu_mulai.slice(0, 5)} - ${agenda.waktu_selesai.slice(0, 5)}`
-                            : '-'
-                          }
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={config.variant as any}>
-                            {config.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDetail(agenda)}
-                              className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            {latestStatus === 'pending' && (
+            <>
+              <div className="overflow-x-auto">
+                <Table className="min-w-[800px]">
+                  <TableHeader>
+                    <TableRow className="bg-gray-50/80 border-b border-gray-200 hover:bg-gray-50/80 transition-colors">
+                      <TableHead className="text-sm font-bold text-gray-900 text-center w-12 py-4">No.</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 w-[140px]">Nomor Surat</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 w-[160px]">Pemohon</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 w-[200px]">Perihal</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 w-[120px]">Tanggal Kegiatan</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 w-[100px]">Waktu</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 w-[100px]">Status</TableHead>
+                      <TableHead className="text-sm font-bold text-gray-900 py-4 w-[80px] text-center">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.map((agenda, index) => {
+                      const latestStatus = getLatestStatus(agenda);
+                      const config = STATUS_CONFIG[latestStatus];
+                      const overallIndex = startIndex + index;
+                      return (
+                        <TableRow key={agenda.id_agenda} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
+                          <TableCell className="text-center font-bold text-gray-400 text-xs">{overallIndex + 1}</TableCell>
+                          <TableCell className="font-medium truncate max-w-[140px]" title={agenda.nomor_surat}>{agenda.nomor_surat}</TableCell>
+                          <TableCell>
+                            <div className="max-w-[160px]">
+                              <p className="font-medium text-sm truncate" title={agenda.pemohon?.nama}>{agenda.pemohon?.nama || '-'}</p>
+                              <p className="text-xs text-gray-500 truncate" title={agenda.pemohon?.instansi}>{agenda.pemohon?.instansi || '-'}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm max-w-[200px]">
+                            <p className="truncate" title={agenda.perihal}>{agenda.perihal}</p>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {agenda.tanggal_kegiatan
+                              ? new Date(agenda.tanggal_kegiatan).toLocaleDateString('id-ID', {
+                                day: '2-digit', month: 'short', year: 'numeric'
+                              })
+                              : '-'
+                            }
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {agenda.waktu_mulai && agenda.waktu_selesai
+                              ? `${agenda.waktu_mulai.slice(0, 5)} - ${agenda.waktu_selesai.slice(0, 5)}`
+                              : '-'
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={config.variant as any}>
+                              {config.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-center gap-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleVerifikasi(agenda)}
-                                className="h-9 w-9 p-0 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border border-green-100 rounded-xl transition-all shadow-sm"
+                                onClick={() => handleDetail(agenda)}
+                                className="h-9 w-9 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-100 rounded-xl transition-all shadow-sm"
                               >
-                                <CheckCircle className="w-4 h-4" />
+                                <Eye className="w-4 h-4" />
                               </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                              {latestStatus === 'pending' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleVerifikasi(agenda)}
+                                  className="h-9 w-9 p-0 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border border-green-100 rounded-xl transition-all shadow-sm"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-100 px-6 py-4 bg-gray-50/50 rounded-b-xl">
+                  <p className="text-xs md:text-sm text-gray-600">
+                    Menampilkan <span className="font-semibold text-gray-900">{startIndex + 1}</span> hingga{' '}
+                    <span className="font-semibold text-gray-900">{Math.min(endIndex, totalItems)}</span> dari{' '}
+                    <span className="font-semibold text-gray-900">{totalItems}</span> permohonan
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="text-xs font-semibold px-3 py-1.5 border-gray-200 shadow-sm"
+                    >
+                      Sebelumnya
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="text-xs font-semibold px-3 py-1.5 border-gray-200 shadow-sm"
+                    >
+                      Selanjutnya
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

@@ -59,7 +59,9 @@ export default function AgendaPimpinanStafProtokolPage() {
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth();
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return filteredData.filter(a => a.tanggal_kegiatan === dateStr);
+    return filteredData
+      .filter(a => a.tanggal_kegiatan === dateStr)
+      .sort((a, b) => (a.waktu_mulai || '00:00').localeCompare(b.waktu_mulai || '00:00'));
   };
 
   const changeMonth = (dir: number) => {
@@ -313,16 +315,16 @@ export default function AgendaPimpinanStafProtokolPage() {
                   return (
                     <div
                       key={index}
-                      className={`min-h-[80px] md:min-h-[110px] border rounded-lg p-1 md:p-2 ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
+                      className={`h-[150px] border rounded-lg p-2 flex flex-col ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
                         } ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
                     >
                       {day && (
                         <>
-                          <div className={`text-xs font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                          <div className={`text-xs font-medium mb-1 shrink-0 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
                             {day}
                           </div>
-                          <div className="space-y-0.5">
-                            {agendas.slice(0, 3).map((agenda) => {
+                          <div className="space-y-1 overflow-y-auto flex-1 pr-0.5 scrollbar-thin">
+                            {agendas.map((agenda) => {
                               let color = 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50';
                               let attendeeName = '';
 
@@ -355,9 +357,6 @@ export default function AgendaPimpinanStafProtokolPage() {
                                 </div>
                               );
                             })}
-                            {agendas.length > 3 && (
-                              <div className="text-[10px] text-gray-400 font-medium">+{agendas.length - 3} lainnya</div>
-                            )}
                           </div>
                         </>
                       )}

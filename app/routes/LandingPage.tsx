@@ -9,23 +9,26 @@ import Footer from '../components/layout/Footer';
 
 const heroSlides = [
   {
-    image: 'https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?w=1600&q=80',
+    image: '/foto/1.png',
     alt: 'Rapat pimpinan'
   },
   {
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80',
+    image: '/foto/2.png',
     alt: 'Kegiatan protokol'
   },
   {
-    image: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=1600&q=80',
+    image: '/foto/3.png',
     alt: 'Gedung pemerintahan'
+  },
+  {
+    image: '/foto/4.png',
+    alt: 'Aktivitas instansi'
   },
 ];
 
 
 const navLinks = [
   { label: 'Home', id: 'hero' },
-  { label: 'Fitur', id: 'fitur' },
   { label: 'Alur', id: 'alur' },
   { label: 'Berita', id: 'berita' },
 ];
@@ -108,34 +111,14 @@ export default function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
-  const features = [
-    {
-      icon: FileText,
-      title: 'Pengelolaan Surat',
-      description: 'Layanan administrasi surat permohonan agenda pimpinan yang terintegrasi secara digital dan real-time.'
-    },
-    {
-      icon: Calendar,
-      title: 'Manajemen Agenda',
-      description: 'Kelola jadwal dan koordinasi agenda pimpinan melalui sistem yang terstruktur dan aman.'
-    },
-    {
-      icon: Users,
-      title: 'Koordinasi Tim',
-      description: 'Penugasan dan monitoring staf protokol dan media untuk setiap kegiatan.',
-    },
-    {
-      icon: Shield,
-      title: 'Pelaporan & Dokumentasi',
-      description: 'Sistem dokumentasi kegiatan dan pelaporan yang tersentralisasi.'
-    }
-  ];
+  // Check if user is internal or external
+  const isInternal = isLoggedIn && userSlug !== 'pemohon';
 
   const steps = [
-    { num: '01', title: 'Pengajuan Surat', desc: 'Pemohon mengajukan surat permohonan agenda kegiatan melalui platform' },
-    { num: '02', title: 'Verifikasi', desc: 'Sespri memverifikasi kelengkapan dan kesesuaian permohonan' },
-    { num: '03', title: 'Penugasan', desc: 'Kasubag menugaskan staf protokol dan media untuk kegiatan' },
-    { num: '04', title: 'Pelaksanaan', desc: 'Kegiatan terlaksana dengan dokumentasi dan pelaporan lengkap' },
+    { num: '01', title: 'Pengajuan Surat', desc: 'Pemohon mengajukan permohonan agenda kegiatan melalui platform' },
+    { num: '02', title: 'Verifikasi Permohonan', desc: 'Permohonan diperiksa untuk memastikan kelengkapan dan kesesuaian data' },
+    { num: '03', title: 'Konfirmasi Jadwal', desc: 'Jadwal kegiatan dikonfirmasi sesuai ketersediaan pimpinan' },
+    { num: '04', title: 'Pelaksanaan Kegiatan', desc: 'Kegiatan dilaksanakan sesuai jadwal yang telah disepakati' },
   ];
 
 
@@ -294,10 +277,10 @@ export default function LandingPage() {
               </button>
             </Link>
             <button 
-              onClick={() => scrollTo('fitur')}
+              onClick={() => scrollTo('alur')}
               className="w-full sm:w-auto px-10 h-16 bg-white/10 backdrop-blur-xl hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition-all duration-300 flex items-center justify-center gap-3"
             >
-              Pelajari Fitur
+              Pelajari Alur
               <ChevronRight className="w-5 h-5 opacity-60" />
             </button>
           </div>
@@ -317,41 +300,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="fitur" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-20">
-            <p className="text-blue-600 font-bold text-xs mb-3 uppercase tracking-[0.2em]">Layanan Unggulan</p>
-            <h3 className="text-3xl sm:text-5xl font-black text-slate-900 mb-6 tracking-tight">Manajemen Agenda Terpadu</h3>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg font-medium leading-relaxed">
-              Sistem digital yang dirancang untuk mempermudah koordinasi agenda pimpinan, pengelolaan surat permohonan, dan dokumentasi kegiatan dalam satu platform terintegrasi.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div key={index} className="group bg-white hover:bg-slate-50 p-8 rounded-[2rem] border border-slate-100 hover:border-blue-100 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(37,99,235,0.08)] relative overflow-hidden">
-                  {/* Hover Accent */}
-                  <div className="absolute top-0 left-0 w-2 h-0 group-hover:h-full bg-blue-600 transition-all duration-500" />
-                  
-                  <div className="w-14 h-14 bg-blue-50/50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-sm border border-blue-100/50">
-                    <Icon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors tracking-tight">{feature.title}</h4>
-                  <p className="text-slate-500 group-hover:text-slate-600 transition-colors text-sm leading-relaxed font-medium">
-                    {feature.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        
-        {/* Background Decor */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-blue-50 rounded-full blur-[100px] opacity-50" />
-      </section>
 
       {/* Process Section */}
       <section id="alur" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-slate-100 relative overflow-hidden">
@@ -371,6 +319,7 @@ export default function LandingPage() {
              <div className="hidden lg:block absolute top-10 left-0 right-0 h-px bg-gradient-to-r from-slate-200/0 via-slate-300 to-slate-200/0" />
              
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
               {steps.map((step, index) => (
                 <div key={index} className="group relative flex flex-col items-center text-center">
                   <div className="w-20 h-20 bg-blue-50 border border-blue-100 rounded-3xl flex items-center justify-center text-3xl font-black text-blue-600 mb-8 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10 shadow-sm group-hover:shadow-xl group-hover:shadow-blue-200">
@@ -428,7 +377,7 @@ export default function LandingPage() {
                           <Clock className="w-4 h-4 text-blue-600" />
                        </div>
                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none pt-0.5">
-                        {berita.tanggal_kirim ? new Date(berita.tanggal_kirim).toLocaleDateString('id-ID', {
+                        {berita.updatedAt ? new Date(berita.updatedAt).toLocaleDateString('id-ID', {
                           day: '2-digit',
                           month: 'short',
                           year: 'numeric'

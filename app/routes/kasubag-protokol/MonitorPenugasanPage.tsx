@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Search, Filter, CheckCircle, Clock, TrendingUp, ArrowRight, ClipboardList, Loader2, AlertCircle, ChevronDown } from 'lucide-react';
 import { penugasanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
+import MonthPicker from '../../components/ui/month-picker';
 
 interface Pimpinan {
   nama_pimpinan: string;
@@ -38,7 +39,9 @@ interface Penugasan {
 export default function MonitorPenugasanPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterBulan, setFilterBulan] = useState<string>(''); // format: YYYY-MM
   const [penugasanList, setPenugasanList] = useState<Penugasan[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,7 +96,12 @@ export default function MonitorPenugasanPage() {
 
     const matchesFilter = filterStatus === 'all' || penugasan.status_pelaksanaan === filterStatus;
 
-    return matchesSearch && matchesFilter;
+    const matchesMonth = !filterBulan || (
+      penugasan.agenda?.tanggal_kegiatan && 
+      penugasan.agenda.tanggal_kegiatan.startsWith(filterBulan)
+    );
+
+    return matchesSearch && matchesFilter && matchesMonth;
   });
 
   const statsSelesai = penugasanList.filter(p => p.status_pelaksanaan === 'Selesai').length;
@@ -222,6 +230,11 @@ export default function MonitorPenugasanPage() {
                 icon={<Filter className="w-4 h-4" />}
                 className="w-full sm:w-48"
                 placeholder="Pilih Status"
+              />
+              <MonthPicker
+                value={filterBulan}
+                onChange={setFilterBulan}
+                className="w-full sm:w-56"
               />
             </div>
           </div>

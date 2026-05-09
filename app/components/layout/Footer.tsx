@@ -62,9 +62,9 @@ export default function Footer({ navLinks, scrollTo }: FooterProps) {
           <div>
             <h4 className="text-slate-900 font-bold text-sm uppercase tracking-widest mb-8">Connect</h4>
             <ul className="space-y-4">
-              <li><a href="#" className="text-sm font-semibold hover:text-blue-600 transition-colors">Instagram</a></li>
-              <li><a href="#" className="text-sm font-semibold hover:text-blue-600 transition-colors">Twitter</a></li>
-              <li><a href="#" className="text-sm font-semibold hover:text-blue-600 transition-colors">YouTube</a></li>
+              <li><a href="https://www.instagram.com/prokopim.padang/" className="text-sm font-semibold hover:text-blue-600 transition-colors">Instagram</a></li>
+              <li><a href="https://web.facebook.com/humaskotapadang/" className="text-sm font-semibold hover:text-blue-600 transition-colors">Fabebook</a></li>
+              <li><a href="https://www.youtube.com/@humaskotapadang1087/" className="text-sm font-semibold hover:text-blue-600 transition-colors">YouTube</a></li>
             </ul>
           </div>
         </div>

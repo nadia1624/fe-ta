@@ -19,6 +19,7 @@ export default function LaporanKegiatanStafMediaPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPimpinan, setFilterPimpinan] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterBulan, setFilterBulan] = useState(''); // format: YYYY-MM
 
   const fetchTugas = async () => {
     try {
@@ -57,7 +58,12 @@ export default function LaporanKegiatanStafMediaPage() {
       (filterStatus === 'proses' && (tugas.status === 'proses' || tugas.status === 'progress')) ||
       (filterStatus === 'belum' && (tugas.status === 'pending' || tugas.status === 'belum'));
 
-    return matchesSearch && matchesPimpinan && matchesStatus;
+    const matchesMonth = !filterBulan || (
+      tugas.agenda?.tanggal_kegiatan && 
+      tugas.agenda.tanggal_kegiatan.startsWith(filterBulan)
+    );
+
+    return matchesSearch && matchesPimpinan && matchesStatus && matchesMonth;
   });
 
   const getStatusBadge = (status: string) => {
@@ -188,6 +194,11 @@ export default function LaporanKegiatanStafMediaPage() {
                 ]}
                 icon={<Filter className="w-4 h-4" />}
                 className="w-full md:w-36 text-xs"
+              />
+              <MonthPicker
+                value={filterBulan}
+                onChange={setFilterBulan}
+                className="w-full md:w-56"
               />
             </div>
           </div>

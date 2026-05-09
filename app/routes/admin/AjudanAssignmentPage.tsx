@@ -219,6 +219,7 @@ export default function AjudanAssignmentPage() {
                 <TableHead className="text-sm font-bold text-gray-900 py-4">Ajudan</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 py-4">Mendampingi Pimpinan</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 py-4">Periode</TableHead>
+                <TableHead className="text-sm font-bold text-gray-900 py-4">Keterangan</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 text-center py-4">Status Aktif</TableHead>
                 <TableHead className="text-sm font-bold text-gray-900 text-center py-4">Aksi</TableHead>
               </TableRow>
@@ -226,7 +227,7 @@ export default function AjudanAssignmentPage() {
             <TableBody>
               {isLoading && assignments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">
+                  <TableCell colSpan={7} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2 text-gray-500">
                       <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
                       <span className="font-medium italic">Memuat data penugasan...</span>
@@ -235,7 +236,7 @@ export default function AjudanAssignmentPage() {
                 </TableRow>
               ) : filteredAssignments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-gray-500 font-medium italic">
+                  <TableCell colSpan={7} className="text-center py-12 text-gray-500 font-medium italic">
                     Tidak ada data penugasan ditemukan
                   </TableCell>
                 </TableRow>
@@ -264,6 +265,9 @@ export default function AjudanAssignmentPage() {
                       <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 border border-gray-200 text-gray-600 text-[10px] font-bold">
                         {item.periodeJabatan?.periode?.nama_periode}
                       </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600 font-medium max-w-[180px] truncate" title={item.keterangan || '-'}>
+                      {item.keterangan || '-'}
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex justify-center">

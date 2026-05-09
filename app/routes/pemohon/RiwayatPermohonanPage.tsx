@@ -112,6 +112,20 @@ export default function RiwayatPermohonanPage() {
         return;
       }
 
+      // Validate Tanggal Surat (max. today)
+      if (editForm.tanggal_surat) {
+        const letterDate = new Date(editForm.tanggal_surat);
+        letterDate.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (letterDate > today) {
+          toast.warning('Peringatan', 'Tanggal surat tidak boleh melebihi hari ini');
+          setEditLoading(false);
+          return;
+        }
+      }
+
       // 2. Validate Tanggal Kegiatan (min. tomorrow)
       const selectedDate = new Date(editForm.tanggal_kegiatan);
       selectedDate.setHours(0, 0, 0, 0);
@@ -156,12 +170,12 @@ export default function RiwayatPermohonanPage() {
   };
 
   const handleCancel = async (request: any) => {
-    const isConfirmed = await toast.confirm(
+    const { isConfirmed } = await toast.confirm(
       'Apakah Anda yakin?',
       'Permohonan yang dibatalkan tidak dapat diproses kembali.',
       'danger'
     );
- 
+
     if (isConfirmed) {
       setLoading(true);
       try {
@@ -345,7 +359,7 @@ export default function RiwayatPermohonanPage() {
                         <Eye className="w-4 h-4 mr-2 text-blue-500 group-hover/btn:text-white transition-colors" />
                         <span className="font-bold text-xs tracking-tight">Detail</span>
                       </Button>
-                      
+
                       {statusInfo.status === 'revision' && (
                         <Button
                           variant="ghost"
@@ -357,7 +371,7 @@ export default function RiwayatPermohonanPage() {
                           <span className="font-bold text-xs tracking-tight text-nowrap">Revisi</span>
                         </Button>
                       )}
-                      
+
                       {(statusInfo.status === 'pending' || statusInfo.status === 'revision') && (
                         <Button
                           variant="ghost"
@@ -480,7 +494,7 @@ export default function RiwayatPermohonanPage() {
                         </div>
                         {ap.status_kehadiran === 'diwakilkan' && (
                           <div className="ml-7 text-[10px] font-bold text-blue-600 bg-blue-50 w-fit px-2 py-0.5 rounded border border-blue-100 italic">
-                             Diwakili oleh: {ap.nama_perwakilan || '-'}
+                            Diwakili oleh: {ap.nama_perwakilan || '-'}
                           </div>
                         )}
                       </div>
@@ -515,28 +529,28 @@ export default function RiwayatPermohonanPage() {
                 </div>
               )}
 
-               <div className="flex flex-wrap items-center gap-4 pt-6 border-t mt-4">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setShowDetailModal(false)} 
+              <div className="flex flex-wrap items-center gap-4 pt-6 border-t mt-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowDetailModal(false)}
                   className="flex-1 h-12 rounded-2xl bg-gray-50 border border-gray-100 text-gray-600 hover:bg-gray-100 font-bold transition-all"
                 >
                   Tutup
                 </Button>
-                
+
                 {getStatusInfo(selectedRequest).status === 'revision' && (
-                  <Button 
-                    onClick={() => { setShowDetailModal(false); handleEdit(selectedRequest); }} 
+                  <Button
+                    onClick={() => { setShowDetailModal(false); handleEdit(selectedRequest); }}
                     className="flex-[3] h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 transition-all font-bold"
                   >
                     <Edit3 className="w-5 h-5 mr-3" />Edit & Kirim Ulang
                   </Button>
                 )}
-                
+
                 {(getStatusInfo(selectedRequest).status === 'pending' || getStatusInfo(selectedRequest).status === 'revision') && (
-                  <Button 
+                  <Button
                     variant="ghost"
-                    onClick={() => handleCancel(selectedRequest)} 
+                    onClick={() => handleCancel(selectedRequest)}
                     className="flex-1 h-12 rounded-2xl bg-red-50 border border-red-100 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 hover:shadow-xl hover:shadow-red-50 font-bold transition-all group/cancel"
                   >
                     <XCircle className="w-5 h-5 mr-2 text-red-500 group-hover/cancel:text-white transition-colors" />Batalkan
@@ -581,7 +595,11 @@ export default function RiwayatPermohonanPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Surat <span className="text-red-500">*</span></label>
-                    <input type="date" value={editForm.tanggal_surat} onChange={e => setEditForm({ ...editForm, tanggal_surat: e.target.value })}
+                    <input
+                      type="date"
+                      value={editForm.tanggal_surat}
+                      onChange={e => setEditForm({ ...editForm, tanggal_surat: e.target.value })}
+                      max={new Date().toISOString().split('T')[0]}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
                   </div>
                 </div>
@@ -601,9 +619,9 @@ export default function RiwayatPermohonanPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Kegiatan <span className="text-red-500">*</span></label>
-                    <input 
-                      type="date" 
-                      value={editForm.tanggal_kegiatan} 
+                    <input
+                      type="date"
+                      value={editForm.tanggal_kegiatan}
                       onChange={e => setEditForm({ ...editForm, tanggal_kegiatan: e.target.value })}
                       min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />

@@ -29,6 +29,7 @@ export function clearAuthData(): void {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userJabatan');
 }
 
 export function getActorSlug(roleName: string | null): string {
@@ -94,7 +95,7 @@ export const authApi = {
         return res.json();
     },
 
-    async updateProfile(data: { nama?: string; email?: string; no_hp?: string }): Promise<ApiResponse> {
+    async updateProfile(data: { nama?: string; email?: string; no_hp?: string; jabatan?: string; nip?: string; instansi?: string }): Promise<ApiResponse> {
         const token = getToken();
         const res = await fetch(`${API_BASE_URL}/auth/me`, {
             method: 'PUT',

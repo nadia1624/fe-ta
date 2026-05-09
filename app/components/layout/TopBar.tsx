@@ -76,7 +76,7 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
       <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <div className="flex items-center gap-3 min-w-0">
           {/* Hamburger — mobile only */}
@@ -108,7 +108,7 @@ export default function TopBar({ user, onLogout, onToggleSidebar }: TopBarProps)
               {/* User info — hidden on small screens */}
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-gray-900">{user.nama}</p>
-                <p className="text-xs text-gray-600">{user.role}</p>
+                <p className="text-xs text-gray-600">{user.jabatan}</p>
               </div>
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-blue-100">
                 {user.foto_profil ? (

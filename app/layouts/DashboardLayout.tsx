@@ -24,7 +24,7 @@ export default function DashboardLayout() {
     setCurrentUser({
       nama: localStorage.getItem('userName') || '',
       role: userRole || '',
-      jabatan: '',
+      jabatan: localStorage.getItem('userJabatan') || '',
       email: localStorage.getItem('userEmail') || '',
       foto_profil: ''
     });
@@ -36,10 +36,15 @@ export default function DashboardLayout() {
         setCurrentUser({
           nama: user.nama,
           role: user.role?.nama_role || userRole || '',
-          jabatan: '',
+          jabatan: user.jabatan || '',
           email: user.email,
           foto_profil: user.foto_profil || ''
         });
+        if (user.jabatan) {
+          localStorage.setItem('userJabatan', user.jabatan);
+        } else {
+          localStorage.removeItem('userJabatan');
+        }
       }
     }).catch(() => {
       // Loader handles auth, we just fail silently here or assume token is still valid

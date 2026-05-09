@@ -107,7 +107,9 @@ export default function AgendaPimpinanPage() {
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth();
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return filteredData.filter(agenda => agenda.tanggal_kegiatan === dateStr);
+    return filteredData
+      .filter(agenda => agenda.tanggal_kegiatan === dateStr)
+      .sort((a, b) => (a.waktu_mulai || '00:00').localeCompare(b.waktu_mulai || '00:00'));
   };
 
   const changeMonth = (direction: number) => {
@@ -128,10 +130,8 @@ export default function AgendaPimpinanPage() {
       if (res.success) {
         toast.success('Berhasil', 'Agenda berhasil diperbarui');
         setIsEditingNotes(false);
-        fetchData(); // Refresh the main list
+        fetchData(); 
 
-        // Update the selected agenda with the full reloaded data from server
-        // This now includes the updated kaskpdPendampings associations
         if (res.data) {
           setSelectedAgenda(res.data);
         }
@@ -170,18 +170,15 @@ export default function AgendaPimpinanPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Date validation: must be after today
     const todayStr = moment().format('YYYY-MM-DD');
     if (formData.tanggal_kegiatan <= todayStr) {
       return toast.error('Error', 'Tanggal kegiatan harus setelah hari ini (minimal besok)');
     }
 
-    // Time validation: end time > start time
     if (formData.waktu_selesai <= formData.waktu_mulai) {
       return toast.error('Error', 'Waktu selesai tidak boleh lebih awal dari waktu mulai.');
     }
 
-    // File validation
     if (!formData.file_surat) {
       return toast.warning('Peringatan', 'Surat permohonan wajib diupload');
     }
@@ -248,10 +245,8 @@ export default function AgendaPimpinanPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Deklarasikan 'now' sebelum digunakan oleh filteredData
   const now = new Date();
 
-  // Extract unique pimpinan options from agenda list for filtering
   const pimpinanFilterOptions: any[] = [];
   const seenPimpinan = new Set();
   agendaList.forEach(a => {
@@ -265,17 +260,14 @@ export default function AgendaPimpinanPage() {
   });
 
   const filteredData = agendaList.filter(item => {
-    // 0. Exclude canceled agendas
     const latestStatus = item.statusAgendas?.[0]?.status_agenda;
     if (latestStatus === 'canceled') return false;
 
-    // 1. Search filter
     const matchSearch =
       item.nama_kegiatan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.perihal?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.lokasi_kegiatan?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // 2. Pimpinan filter
     let matchPimpinan = true;
     if (filterPimpinan !== 'all') {
       const [idJ, idP] = filterPimpinan.split(':');
@@ -284,7 +276,6 @@ export default function AgendaPimpinanPage() {
       );
     }
 
-    // 3. Status filter (Terlaksana vs Belum)
     let matchStatus = true;
     if (filterStatus !== 'all') {
       const agendaDateTime = new Date(item.tanggal_kegiatan);
@@ -311,9 +302,6 @@ export default function AgendaPimpinanPage() {
       default: return <Badge variant="secondary">Belum Diatur</Badge>;
     }
   };
-
-  // KPI Calculations
-
 
   const statsTotal = agendaList.length;
   let statsTerlaksana = 0;
@@ -491,16 +479,16 @@ export default function AgendaPimpinanPage() {
                   return (
                     <div
                       key={index}
-                      className={`min-h-[100px] border rounded-lg p-2 ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
+                      className={`h-[150px] border rounded-lg p-2 flex flex-col ${day ? 'bg-white hover:bg-gray-50' : 'bg-gray-50'
                         } ${isToday ? 'border-blue-500 border-2' : 'border-gray-200'}`}
                     >
                       {day && (
                         <>
-                          <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                          <div className={`text-sm font-medium mb-1 shrink-0 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
                             {day}
                           </div>
-                          <div className="space-y-1">
-                            {agendas.slice(0, 3).map((agenda) => {
+                          <div className="space-y-1 overflow-y-auto flex-1 pr-0.5 scrollbar-thin">
+                            {agendas.map((agenda) => {
                               let dominantColor = 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50';
                               let attendeeName = '';
 
@@ -545,11 +533,6 @@ export default function AgendaPimpinanPage() {
                                 </div>
                               );
                             })}
-                            {agendas.length > 3 && (
-                              <div className="text-[10px] text-gray-400 font-medium">
-                                +{agendas.length - 3} lainnya
-                              </div>
-                            )}
                           </div>
                         </>
                       )}

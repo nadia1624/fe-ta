@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { User, Mail, Phone, Lock, Pencil, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, Lock, Pencil, Trash2, Building2 } from 'lucide-react';
 import { authApi } from '../lib/api';
 import { toast } from '../lib/swal';
 import PhotoCropModal from '../components/ui/PhotoCropModal';
@@ -40,6 +40,9 @@ export default function ProfilePage() {
     nama: '',
     email: '',
     no_hp: '',
+    jabatan: '',
+    nip: '',
+    instansi: '',
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -60,6 +63,9 @@ export default function ProfilePage() {
             nama: data.nama || '',
             email: data.email || '',
             no_hp: data.no_hp || '',
+            jabatan: data.jabatan || '',
+            nip: data.nip || '',
+            instansi: data.instansi || '',
           });
         }
       } catch (err) {
@@ -109,7 +115,7 @@ export default function ProfilePage() {
   };
 
   const handleDeleteFoto = async () => {
-    const isConfirmed = await toast.confirm(
+    const { isConfirmed } = await toast.confirm(
       'Hapus Foto Profil?',
       'Foto profil Anda akan dihapus dan diganti dengan avatar default.',
       'danger'
@@ -132,14 +138,23 @@ export default function ProfilePage() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await authApi.updateProfile({
+      const payload: any = {
         nama: profileForm.nama,
         email: profileForm.email,
         no_hp: profileForm.no_hp,
-      });
+      };
+      if (profileData.role?.nama_role === 'Pemohon') {
+        payload.jabatan = profileForm.jabatan;
+        payload.nip = profileForm.nip;
+        payload.instansi = profileForm.instansi;
+      }
+      const res = await authApi.updateProfile(payload);
       if (res.success) {
         setProfileData({ ...profileData, ...profileForm });
         localStorage.setItem('userName', profileForm.nama);
+        if (profileData.role?.nama_role === 'Pemohon') {
+          localStorage.setItem('userJabatan', profileForm.jabatan);
+        }
         setIsEditingProfile(false);
         toast.success('Berhasil!', 'Profil berhasil diperbarui.');
       } else {
@@ -155,6 +170,9 @@ export default function ProfilePage() {
       nama: profileData.nama,
       email: profileData.email,
       no_hp: profileData.no_hp || '',
+      jabatan: profileData.jabatan || '',
+      nip: profileData.nip || '',
+      instansi: profileData.instansi || '',
     });
     setIsEditingProfile(false);
   };
@@ -325,10 +343,26 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-gray-600 mb-1">Jabatan</label>
                   <div className="text-gray-900">{profileData.jabatan || 'Belum diisi'}</div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">Role</label>
-                  <div className="text-gray-900">{profileData.role?.nama_role || '-'}</div>
-                </div>
+                {profileData.role?.nama_role === 'Pemohon' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Instansi</label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <Building2 className="w-4 h-4 text-gray-400" />
+                      {profileData.instansi || 'Belum diisi'}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Role</label>
+                    <div className="text-gray-900">{profileData.role?.nama_role || '-'}</div>
+                  </div>
+                )}
+                {profileData.role?.nama_role === 'Pemohon' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Role</label>
+                    <div className="text-gray-900">{profileData.role?.nama_role || '-'}</div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -349,13 +383,21 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    NIP <span className="text-gray-400">(Tidak dapat diubah)</span>
+                    NIP {profileData.role?.nama_role === 'Pemohon' ? (
+                      <span className="text-gray-400">(Opsional)</span>
+                    ) : (
+                      <span className="text-gray-400">(Tidak dapat diubah)</span>
+                    )}
                   </label>
                   <input
                     type="text"
-                    value={profileData.nip || ''}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
-                    disabled
+                    name="nip"
+                    value={profileData.role?.nama_role === 'Pemohon' ? profileForm.nip : (profileData.nip || '')}
+                    onChange={profileData.role?.nama_role === 'Pemohon' ? handleProfileChange : undefined}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      profileData.role?.nama_role !== 'Pemohon' ? 'bg-gray-50 text-gray-500' : ''
+                    }`}
+                    disabled={profileData.role?.nama_role !== 'Pemohon'}
                   />
                 </div>
                 <div>
@@ -383,11 +425,43 @@ export default function ProfilePage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
+                {profileData.role?.nama_role === 'Pemohon' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Jabatan <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="jabatan"
+                        value={profileForm.jabatan}
+                        onChange={handleProfileChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Instansi <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="instansi"
+                        value={profileForm.instansi}
+                        onChange={handleProfileChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900">
-                  <strong>Catatan:</strong> Jabatan dan Role tidak dapat diubah sendiri. Hubungi Administrator untuk perubahan data tersebut.
+                  <strong>Catatan:</strong> {profileData.role?.nama_role === 'Pemohon' 
+                    ? 'Role Anda tidak dapat diubah sendiri. Hubungi Administrator untuk perubahan data tersebut.' 
+                    : 'Jabatan dan Role tidak dapat diubah sendiri. Hubungi Administrator untuk perubahan data tersebut.'}
                 </p>
               </div>
 

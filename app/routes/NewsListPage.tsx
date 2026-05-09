@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { Newspaper, ArrowLeft, Clock, Search, ExternalLink, Calendar, ChevronRight } from 'lucide-react';
+import { Newspaper, ArrowLeft, Clock, Search, ExternalLink, Calendar, ChevronRight, Share2, Check } from 'lucide-react';
 import { NewsSlider } from '../components/NewsSlider';
 import Footer from '../components/layout/Footer';
 
@@ -10,7 +10,15 @@ export default function NewsListPage() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const limit = 9;
+
+  const handleCopyLink = (id: string) => {
+    const url = `${window.location.origin}/berita/${id}`;
+    navigator.clipboard.writeText(url);
+    setCopySuccess(id);
+    setTimeout(() => setCopySuccess(null), 2000);
+  };
 
   useEffect(() => {
     fetchBerita(currentPage);
@@ -128,7 +136,7 @@ export default function NewsListPage() {
                             <Calendar className="w-4 h-4 text-blue-600" />
                          </div>
                          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none pt-0.5">
-                          {berita.tanggal_kirim ? new Date(berita.tanggal_kirim).toLocaleDateString('id-ID', {
+                          {berita.updatedAt ? new Date(berita.updatedAt).toLocaleDateString('id-ID', {
                             day: '2-digit',
                             month: 'long',
                             year: 'numeric'
@@ -154,8 +162,20 @@ export default function NewsListPage() {
                           Baca Selengkapnya
                           <ArrowLeft className="w-4 h-4 rotate-180 group-hover/btn:translate-x-1 transition-transform" />
                         </Link>
-                        <button className="p-2 rounded-lg hover:bg-slate-50 text-slate-400 transition-colors">
-                          <ExternalLink className="w-4 h-4" />
+                        <button 
+                          onClick={() => handleCopyLink(berita.id_draft_berita)}
+                          className={`p-2 rounded-lg transition-all ${
+                            copySuccess === berita.id_draft_berita 
+                              ? 'bg-green-50 text-green-600' 
+                              : 'hover:bg-slate-50 text-slate-400 hover:text-blue-600'
+                          }`}
+                          title="Salin Link"
+                        >
+                          {copySuccess === berita.id_draft_berita ? (
+                            <Check className="w-4 h-4" />
+                          ) : (
+                            <Share2 className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                     </div>

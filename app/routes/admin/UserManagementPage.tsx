@@ -560,9 +560,11 @@ export default function UserManagementPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     >
                       <option value="">Pilih Role...</option>
-                      {roles.map(role => (
-                        <option key={role.id_role} value={role.id_role}>{role.nama_role}</option>
-                      ))}
+                      {roles
+                        .filter(role => role.id_role !== 'R008' && role.id_role !== 8 && role.nama_role !== 'Pemohon')
+                        .map(role => (
+                          <option key={role.id_role} value={role.id_role}>{role.nama_role}</option>
+                        ))}
                     </select>
                   </div>
 
