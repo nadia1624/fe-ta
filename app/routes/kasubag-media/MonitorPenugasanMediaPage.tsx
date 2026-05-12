@@ -21,6 +21,8 @@ import {
 import { Link } from 'react-router';
 import { penugasanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 interface Pimpinan {
     nama_pimpinan: string;
@@ -117,6 +119,15 @@ export default function MonitorPenugasanMediaPage() {
 
         return matchesSearch && matchesStatus;
     });
+
+    const {
+        currentPage,
+        setCurrentPage,
+        totalPages,
+        totalItems,
+        paginatedData: paginatedPenugasan,
+        itemsPerPage: ITEMS_PER_PAGE
+    } = usePagination(filteredData, 15, [searchTerm, statusFilter]);
 
     const statsTotal = penugasanList.length;
     const statsSelesai = penugasanList.filter(p => {
@@ -290,7 +301,7 @@ export default function MonitorPenugasanMediaPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {filteredData.map((item) => (
+                                {paginatedPenugasan.map((item) => (
                                     <tr key={item.id_penugasan} className="hover:bg-blue-50/30 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
@@ -386,6 +397,15 @@ export default function MonitorPenugasanMediaPage() {
                                 ))}
                             </tbody>
                         </table>
+                        
+                        {/* Pagination Controls */}
+                        <CustomTablePagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalItems}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            onPageChange={setCurrentPage}
+                        />
                     </div>
 
                     {filteredData.length === 0 && (

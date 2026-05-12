@@ -8,6 +8,8 @@ import { agendaApi, pimpinanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 import { toast } from '../../lib/swal';
 import { isAgendaPast } from '../../lib/dateUtils';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 export default function KonfirmasiAgendaPage() {
   const [loading, setLoading] = useState(true);
@@ -198,6 +200,15 @@ export default function KonfirmasiAgendaPage() {
     });
   });
 
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedPendingTasks,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(myPendingTasks, 15, []);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -258,9 +269,9 @@ export default function KonfirmasiAgendaPage() {
                     Tidak ada agenda perlu konfirmasi saat ini
                   </TableCell>
                 </TableRow>
-              ) : myPendingTasks.map((task, index) => (
+              ) : paginatedPendingTasks.map((task, index) => (
                 <TableRow key={`${task.id_agenda}-${index}`} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                  <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                  <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
                   <TableCell className="font-medium text-sm">{task.nomor_surat}</TableCell>
                   <TableCell>
                     <div>
@@ -311,6 +322,15 @@ export default function KonfirmasiAgendaPage() {
               ))}
             </TableBody>
           </Table>
+          
+          {/* Pagination Controls */}
+          <CustomTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
 

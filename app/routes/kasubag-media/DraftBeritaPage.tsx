@@ -25,6 +25,8 @@ import {
 import { Link } from 'react-router';
 import { beritaApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 const getStatusInfo = (status: string) => {
   switch (status) {
@@ -110,6 +112,15 @@ export default function DraftBeritaPage() {
     const matchesStatus = statusFilter === 'all' || draft.status_draft === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedDrafts,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(filteredDraft, 15, [searchTerm, statusFilter]);
 
   const nextImage = () => {
     if (selectedDraft?.dokumentasis?.length > 0) {
@@ -207,13 +218,13 @@ export default function DraftBeritaPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDraft.map((draft, index) => {
+                {paginatedDrafts.map((draft, index) => {
                   const statusInfo = getStatusInfo(draft.status_draft);
                   const revisiCount = draft.revisions?.length || 1;
 
                   return (
                     <TableRow key={draft.id_draft_berita} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                      <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                      <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
                       <TableCell>
                         <div className="max-w-md">
                           <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
@@ -306,6 +317,15 @@ export default function DraftBeritaPage() {
                 )}
               </TableBody>
             </Table>
+            
+            {/* Pagination Controls */}
+            <CustomTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </CardContent>
       </Card>

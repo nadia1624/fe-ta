@@ -8,6 +8,8 @@ import { Button } from '../../components/ui/button';
 import { ArrowRight, Search, Filter, TrendingUp, User, Clock, CheckCircle, Calendar, MapPin } from 'lucide-react';
 import CustomSelect from '../../components/ui/CustomSelect';
 import MonthPicker from '../../components/ui/month-picker';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 export default function LaporanKegiatanStafProtokolPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,6 +64,15 @@ export default function LaporanKegiatanStafProtokolPage() {
 
     return matchSearch && matchPimpinan && matchStatus && matchMonth;
   });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedLaporan,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(filteredData, 15, [searchTerm, filterPimpinan, filterStatus, filterBulan]);
 
   const pimpinanList = Array.from(new Set(laporanList.flatMap(l => l.pimpinans.map((p: any) => p.nama_pimpinan))));
   const pimpinanOptions = [
@@ -220,9 +231,9 @@ export default function LaporanKegiatanStafProtokolPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredData.map((item, index) => (
+                    {paginatedLaporan.map((item, index) => (
                       <TableRow key={item.id} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                        <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                        <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
                         <TableCell>
                           <div className="text-sm space-y-1">
                             {item.pimpinans.map((p: any, idx: number) => (
@@ -281,6 +292,15 @@ export default function LaporanKegiatanStafProtokolPage() {
                     ))}
                   </TableBody>
                 </Table>
+                
+                {/* Pagination Controls */}
+                <CustomTablePagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setCurrentPage}
+                />
               </div>
 
               {filteredData.length === 0 && (

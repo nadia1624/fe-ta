@@ -8,6 +8,8 @@ import { Search, Filter, CheckCircle, Clock, TrendingUp, ArrowRight, ClipboardLi
 import { penugasanApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 import MonthPicker from '../../components/ui/month-picker';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 interface Pimpinan {
   nama_pimpinan: string;
@@ -103,6 +105,15 @@ export default function MonitorPenugasanPage() {
 
     return matchesSearch && matchesFilter && matchesMonth;
   });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedPenugasan,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(filteredPenugasan, 15, [searchTerm, filterStatus, filterBulan]);
 
   const statsSelesai = penugasanList.filter(p => p.status_pelaksanaan === 'Selesai').length;
   const statsBerlangsung = penugasanList.filter(p => p.status_pelaksanaan === 'Berlangsung').length;
@@ -255,9 +266,9 @@ export default function MonitorPenugasanPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPenugasan.map((penugasan, index) => (
+              {paginatedPenugasan.map((penugasan, index) => (
                 <TableRow key={penugasan.id_penugasan} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                  <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                  <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
                   <TableCell>
                     <div className="text-sm space-y-1">
                       {penugasan.pimpinans?.length > 0
@@ -345,6 +356,15 @@ export default function MonitorPenugasanPage() {
               )}
             </TableBody>
           </Table>
+          
+          {/* Pagination Controls */}
+          <CustomTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
     </div>

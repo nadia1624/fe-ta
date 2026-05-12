@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Search, UserPlus, Users, Mail, Calendar, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Search, UserPlus, Users, Mail, Calendar, RefreshCw } from 'lucide-react';
 import { pimpinanApi, periodeApi } from '../../lib/api';
 import { toast } from '../../lib/swal';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 export default function PimpinanManagementPage() {
   const [showModal, setShowModal] = useState(false);
@@ -16,8 +18,6 @@ export default function PimpinanManagementPage() {
   const [periodeOptions, setPeriodeOptions] = useState<any[]>([]);
   const [jabatanOptions, setJabatanOptions] = useState<any[]>([]);
   const [existingPimpinanList, setExistingPimpinanList] = useState<any[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,8 +81,14 @@ export default function PimpinanManagementPage() {
     fetchData();
   }, []);
 
-  const totalPages = Math.ceil(pimpinanList.length / ITEMS_PER_PAGE);
-  const paginatedPimpinan = pimpinanList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedPimpinan,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(pimpinanList, 15);
 
   const handleAdd = () => {
     setModalMode('add');
@@ -306,54 +312,13 @@ export default function PimpinanManagementPage() {
           </Table>
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="px-6 py-4 flex items-center justify-between border-t border-gray-100 bg-gray-50/30">
-              <div className="text-xs font-bold text-gray-400 tracking-tight">
-                Menampilkan <span className="text-gray-600">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="text-gray-600">{Math.min(currentPage * ITEMS_PER_PAGE, pimpinanList.length)}</span> dari <span className="text-gray-600">{pimpinanList.length}</span> data
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  data-testid="pagination-prev"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Prev
-                </Button>
-                
-                <div className="flex items-center gap-1">
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
-                        currentPage === i + 1
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
-                          : 'text-gray-400 hover:bg-white hover:text-gray-600 border border-transparent hover:border-gray-200'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  data-testid="pagination-next"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-          )}
+          <CustomTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
 

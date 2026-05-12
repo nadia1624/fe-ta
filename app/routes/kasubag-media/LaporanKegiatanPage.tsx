@@ -11,6 +11,8 @@ import { Link } from 'react-router';
 import CustomSelect from '../../components/ui/CustomSelect';
 import MonthPicker from '../../components/ui/month-picker';
 import { penugasanApi } from '../../lib/api';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 export default function LaporanKegiatanPage() {
   const [tugasProtokol, setTugasProtokol] = useState<any[]>([]);
@@ -65,6 +67,15 @@ export default function LaporanKegiatanPage() {
 
     return matchesSearch && matchesPimpinan && matchesStatus && matchesMonth;
   });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedTugas,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(filteredTugas, 15, [searchTerm, filterPimpinan, filterStatus, filterBulan]);
 
   const pimpinanOptions = [
     { value: 'all', label: 'Semua Pimpinan' },
@@ -210,9 +221,9 @@ export default function LaporanKegiatanPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTugas.map((tugas, index) => (
+                  {paginatedTugas.map((tugas, index) => (
                     <TableRow key={tugas.id_penugasan} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                      <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                      <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex flex-col">
                           {tugas.pimpinans.map((p: any, idx: number) => (
@@ -269,6 +280,15 @@ export default function LaporanKegiatanPage() {
                   ))}
                 </TableBody>
               </Table>
+              
+              {/* Pagination Controls */}
+              <CustomTablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+              />
               {filteredTugas.length === 0 && (
                 <div className="p-16 text-center text-gray-400 bg-white/50">
                   <FileText className="w-12 h-12 mx-auto mb-4 opacity-10" />

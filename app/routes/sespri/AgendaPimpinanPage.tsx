@@ -19,6 +19,8 @@ import { cn } from '../../components/ui/utils';
 import moment from 'moment';
 import 'moment/locale/id';
 import { toast } from '../../lib/swal';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 moment.locale('id');
 
@@ -293,6 +295,15 @@ export default function AgendaPimpinanPage() {
 
     return matchSearch && matchPimpinan && matchStatus;
   });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedAgendas,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(filteredData, 15, [searchTerm, filterPimpinan, filterStatus]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -577,9 +588,9 @@ export default function AgendaPimpinanPage() {
                     </TableCell>
                   </TableRow>
                 )}
-                {filteredData.map((agenda, index) => (
+                {paginatedAgendas.map((agenda, index) => (
                   <TableRow key={agenda.id_agenda} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                    <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                    <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
                     <TableCell>
                       <div>
                         <p className="font-semibold text-sm">{agenda.nama_kegiatan}</p>
@@ -640,6 +651,15 @@ export default function AgendaPimpinanPage() {
                 ))}
               </TableBody>
             </Table>
+            
+            {/* Pagination Controls */}
+            <CustomTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCurrentPage}
+            />
           </CardContent>
         </Card >
       )

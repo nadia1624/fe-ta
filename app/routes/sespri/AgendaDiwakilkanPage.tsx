@@ -8,6 +8,8 @@ import { toast } from '../../lib/swal';
 import { Badge } from '../../components/ui/badge';
 import MultiSelect from '../../components/ui/MultiSelect';
 import { cn } from '../../components/ui/utils';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 export default function KonfirmasiPenggantiPage() {
   const [loading, setLoading] = useState(true);
@@ -60,6 +62,15 @@ export default function KonfirmasiPenggantiPage() {
 
     return matchSearch;
   });
+
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedDelegated,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(delegatedAgendas, 15, [searchTerm]);
 
   const handleDetail = (agenda: any) => {
     setSelectedAgenda(agenda);
@@ -162,9 +173,9 @@ export default function KonfirmasiPenggantiPage() {
                   </TableCell>
                 </TableRow>
               )}
-              {delegatedAgendas.map((agenda, index) => (
+              {paginatedDelegated.map((agenda, index) => (
                 <TableRow key={agenda.id_agenda} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                  <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                  <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
                   <TableCell>
                     <div>
                       <p className="font-semibold text-sm">{agenda.nama_kegiatan}</p>
@@ -214,6 +225,15 @@ export default function KonfirmasiPenggantiPage() {
               ))}
             </TableBody>
           </Table>
+          
+          {/* Pagination Controls */}
+          <CustomTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
 

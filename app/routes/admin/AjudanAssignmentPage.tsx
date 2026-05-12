@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Plus, Trash2, Search, X, UserCheck, ChevronLeft, ChevronRight, Filter, RefreshCw, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Search, X, UserCheck, Filter, RefreshCw, AlertCircle } from 'lucide-react';
 import { userApi, pimpinanApi, periodeApi, ajudanAssignmentApi } from '../../lib/api';
 import { toast } from '../../lib/swal';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 export default function AjudanAssignmentPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,9 +18,6 @@ export default function AjudanAssignmentPage() {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [ajudans, setAjudans] = useState<any[]>([]);
   const [allPimpinan, setAllPimpinan] = useState<any[]>([]); // These are actually PeriodeJabatan records
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
-
   const [formData, setFormData] = useState({
     id_user_ajudan: '',
     id_pimpinan_jabatan: '', // Composite key string: id_jabatan|id_periode
@@ -73,8 +72,14 @@ export default function AjudanAssignmentPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const totalPages = Math.ceil(filteredAssignments.length / ITEMS_PER_PAGE);
-  const paginatedData = filteredAssignments.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(filteredAssignments, 15, [searchTerm, statusFilter]);
 
   const handleAddAssignment = () => {
     setFormData({ id_user_ajudan: '', id_pimpinan_jabatan: '', keterangan: '' });
@@ -319,37 +324,14 @@ export default function AjudanAssignmentPage() {
             </TableBody>
           </Table>
 
-          {totalPages > 1 && (
-            <div className="px-6 py-4 flex items-center justify-between border-t border-gray-100 bg-gray-50/30">
-              <div className="text-xs font-bold text-gray-400">
-                Menampilkan <span className="text-gray-600">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="text-gray-600">{Math.min(currentPage * ITEMS_PER_PAGE, filteredAssignments.length)}</span> dari <span className="text-gray-600">{filteredAssignments.length}</span> data
-              </div>
-              <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    data-testid="pagination-prev"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="h-8 px-2 text-xs font-bold rounded-lg"
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    Prev
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    data-testid="pagination-next"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="h-8 px-2 text-xs font-bold rounded-lg"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-              </div>
-            </div>
-          )}
+          {/* Pagination Controls */}
+          <CustomTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
 

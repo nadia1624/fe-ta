@@ -7,6 +7,8 @@ import { Eye, CheckCircle, XCircle, FileText, Search, Filter, X, RefreshCw, Cloc
 import { agendaApi } from '../../lib/api';
 import CustomSelect from '../../components/ui/CustomSelect';
 import { toast } from '../../lib/swal';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 type StatusType = 'pending' | 'revision' | 'rejected_sespri' | 'approved_sespri' | 'approved_ajudan' | 'delegated' | 'rejected_ajudan' | 'canceled' | 'completed';
 
@@ -92,14 +94,6 @@ export default function VerifikasiPermohonanPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 15;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, filterStatus]);
-
   const fetchAgendas = async () => {
     setLoading(true);
     setError('');
@@ -181,12 +175,16 @@ export default function VerifikasiPermohonanPage() {
     return matchSearch && matchStatus;
   });
 
-  // Paginated Data Calculation
-  const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(filteredData, 15, [searchTerm, filterStatus]);
+
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedData = filteredData.slice(startIndex, endIndex);
 
   // Count by status
   const statusCounts = agendaList.reduce((acc, item) => {
@@ -370,50 +368,13 @@ export default function VerifikasiPermohonanPage() {
               </div>
 
               {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-gray-100 px-6 py-4 bg-gray-50/50 rounded-b-xl">
-                  <p className="text-xs md:text-sm text-gray-600">
-                    Menampilkan <span className="font-semibold text-gray-900">{startIndex + 1}</span> hingga{' '}
-                    <span className="font-semibold text-gray-900">{Math.min(endIndex, totalItems)}</span> dari{' '}
-                    <span className="font-semibold text-gray-900">{totalItems}</span> permohonan
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="text-xs font-semibold px-3 py-1.5 border-gray-200 shadow-sm"
-                    >
-                      Sebelumnya
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
-                            currentPage === page
-                              ? 'bg-blue-600 text-white shadow-sm'
-                              : 'text-gray-600 hover:bg-gray-100'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                      className="text-xs font-semibold px-3 py-1.5 border-gray-200 shadow-sm"
-                    >
-                      Selanjutnya
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <CustomTablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+              />
             </>
           )}
         </CardContent>

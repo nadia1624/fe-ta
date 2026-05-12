@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Button } from '../../components/ui/button';
-import { Plus, Edit2, Trash2, X, AlertTriangle, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, AlertTriangle, Building2 } from 'lucide-react';
 import { kaskpdApi } from '../../lib/api';
 import { toast } from '../../lib/swal';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 export default function KasSKPDManagementPage() {
   const [showModal, setShowModal] = useState(false);
@@ -13,8 +15,6 @@ export default function KasSKPDManagementPage() {
   const [itemList, setItemList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
 
   const [formData, setFormData] = useState({
     nama_instansi: ''
@@ -44,8 +44,14 @@ export default function KasSKPDManagementPage() {
     fetchData();
   }, []);
 
-  const totalPages = Math.ceil(itemList.length / ITEMS_PER_PAGE);
-  const paginatedItemList = itemList.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedItemList,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(itemList, 15);
 
   const handleAdd = () => {
     setModalMode('add');
@@ -210,54 +216,14 @@ export default function KasSKPDManagementPage() {
                 </Table>
               </div>
 
-              {totalPages > 1 && (
-                <div className="px-6 py-4 flex items-center justify-between border-t border-gray-100 bg-gray-50/30 font-inter">
-                  <div className="text-xs font-bold text-gray-400 tracking-tight">
-                    Menampilkan <span className="text-gray-600">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> - <span className="text-gray-600">{Math.min(currentPage * ITEMS_PER_PAGE, itemList.length)}</span> dari <span className="text-gray-600">{itemList.length}</span> data
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      data-testid="pagination-prev"
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
-                    >
-                      <ChevronLeft className="w-4 h-4 mr-1" />
-                      Prev
-                    </Button>
-                    
-                    <div className="flex items-center gap-1">
-                      {[...Array(totalPages)].map((_, i) => (
-                        <button
-                          key={i + 1}
-                          onClick={() => setCurrentPage(i + 1)}
-                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
-                            currentPage === i + 1
-                              ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
-                              : 'text-gray-400 hover:bg-white hover:text-gray-600 border border-transparent hover:border-gray-200'
-                          }`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      data-testid="pagination-next"
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                      className="h-8 px-2 text-xs font-bold text-gray-500 hover:text-blue-600 border-gray-200"
-                    >
-                      Next
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+              {/* Pagination Controls */}
+              <CustomTablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+              />
         </CardContent>
       </Card>
 

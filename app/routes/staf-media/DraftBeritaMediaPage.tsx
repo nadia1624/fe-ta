@@ -19,6 +19,8 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { beritaApi } from '../../lib/api';
+import { usePagination } from '../../hooks/usePagination';
+import { CustomTablePagination } from '../../components/ui/CustomTablePagination';
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -101,6 +103,15 @@ export default function DraftBeritaMediaPage() {
     return matchesSearch;
   });
 
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    totalItems,
+    paginatedData: paginatedDrafts,
+    itemsPerPage: ITEMS_PER_PAGE
+  } = usePagination(filteredDraft, 15, [searchTerm]);
+
   const nextImage = () => {
     if (selectedDraft?.dokumentasis?.length > 0) {
       setCurrentImageIndex((prev) => (prev === selectedDraft.dokumentasis.length - 1 ? 0 : prev + 1));
@@ -168,12 +179,12 @@ export default function DraftBeritaMediaPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDraft.map((draft, index) => {
+                {paginatedDrafts.map((draft, index) => {
                   const revisiCount = draft.revisies?.length || 0;
 
                   return (
                     <TableRow key={draft.id_draft_berita} className="hover:bg-blue-50/40 transition-colors even:bg-blue-50/60">
-                      <TableCell className="text-center font-bold text-gray-400 text-xs">{index + 1}</TableCell>
+                      <TableCell className="text-center font-bold text-gray-400 text-xs">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="max-w-md">
                           <p className="font-medium text-gray-900 text-sm line-clamp-2">
@@ -228,6 +239,15 @@ export default function DraftBeritaMediaPage() {
               </TableBody>
             </Table>
           </div>
+          
+          {/* Pagination Controls */}
+          <CustomTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
 
