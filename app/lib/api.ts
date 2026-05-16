@@ -627,9 +627,12 @@ export const penugasanApi = {
         return res.json();
     },
 
-    async getAgendasForAssignment(): Promise<ApiResponse> {
+    async getAgendasForAssignment(scheduleStatus?: 'upcoming' | 'past'): Promise<ApiResponse> {
         const token = getToken();
-        const res = await fetch(`${API_BASE_URL}/penugasan/agendas-for-assignment`, {
+        const url = scheduleStatus 
+            ? `${API_BASE_URL}/penugasan/agendas-for-assignment?scheduleStatus=${scheduleStatus}`
+            : `${API_BASE_URL}/penugasan/agendas-for-assignment`;
+        const res = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -638,9 +641,12 @@ export const penugasanApi = {
         return res.json();
     },
 
-    async getAgendasForMediaAssignment(): Promise<ApiResponse> {
+    async getAgendasForMediaAssignment(scheduleStatus?: 'upcoming' | 'past'): Promise<ApiResponse> {
         const token = getToken();
-        const res = await fetch(`${API_BASE_URL}/penugasan/agendas-for-media-assignment`, {
+        const url = scheduleStatus 
+            ? `${API_BASE_URL}/penugasan/agendas-for-media-assignment?scheduleStatus=${scheduleStatus}`
+            : `${API_BASE_URL}/penugasan/agendas-for-media-assignment`;
+        const res = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -670,9 +676,12 @@ export const penugasanApi = {
         return res.json();
     },
 
-    async getMyPenugasan(): Promise<ApiResponse> {
+    async getMyPenugasan(scheduleStatus?: 'upcoming' | 'past'): Promise<ApiResponse> {
         const token = getToken();
-        const res = await fetch(`${API_BASE_URL}/penugasan/my-penugasan`, {
+        const url = scheduleStatus 
+            ? `${API_BASE_URL}/penugasan/my-penugasan?scheduleStatus=${scheduleStatus}`
+            : `${API_BASE_URL}/penugasan/my-penugasan`;
+        const res = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',

@@ -173,6 +173,11 @@ export default function AgendaPimpinanPage() {
     e.preventDefault();
 
     const todayStr = moment().format('YYYY-MM-DD');
+    
+    if (formData.tanggal_surat && formData.tanggal_surat > todayStr) {
+      return toast.error('Error', 'Tanggal surat tidak boleh melebihi hari ini');
+    }
+
     if (formData.tanggal_kegiatan <= todayStr) {
       return toast.error('Error', 'Tanggal kegiatan harus setelah hari ini (minimal besok)');
     }
@@ -731,6 +736,11 @@ export default function AgendaPimpinanPage() {
                             selected={formData.tanggal_surat ? new Date(formData.tanggal_surat) : undefined}
                             onSelect={(date) => handleDateSelect('tanggal_surat', date)}
                             initialFocus
+                            disabled={(date) => {
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              return date > today;
+                            }}
                           />
                         </PopoverContent>
                       </Popover>

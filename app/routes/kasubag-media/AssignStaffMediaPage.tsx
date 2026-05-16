@@ -18,6 +18,7 @@ export default function AssignStaffMediaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [scheduleFilter, setScheduleFilter] = useState<'upcoming' | 'past'>('upcoming');
 
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -28,7 +29,7 @@ export default function AssignStaffMediaPage() {
         setLoading(true);
         setError(null);
         const [agendasRes, staffRes] = await Promise.all([
-          penugasanApi.getAgendasForMediaAssignment(),
+          penugasanApi.getAgendasForMediaAssignment(scheduleFilter),
           penugasanApi.getStaffMedia()
         ]);
 
@@ -46,7 +47,7 @@ export default function AssignStaffMediaPage() {
     };
 
     fetchData();
-  }, []);
+  }, [scheduleFilter]);
 
   const handleAssign = (agenda: any) => {
     if (isPastAgenda(agenda.tanggal_kegiatan, agenda.waktu_selesai)) {
@@ -155,14 +156,38 @@ export default function AssignStaffMediaPage() {
           <h1 className="text-2xl font-semibold text-gray-900">Tugaskan Staf Media</h1>
           <p className="text-sm text-gray-600 mt-1">Tugaskan staf media untuk dokumentasi dan peliputan agenda kegiatan pimpinan</p>
         </div>
-        <div className="w-full md:w-64">
-          <input
-            type="text"
-            placeholder="Cari agenda atau pimpinan..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-gray-100 p-1 rounded-xl w-fit">
+            <button
+              onClick={() => setScheduleFilter('upcoming')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                scheduleFilter === 'upcoming' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Mendatang
+            </button>
+            <button
+              onClick={() => setScheduleFilter('past')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                scheduleFilter === 'past' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Terlewat
+            </button>
+          </div>
+          <div className="w-full md:w-64">
+            <input
+              type="text"
+              placeholder="Cari agenda atau pimpinan..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -171,8 +196,10 @@ export default function AssignStaffMediaPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Agenda Perlu Penugasan</h3>
-              <Badge variant="warning">{filteredAgenda.length}</Badge>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {scheduleFilter === 'upcoming' ? 'Agenda Mendatang' : 'Agenda Terlewat'}
+              </h3>
+              <Badge variant={scheduleFilter === 'upcoming' ? 'warning' : 'secondary'}>{filteredAgenda.length}</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-0">

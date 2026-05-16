@@ -10,20 +10,20 @@ import Footer from '../components/layout/Footer';
 const heroSlides = [
   {
     image: '/foto/1.png',
-    alt: 'Rapat pimpinan'
+    alt: 'Sekretariat Daerah Padang'
   },
   {
     image: '/foto/2.png',
-    alt: 'Kegiatan protokol'
+    alt: 'Sekretariat Daerah Padang'
   },
   {
     image: '/foto/3.png',
-    alt: 'Gedung pemerintahan'
+    alt: 'Sekretariat Daerah Padang'
   },
   {
     image: '/foto/4.png',
-    alt: 'Aktivitas instansi'
-  },
+    alt: 'Sekretariat Daerah Padang'
+  }
 ];
 
 
@@ -145,19 +145,17 @@ export default function LandingPage() {
                 <button
                   key={link.id}
                   onClick={() => scrollTo(link.id)}
-                  className={`relative px-4 py-3 text-sm font-bold transition-all duration-300 flex flex-col items-center group ${
-                    activeSection === link.id 
-                      ? 'text-blue-600' 
-                      : 'text-slate-600 hover:text-blue-600'
-                  }`}
+                  className={`relative px-4 py-3 text-sm font-bold transition-all duration-300 flex flex-col items-center group ${activeSection === link.id
+                    ? 'text-blue-600'
+                    : 'text-slate-600 hover:text-blue-600'
+                    }`}
                 >
                   {link.label}
                   {/* Underline Indicator */}
-                  <span className={`absolute bottom-1 w-8 h-1 bg-blue-600 rounded-full transition-all duration-300 ${
-                    activeSection === link.id 
-                      ? 'opacity-100 scale-x-100' 
-                      : 'opacity-0 scale-x-0 group-hover:opacity-40 group-hover:scale-x-100'
-                  }`} />
+                  <span className={`absolute bottom-1 w-8 h-1 bg-blue-600 rounded-full transition-all duration-300 ${activeSection === link.id
+                    ? 'opacity-100 scale-x-100'
+                    : 'opacity-0 scale-x-0 group-hover:opacity-40 group-hover:scale-x-100'
+                    }`} />
                 </button>
               ))}
             </nav>
@@ -201,11 +199,10 @@ export default function LandingPage() {
                   <button
                     key={link.id}
                     onClick={() => scrollTo(link.id)}
-                    className={`flex items-center justify-between w-full px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
-                      activeSection === link.id
-                        ? 'text-blue-600 bg-blue-50/50'
-                        : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/30'
-                    }`}
+                    className={`flex items-center justify-between w-full px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 ${activeSection === link.id
+                      ? 'text-blue-600 bg-blue-50/50'
+                      : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/30'
+                      }`}
                   >
                     {link.label}
                     {activeSection === link.id && (
@@ -261,7 +258,7 @@ export default function LandingPage() {
         {/* Content Overlay */}
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
           <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-8 leading-[1.1] tracking-tight">
-            Manajemen <br /> 
+            Manajemen <br />
             Agenda Pimpinan
           </h2>
 
@@ -276,7 +273,7 @@ export default function LandingPage() {
                 <ArrowRight className="w-5 h-5" />
               </button>
             </Link>
-            <button 
+            <button
               onClick={() => scrollTo('alur')}
               className="w-full sm:w-auto px-10 h-16 bg-white/10 backdrop-blur-xl hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition-all duration-300 flex items-center justify-center gap-3"
             >
@@ -291,9 +288,8 @@ export default function LandingPage() {
               <button
                 key={i}
                 onClick={() => setCurrentSlide(i)}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  currentSlide === i ? 'w-12 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'
-                }`}
+                className={`h-1.5 rounded-full transition-all duration-500 ${currentSlide === i ? 'w-12 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'
+                  }`}
               />
             ))}
           </div>
@@ -305,7 +301,7 @@ export default function LandingPage() {
       <section id="alur" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-slate-100 relative overflow-hidden">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(37,99,235,0.04),rgba(255,255,255,0))]" />
-         <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-20">
             <p className="text-blue-600 font-bold text-xs mb-3 uppercase tracking-[0.2em]">Workflow</p>
             <h3 className="text-3xl sm:text-5xl font-black text-slate-900 mb-6 tracking-tight">Alur Kerja Digital</h3>
@@ -315,10 +311,10 @@ export default function LandingPage() {
           </div>
 
           <div className="relative">
-             {/* Connection Line */}
-             <div className="hidden lg:block absolute top-10 left-0 right-0 h-px bg-gradient-to-r from-slate-200/0 via-slate-300 to-slate-200/0" />
-             
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Connection Line */}
+            <div className="hidden lg:block absolute top-10 left-0 right-0 h-px bg-gradient-to-r from-slate-200/0 via-slate-300 to-slate-200/0" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
 
               {steps.map((step, index) => (
                 <div key={index} className="group relative flex flex-col items-center text-center">
@@ -331,7 +327,7 @@ export default function LandingPage() {
                   </p>
                 </div>
               ))}
-             </div>
+            </div>
           </div>
         </div>
       </section>
@@ -344,7 +340,7 @@ export default function LandingPage() {
               <p className="text-blue-600 font-bold text-xs mb-3 uppercase tracking-[0.2em]">Latest Update</p>
               <h3 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">Berita Terbaru</h3>
             </div>
-            
+
             <div className="flex items-center gap-6">
               <p className="text-slate-500 max-w-md font-medium text-right hidden lg:block">
                 Ikuti kabar terbaru dan monitoring dokumentasi kegiatan pimpinan secara transparan.
@@ -366,42 +362,42 @@ export default function LandingPage() {
                     key={berita.id_draft_berita}
                     className="group bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2"
                   >
-                  {/* Photo Slider */}
-                  <div className="aspect-video bg-slate-100 overflow-hidden relative">
-                    <NewsSlider dokumentasis={berita.dokumentasis} judul={berita.judul_berita} />
-                  </div>
-                  {/* Content */}
-                  <div className="p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                       <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                          <Clock className="w-4 h-4 text-blue-600" />
-                       </div>
-                       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none pt-0.5">
-                        {berita.updatedAt ? new Date(berita.updatedAt).toLocaleDateString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric'
-                        }) : 'N/A'}
-                      </p>
+                    {/* Photo Slider */}
+                    <div className="aspect-video bg-slate-100 overflow-hidden relative">
+                      <NewsSlider dokumentasis={berita.dokumentasis} judul={berita.judul_berita} />
                     </div>
-                    <h4 className="text-xl font-bold text-slate-900 mb-4 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors tracking-tight">
-                      {berita.judul_berita}
-                    </h4>
-                    {berita.isi_draft && (
-                      <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed font-medium mb-8">
-                        {berita.isi_draft}
-                      </p>
-                    )}
-                    <Link to={`/berita/${berita.id_draft_berita}`}>
-                      <button className="flex items-center gap-2 text-xs font-bold text-slate-900 uppercase tracking-widest group-hover:gap-4 transition-all duration-300">
-                        Detail Lengkap
-                        <ArrowRight className="w-4 h-4 text-blue-600" />
-                      </button>
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
+                    {/* Content */}
+                    <div className="p-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                          <Clock className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none pt-0.5">
+                          {berita.updatedAt ? new Date(berita.updatedAt).toLocaleDateString('id-ID', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          }) : 'N/A'}
+                        </p>
+                      </div>
+                      <h4 className="text-xl font-bold text-slate-900 mb-4 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors tracking-tight">
+                        {berita.judul_berita}
+                      </h4>
+                      {berita.isi_draft && (
+                        <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed font-medium mb-8">
+                          {berita.isi_draft}
+                        </p>
+                      )}
+                      <Link to={`/berita/${berita.id_draft_berita}`}>
+                        <button className="flex items-center gap-2 text-xs font-bold text-slate-900 uppercase tracking-widest group-hover:gap-4 transition-all duration-300">
+                          Detail Lengkap
+                          <ArrowRight className="w-4 h-4 text-blue-600" />
+                        </button>
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="text-center py-24 bg-white rounded-[3rem] border border-dashed border-slate-200">
@@ -423,39 +419,39 @@ export default function LandingPage() {
 
         <div className="max-w-5xl mx-auto relative z-10">
           {/* Card */}
-            <h3 className="text-3xl sm:text-5xl text-center font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">
-              Siap Mengelola Agenda <br className="hidden sm:block" />
-              <span className="text-blue-600">Dengan Lebih Mudah?</span>
-            </h3>
-            <p className="text-slate-500 text-lg sm:text-xl text-center mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
-              Gunakan sistem manajemen agenda untuk mengatur jadwal, tugas protokol, dan koordinasi pimpinan secara efisien.
-            </p>
+          <h3 className="text-3xl sm:text-5xl text-center font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">
+            Siap Mengelola Agenda <br className="hidden sm:block" />
+            <span className="text-blue-600">Dengan Lebih Mudah?</span>
+          </h3>
+          <p className="text-slate-500 text-lg sm:text-xl text-center mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
+            Gunakan sistem manajemen agenda untuk mengatur jadwal, tugas protokol, dan koordinasi pimpinan secara efisien.
+          </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              {isLoggedIn ? (
-                <Link to={`/${userSlug}/dashboard`} className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-10 h-14 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl shadow-lg shadow-blue-900/40 hover:shadow-blue-900/60 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
-                    Masuk Ke Dashboard Utama
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {isLoggedIn ? (
+              <Link to={`/${userSlug}/dashboard`} className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto px-10 h-14 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl shadow-lg shadow-blue-900/40 hover:shadow-blue-900/60 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
+                  Masuk Ke Dashboard Utama
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/register" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-10 h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/40 hover:shadow-blue-900/60 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
+                    Daftar Akun
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </Link>
-              ) : (
-                <>
-                  <Link to="/register" className="w-full sm:w-auto">
-                    <button className="w-full sm:w-auto px-10 h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/40 hover:shadow-blue-900/60 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2">
-                      Daftar Akun
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </Link>
-                  <Link to="/login" className="w-full sm:w-auto">
-                    <button className="w-full sm:w-auto px-10 h-14 bg-white hover:bg-white/15 border border-white/15 text-slate-900 font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
-                      Login Sistem
-                      <ChevronRight className="w-4 h-4 opacity-60" />
-                    </button>
-                  </Link>
-                </>
-              )}
-            </div>
+                <Link to="/login" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto px-10 h-14 bg-white hover:bg-white/15 border border-white/15 text-slate-900 font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                    Login Sistem
+                    <ChevronRight className="w-4 h-4 opacity-60" />
+                  </button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Decor */}

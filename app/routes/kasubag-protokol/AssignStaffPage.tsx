@@ -16,17 +16,18 @@ export default function AssignStaffPage() {
   const [submitting, setSubmitting] = useState(false);
   const [agendaSlots, setAgendaSlots] = useState<any[]>([]);
   const [availableStaff, setAvailableStaff] = useState<any[]>([]);
+  const [scheduleFilter, setScheduleFilter] = useState<'upcoming' | 'past'>('upcoming');
 
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [scheduleFilter]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [agendasRes, staffRes] = await Promise.all([
-        penugasanApi.getAgendasForAssignment(),
+        penugasanApi.getAgendasForAssignment(scheduleFilter),
         penugasanApi.getStaffProtokol()
       ]);
 
@@ -125,14 +126,38 @@ export default function AssignStaffPage() {
           <h1 className="text-2xl font-semibold text-gray-900">Tugaskan Staf Protokol</h1>
           <p className="text-sm text-gray-600 mt-1">Tugaskan staf protokol untuk per agenda kegiatan pimpinan yang terkonfirmasi</p>
         </div>
-        <div className="w-full md:w-64">
-          <input
-            type="text"
-            placeholder="Cari agenda atau pimpinan..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-gray-100 p-1 rounded-xl w-fit">
+            <button
+              onClick={() => setScheduleFilter('upcoming')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                scheduleFilter === 'upcoming' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Mendatang
+            </button>
+            <button
+              onClick={() => setScheduleFilter('past')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                scheduleFilter === 'past' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Terlewat
+            </button>
+          </div>
+          <div className="w-full md:w-64">
+            <input
+              type="text"
+              placeholder="Cari agenda atau pimpinan..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -141,8 +166,10 @@ export default function AssignStaffPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Agenda Terkonfirmasi</h3>
-              <Badge variant="warning">{filteredAgenda.length}</Badge>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {scheduleFilter === 'upcoming' ? 'Agenda Mendatang' : 'Agenda Terlewat'}
+              </h3>
+              <Badge variant={scheduleFilter === 'upcoming' ? 'warning' : 'secondary'}>{filteredAgenda.length}</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-0">

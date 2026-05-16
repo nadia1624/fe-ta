@@ -120,7 +120,7 @@ export default function TugasSayaMediaPage() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'mp4', 'mov', 'webm'];
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
 
     const validFiles: File[] = [];
     const invalidFiles: string[] = [];
@@ -135,7 +135,7 @@ export default function TugasSayaMediaPage() {
     });
 
     if (invalidFiles.length > 0) {
-      toast.warning('File Diabaikan', `Format file tidak didukung: ${invalidFiles.join(', ')}. Hanya JPG, PNG, dan Video yang diizinkan.`);
+      toast.warning('File Diabaikan', `Format file tidak didukung: ${invalidFiles.join(', ')}. Hanya JPG, JPEG, PNG, dan WebP yang diizinkan.`);
     }
 
     if (validFiles.length === 0) return;
@@ -574,14 +574,14 @@ export default function TugasSayaMediaPage() {
                       <Upload className="w-6 h-6 text-blue-600" />
                     </div>
                     <p className="text-sm font-bold text-gray-900">Klik untuk upload dokumentasi</p>
-                    <p className="text-xs text-gray-500 mt-1">Mendukung format gambar (JPG, PNG) dan video (MP4)</p>
+                    <p className="text-xs text-gray-500 mt-1">Mendukung format gambar (JPG, JPEG, PNG, WebP)</p>
                   </div>
 
                   <input
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileSelect}
-                    accept="image/*,video/*"
+                    accept="image/*"
                     multiple
                     className="hidden"
                   />
@@ -622,22 +622,9 @@ export default function TugasSayaMediaPage() {
 
                       {/* New Upload Previews */}
                       {uploadForm.foto_previews.map((preview, index) => {
-                        const file = uploadForm.foto_dokumentasi[index];
-                        const isVideo = file?.type.startsWith('video/') || file?.name.toLowerCase().match(/\.(mp4|mov|webm)$/);
                         return (
                           <div key={`new-${index}`} className="relative aspect-square group">
-                            {isVideo ? (
-                              <div className="w-full h-full bg-gray-900 rounded-xl flex items-center justify-center border border-blue-200 shadow-sm overflow-hidden">
-                                <video src={preview} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="bg-blue-600/60 rounded-full p-2">
-                                    <Upload className="w-4 h-4 text-white" />
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-blue-200 shadow-sm" />
-                            )}
+                            <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-xl border border-blue-200 shadow-sm" />
                             <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center pointer-events-none">
                               <span className="text-white bg-blue-600 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm">Baru</span>
                             </div>
